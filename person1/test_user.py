@@ -35,7 +35,10 @@ print("6. queue_position:", token.queue_position)
 
 print("7. priority_type:", token.priority_type)
 
-print("8. token_created_at:", token.token_created_at)
+print(
+    "8. token_created_at:",
+    token.token_created_at.strftime("%Y-%m-%d %H:%M:%S")
+)
 
 print("9. service_started_at:", token.service_started_at)
 
@@ -55,10 +58,14 @@ print("13. token_expires_at:", token.token_expires_at)
 print("\n========== START SERVICE ==========")
 
 token = start_token_service(token.token_id)
+import time
+time.sleep(2)
 
 print("Status:", token.token_status)
-print("Service Started:", token.service_started_at)
-
+print(
+    "Service Started:",
+    token.service_started_at.strftime("%Y-%m-%d %H:%M:%S")
+)
 
 # Complete service
 print("\n========== COMPLETE SERVICE ==========")
@@ -66,8 +73,10 @@ print("\n========== COMPLETE SERVICE ==========")
 token = complete_token_service(token.token_id)
 
 print("Status:", token.token_status)
-print("Service Completed:", token.service_completed_at)
-
+print(
+    "Service Completed:",
+    token.service_completed_at.strftime("%Y-%m-%d %H:%M:%S")
+)
 
 # Calculate actual service time
 service_time = token.get_service_time_seconds()

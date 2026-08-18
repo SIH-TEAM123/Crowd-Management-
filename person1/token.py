@@ -39,9 +39,12 @@ class Token:
 
         self.priority_type = priority_type
 
-        self.token_created_at = datetime.now()
+        self.token_created_at = datetime.now().replace(microsecond=0)
 
+        # Service has not started yet
         self.service_started_at = None
+
+        # Service has not completed yet
         self.service_completed_at = None
 
         self.admin_configured_service_time_minutes = (
@@ -52,7 +55,10 @@ class Token:
 
         self.expiry_minutes = expiry_minutes
 
-        self.token_expires_at = None
+        self.token_expires_at = (
+    self.token_created_at
+    + timedelta(minutes=expiry_minutes)
+)
 
         if expiry_minutes is not None:
             self.token_expires_at = (
@@ -62,11 +68,12 @@ class Token:
 
     def start_service(self):
         self.token_status = TokenStatus.SERVING
-        self.service_started_at = datetime.now()
+        self.service_started_at = datetime.now().replace(microsecond=0)
+
 
     def complete_service(self):
         self.token_status = TokenStatus.COMPLETED
-        self.service_completed_at = datetime.now()
+        self.service_completed_at = datetime.now().replace(microsecond=0)
 
     def cancel(self):
         self.token_status = TokenStatus.CANCELLED
@@ -81,6 +88,10 @@ class Token:
         ):
             return None
 
-        return (
-            self.service_completed_at - self.service_started_at
-        ).total_seconds()
+        return round(
+            (
+                self.service_completed_at
+                - self.service_started_at
+            ).total_seconds(),
+            2
+        )
