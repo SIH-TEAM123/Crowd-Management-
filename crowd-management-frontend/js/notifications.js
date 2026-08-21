@@ -238,4 +238,29 @@ document.addEventListener("DOMContentLoaded", function () {
     if (markAllBtn) {
         markAllBtn.addEventListener("click", markAllAsRead);
     }
+
+    // Header & Logout Navigation Handlers
+    const profileBadge = document.querySelector(".profile-badge");
+    if (profileBadge) {
+        profileBadge.style.cursor = "pointer";
+        profileBadge.addEventListener("click", function () {
+            window.location.href = "profile.html";
+        });
+    }
+
+    const notifBtn = document.querySelector('.icon-btn[title="View alerts"], .icon-btn[title="Notifications"]');
+    if (notifBtn) {
+        notifBtn.addEventListener("click", function () {
+            window.location.href = "notifications.html";
+        });
+    }
+
+    const logoutLinks = document.querySelectorAll('.sidebar-footer a, #btnLogout');
+    logoutLinks.forEach(function (link) {
+        link.addEventListener("click", function () {
+            localStorage.removeItem("isAuthenticated");
+            localStorage.removeItem("userEmail");
+        });
+    });
 });
+

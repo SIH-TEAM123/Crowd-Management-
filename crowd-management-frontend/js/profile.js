@@ -82,5 +82,30 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // 3. Header & Logout Navigation Handlers
+    const profileBadge = document.querySelector(".profile-badge");
+    if (profileBadge) {
+        profileBadge.style.cursor = "pointer";
+        profileBadge.addEventListener("click", () => {
+            window.location.href = "profile.html";
+        });
+    }
+
+    const notifBtn = document.querySelector('.icon-btn[title="View alerts"], .icon-btn[title="Notifications"]');
+    if (notifBtn) {
+        notifBtn.addEventListener("click", () => {
+            window.location.href = "notifications.html";
+        });
+    }
+
+    const logoutLinks = document.querySelectorAll('.sidebar-footer a, #btnLogout');
+    logoutLinks.forEach(link => {
+        link.addEventListener("click", () => {
+            localStorage.removeItem("isAuthenticated");
+            localStorage.removeItem("userEmail");
+        });
+    });
+
     console.log("profile.js successfully loaded. Profile interactive events active.");
 });
+

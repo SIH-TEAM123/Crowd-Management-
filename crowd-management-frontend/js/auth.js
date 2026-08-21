@@ -8,24 +8,44 @@ document.addEventListener("DOMContentLoaded", () => {
         loginForm.addEventListener("submit", (event) => {
             event.preventDefault(); // Prevent the page from refreshing
 
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            const rememberMe = document.getElementById("rememberMe").checked;
+            const emailInput = document.getElementById("email");
+            const passwordInput = document.getElementById("password");
+            const rememberMeInput = document.getElementById("rememberMe");
+
+            const email = emailInput ? emailInput.value.trim() : "";
+            const password = passwordInput ? passwordInput.value.trim() : "";
+            const rememberMe = rememberMeInput ? rememberMeInput.checked : false;
+
+            if (!email || !password) {
+                alert("Please fill in both email and password.");
+                return;
+            }
 
             console.log("Mock Sign In Event triggered:");
             console.log("Email:", email);
             console.log("Password:", password ? "••••••••" : "Empty");
             console.log("Remember for 30 days:", rememberMe);
 
-            // Friendly alert showing the captured inputs
-            alert(`Logging in as: ${email}\n(Remember Me: ${rememberMe ? 'Yes' : 'No'})\n\nThis is a local demonstration. The FastAPI backend connection will be added in a later step!`);
+            // Persist mock authentication state
+            localStorage.setItem("isAuthenticated", "true");
+            localStorage.setItem("userEmail", email);
+
+            // Redirect to dashboard
+            window.location.href = "dashboard.html";
         });
     }
 
     if (googleButton) {
         googleButton.addEventListener("click", () => {
             console.log("Mock Sign In with Google triggered");
-            alert("Signing in with Google...\n\nThis is a local demonstration. The Google OAuth configuration will be added later!");
+
+            // Persist mock authentication state
+            localStorage.setItem("isAuthenticated", "true");
+            localStorage.setItem("userEmail", "google.user@example.com");
+
+            // Redirect to dashboard
+            window.location.href = "dashboard.html";
         });
     }
 });
+

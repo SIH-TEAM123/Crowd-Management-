@@ -124,16 +124,18 @@ function bookNewAppointment() {
     const counter = "Counter " + (Math.floor(Math.random() * 5) + 1);
 
     // Generate a new card ID
-    const existingCards = document.querySelectorAll("#upcomingGrid .appt-card");
     const newId = Date.now(); // use timestamp as unique id
 
     // Remove empty state if present
     const emptyState = document.querySelector("#upcomingGrid .empty-state");
-    if (emptyState) emptyState.closest("div")?.remove();
+    if (emptyState) emptyState.remove();
 
     // Build the new card HTML and prepend it
     const grid = document.getElementById("upcomingGrid");
     if (!grid) return;
+
+    const safeService = service.trim().replace(/'/g, "\\'");
+    const safeDate = date.trim().replace(/'/g, "\\'");
 
     const card = document.createElement("div");
     card.className = "appt-card pending";
@@ -163,7 +165,7 @@ function bookNewAppointment() {
         </div>
         <div class="appt-card-actions">
             <button class="btn-action-ghost" onclick="viewDetails(${newId})">View Details</button>
-            <button class="btn-action-cancel" onclick="cancelAppointment(${newId}, '${service.trim()}', '${date.trim()}', '${token}')">Cancel</button>
+            <button class="btn-action-cancel" onclick="cancelAppointment(${newId}, '${safeService}', '${safeDate}', '${token}')">Cancel</button>
         </div>
     `;
 
@@ -181,6 +183,30 @@ document.addEventListener("DOMContentLoaded", () => {
         bookBtn.addEventListener("click", bookNewAppointment);
     }
 
+    const profileBadge = document.querySelector(".profile-badge");
+    if (profileBadge) {
+        profileBadge.style.cursor = "pointer";
+        profileBadge.addEventListener("click", () => {
+            window.location.href = "profile.html";
+        });
+    }
+
+    const notifBtn = document.querySelector('.icon-btn[title="View alerts"], .icon-btn[title="Notifications"]');
+    if (notifBtn) {
+        notifBtn.addEventListener("click", () => {
+            window.location.href = "notifications.html";
+        });
+    }
+
+    const logoutLinks = document.querySelectorAll('.sidebar-footer a, #btnLogout');
+    logoutLinks.forEach(link => {
+        link.addEventListener("click", () => {
+            localStorage.removeItem("isAuthenticated");
+            localStorage.removeItem("userEmail");
+        });
+    });
+
     refreshCounts();
     console.log("appointments.js loaded. Appointment event handlers active.");
 });
+

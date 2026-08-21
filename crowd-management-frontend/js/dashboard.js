@@ -1,6 +1,15 @@
 // Dashboard logic for Crowd Management UI
 
 document.addEventListener("DOMContentLoaded", () => {
+    // 0. Update Welcome Banner if user email is stored
+    const welcomeUserEl = document.getElementById("welcomeUser");
+    const storedEmail = localStorage.getItem("userEmail");
+    if (welcomeUserEl && storedEmail) {
+        const username = storedEmail.split("@")[0];
+        const formattedName = username.charAt(0).toUpperCase() + username.slice(1);
+        welcomeUserEl.textContent = `Welcome back, ${formattedName}.`;
+    }
+
     // 1. Dynamic Date and Time Updater
     const dateTimeElement = document.getElementById("currentDateTime");
     
@@ -40,21 +49,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (bookApptHeaderBtn) {
         bookApptHeaderBtn.addEventListener("click", () => {
-            // In a real app, this would redirect or open a modal.
-            // Let's redirect to appointments.html
-            alert("Redirecting to the Appointments page...");
             window.location.href = "appointments.html";
         });
     }
     
-    // 3. Quick Actions Mock Notifications
-    const quickActionBtns = document.querySelectorAll(".quick-action-btn");
-    quickActionBtns.forEach(btn => {
-        btn.addEventListener("click", (event) => {
-            const actionText = btn.textContent.trim();
-            console.log(`Quick Action clicked: ${actionText}`);
+    // 3. Header & Logout Navigation Handlers
+    const profileBadge = document.querySelector(".profile-badge");
+    if (profileBadge) {
+        profileBadge.style.cursor = "pointer";
+        profileBadge.addEventListener("click", () => {
+            window.location.href = "profile.html";
+        });
+    }
+
+    const notifBtn = document.querySelector('.icon-btn[title="View alerts"], .icon-btn[title="Notifications"]');
+    if (notifBtn) {
+        notifBtn.addEventListener("click", () => {
+            window.location.href = "notifications.html";
+        });
+    }
+
+    const logoutLinks = document.querySelectorAll('.sidebar-footer a, #btnLogout');
+    logoutLinks.forEach(link => {
+        link.addEventListener("click", (e) => {
+            localStorage.removeItem("isAuthenticated");
+            localStorage.removeItem("userEmail");
         });
     });
 
     console.log("dashboard.js successfully loaded. Dynamic widgets active.");
 });
+
