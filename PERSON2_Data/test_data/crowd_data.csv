@@ -1,0 +1,6 @@
+timestamp,location,crowd_count,queue_length,arrival_rate,service_rate,active_counters,avg_waiting_time
+2026-08-01 09:00,Gate_A,120,35,20,18,3,8.5
+2026-08-01 09:10,Gate_A,145,42,25,20,3,10.2
+2026-08-01 09:20,Gate_A,180,58,32,22,3,13.7
+2026-08-01 09:30,Gate_A,210,72,38,24,4,15.1
+2026-08-01 09:40,Gate_A,165,50,28,25,4,11.4
