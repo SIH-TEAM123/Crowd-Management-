@@ -238,10 +238,10 @@ def get_prediction_confidence():
     individual prediction.
 
     Returns:
-        float: percentage
+        float: confidence value from 0.0 to 1.0
     """
 
-    return round(MODEL_R2 * 100, 2)
+    return float(MODEL_R2)
 
 
 # ==================================================
