@@ -486,11 +486,10 @@ async def reset_password(
 async def get_current_user_info(
     user: User = Depends(get_current_user)
 ):
-    user = User(
-    user_id=new_id,
-    full_name=data.full_name,
-    email=data.email,
-    password_hash=hashed_password,
-    is_verified=False,
-    role="user"
-)
+    return {
+        "user_id": user.user_id,
+        "full_name": user.full_name,
+        "email": user.email,
+        "role": user.role,
+        "is_verified": user.is_verified
+    }
