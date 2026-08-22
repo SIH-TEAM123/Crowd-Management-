@@ -1,51 +1,66 @@
-// Authentication logic for Symmetry Login
+// Real authentication using FastAPI
 
 document.addEventListener("DOMContentLoaded", () => {
     const loginForm = document.getElementById("loginForm");
     const googleButton = document.getElementById("btnGoogle");
 
     if (loginForm) {
-        loginForm.addEventListener("submit", (event) => {
-            event.preventDefault(); // Prevent the page from refreshing
+        loginForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
 
-            const emailInput = document.getElementById("email");
-            const passwordInput = document.getElementById("password");
-            const rememberMeInput = document.getElementById("rememberMe");
-
-            const email = emailInput ? emailInput.value.trim() : "";
-            const password = passwordInput ? passwordInput.value.trim() : "";
-            const rememberMe = rememberMeInput ? rememberMeInput.checked : false;
+            const email = document.getElementById("email")?.value.trim();
+            const password = document.getElementById("password")?.value;
+            const rememberMe = document.getElementById("rememberMe")?.checked;
 
             if (!email || !password) {
                 alert("Please fill in both email and password.");
                 return;
             }
 
-            console.log("Mock Sign In Event triggered:");
-            console.log("Email:", email);
-            console.log("Password:", password ? "••••••••" : "Empty");
-            console.log("Remember for 30 days:", rememberMe);
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
 
-            // Persist mock authentication state
-            localStorage.setItem("isAuthenticated", "true");
-            localStorage.setItem("userEmail", email);
+                const data = await response.json();
 
-            // Redirect to dashboard
-            window.location.href = "dashboard.html";
+                if (!response.ok) {
+                    alert(data.detail || "Login failed.");
+                    return;
+                }
+
+                // Store the real JWT
+                localStorage.setItem("access_token", data.access_token);
+                localStorage.setItem("userEmail", email);
+                localStorage.setItem("isAuthenticated", "true");
+
+                if (rememberMe) {
+                    localStorage.setItem("rememberMe", "true");
+                } else {
+                    localStorage.removeItem("rememberMe");
+                }
+
+                // Go to dashboard
+                window.location.href = "dashboard.html";
+
+            } catch (error) {
+                console.error("Login error:", error);
+                alert("Unable to connect to the server.");
+            }
         });
     }
 
+    // Google login is not connected to FastAPI yet.
     if (googleButton) {
         googleButton.addEventListener("click", () => {
-            console.log("Mock Sign In with Google triggered");
-
-            // Persist mock authentication state
-            localStorage.setItem("isAuthenticated", "true");
-            localStorage.setItem("userEmail", "google.user@example.com");
-
-            // Redirect to dashboard
-            window.location.href = "dashboard.html";
+            alert("Google Sign-In is not connected yet.");
         });
     }
 });
-

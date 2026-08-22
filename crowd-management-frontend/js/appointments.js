@@ -1,212 +1,333 @@
-// Appointments page logic for Crowd Management
+// Real appointment integration with FastAPI
 
-// ─────────────────────────────────────────────
-// Helper – update the "3" badge counters
-// ─────────────────────────────────────────────
-function refreshCounts() {
-    const upcomingCards = document.querySelectorAll("#upcomingGrid .appt-card");
-    const prevRows      = document.querySelectorAll("#prevTableBody tr");
-    const upcomingCount = document.getElementById("upcomingCount");
-    const prevCount     = document.getElementById("prevCount");
+function getAuthHeaders() {
+    const token = localStorage.getItem("access_token");
 
-    if (upcomingCount) upcomingCount.textContent = upcomingCards.length;
-    if (prevCount)     prevCount.textContent     = prevRows.length;
+    if (!token) {
+        window.location.href = "index.html";
+        return null;
+    }
+
+    return {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+    };
 }
 
-// ─────────────────────────────────────────────
-// View Details – shows a read-only alert summary
-// ─────────────────────────────────────────────
-function viewDetails(id) {
-    const card = document.querySelector(`.appt-card[data-id="${id}"]`);
-    if (!card) return;
 
-    const service  = card.querySelector(".appt-service-name")?.textContent || "—";
-    const values   = card.querySelectorAll(".appt-meta-value");
-    const date     = values[0]?.textContent || "—";
-    const time     = values[1]?.textContent || "—";
-    const counter  = values[2]?.textContent || "—";
-    const token    = values[3]?.textContent || "—";
-    const status   = card.querySelector(".card-badge")?.textContent || "—";
+async function loadAppointments() {
+    const headers = getAuthHeaders();
+    if (!headers) return;
 
-    alert(
-        `📋 Appointment Details\n` +
-        `──────────────────────\n` +
-        `Service  : ${service}\n` +
-        `Date     : ${date}\n` +
-        `Time     : ${time}\n` +
-        `Counter  : ${counter}\n` +
-        `Token    : ${token}\n` +
-        `Status   : ${status}\n` +
-        `──────────────────────\n` +
-        `(Full details will be available once connected to the backend.)`
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/appointments`,
+            {
+                method: "GET",
+                headers: headers
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.detail || "Unable to load appointments.");
+            return;
+        }
+
+        renderAppointments(data);
+
+    } catch (error) {
+        console.error("Appointment loading error:", error);
+        alert("Unable to connect to the server.");
+    }
+}
+
+
+function renderAppointments(appointments) {
+    const grid = document.getElementById("upcomingGrid");
+    const count = document.getElementById("upcomingCount");
+
+    if (!grid) return;
+
+    grid.innerHTML = "";
+
+    const upcoming = appointments.filter(
+        appointment =>
+            appointment.status !== "CANCELLED"
     );
+
+    if (count) {
+        count.textContent = upcoming.length;
+    }
+
+    if (upcoming.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1;">
+                <p>No upcoming appointments. Book one using the button above!</p>
+            </div>
+        `;
+        return;
+    }
+
+    upcoming.forEach(appointment => {
+        const card = document.createElement("div");
+
+        card.className = "appt-card";
+        card.dataset.id = appointment.appointment_id;
+
+        const date = appointment.appointment_date;
+        const time = appointment.appointment_time;
+
+        card.innerHTML = `
+            <div class="appt-card-header">
+                <span class="appt-service-name">
+                    ${escapeHtml(appointment.purpose)}
+                </span>
+
+                <span class="card-badge badge-warning">
+                    ${escapeHtml(appointment.status)}
+                </span>
+            </div>
+
+            <div class="appt-meta-grid">
+
+                <div class="appt-meta-item">
+                    <span class="appt-meta-label">Date</span>
+                    <span class="appt-meta-value">
+                        ${date}
+                    </span>
+                </div>
+
+                <div class="appt-meta-item">
+                    <span class="appt-meta-label">Time</span>
+                    <span class="appt-meta-value">
+                        ${time}
+                    </span>
+                </div>
+
+                <div class="appt-meta-item">
+                    <span class="appt-meta-label">Counter</span>
+                    <span class="appt-meta-value">
+                        Not assigned
+                    </span>
+                </div>
+
+                <div class="appt-meta-item">
+                    <span class="appt-meta-label">Token</span>
+                    <span class="appt-meta-value token">
+                        ${escapeHtml(appointment.token_id)}
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="appt-card-actions">
+
+                <button
+                    class="btn-action-ghost"
+                    onclick="viewDetails(${appointment.appointment_id})">
+                    View Details
+                </button>
+
+                <button
+                    class="btn-action-cancel"
+                    onclick="cancelAppointment(${appointment.appointment_id})">
+                    Cancel
+                </button>
+
+            </div>
+        `;
+
+        grid.appendChild(card);
+    });
 }
 
-// ─────────────────────────────────────────────
-// Cancel Appointment
-// ─────────────────────────────────────────────
-function cancelAppointment(id, service, date, token) {
+
+async function viewDetails(id) {
+    const headers = getAuthHeaders();
+    if (!headers) return;
+
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/appointments/${id}`,
+            {
+                method: "GET",
+                headers: headers
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.detail || "Unable to load appointment.");
+            return;
+        }
+
+        alert(
+            `Appointment Details\n\n` +
+            `Service: ${data.purpose}\n` +
+            `Date: ${data.appointment_date}\n` +
+            `Time: ${data.appointment_time}\n` +
+            `Token: ${data.token_id}\n` +
+            `Status: ${data.status}`
+        );
+
+    } catch (error) {
+        console.error("View appointment error:", error);
+        alert("Unable to connect to the server.");
+    }
+}
+
+
+async function cancelAppointment(id) {
     const confirmed = confirm(
-        `Are you sure you want to cancel this appointment?\n\n` +
-        `Service : ${service}\n` +
-        `Date    : ${date}\n` +
-        `Token   : ${token}`
+        "Are you sure you want to cancel this appointment?"
     );
 
     if (!confirmed) return;
 
-    // Remove the upcoming card
-    const card = document.querySelector(`.appt-card[data-id="${id}"]`);
-    if (card) card.remove();
+    const headers = getAuthHeaders();
+    if (!headers) return;
 
-    // Add a new row to Previous Appointments table
-    const tbody = document.getElementById("prevTableBody");
-    if (tbody) {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>
-                <div class="table-icon-row">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <rect x="3" y="4" width="18" height="18" rx="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
-                    <span>${service}</span>
-                </div>
-            </td>
-            <td>${date}</td>
-            <td style="color:#7c3aed;font-weight:600;">${token}</td>
-            <td><span class="card-badge badge-danger">Cancelled</span></td>
-        `;
-        tbody.prepend(row); // put it at the top
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/appointments/${id}`,
+            {
+                method: "DELETE",
+                headers: headers
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.detail || "Unable to cancel appointment.");
+            return;
+        }
+
+        alert("Appointment cancelled successfully.");
+
+        await loadAppointments();
+
+    } catch (error) {
+        console.error("Cancel appointment error:", error);
+        alert("Unable to connect to the server.");
     }
-
-    // Show empty state if no cards remain
-    const grid = document.getElementById("upcomingGrid");
-    if (grid && grid.querySelectorAll(".appt-card").length === 0) {
-        grid.innerHTML = `
-            <div class="empty-state" style="grid-column:1/-1;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <rect x="3" y="4" width="18" height="18" rx="2"/>
-                    <line x1="16" y1="2" x2="16" y2="6"/>
-                    <line x1="8" y1="2" x2="8" y2="6"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                <p>No upcoming appointments. Book one using the button above!</p>
-            </div>
-        `;
-    }
-
-    refreshCounts();
-    alert(`Appointment for "${service}" has been cancelled.`);
 }
 
-// ─────────────────────────────────────────────
-// Book New Appointment
-// ─────────────────────────────────────────────
-function bookNewAppointment() {
-    const service = prompt("Enter service name (e.g. Blood Test, Passport Renewal):");
-    if (!service || service.trim() === "") return;
 
-    const date = prompt("Enter appointment date (e.g. Sep 5, 2026):");
-    if (!date || date.trim() === "") return;
+async function bookNewAppointment() {
+    const service = prompt(
+        "Enter service name (e.g. Blood Test, Passport Renewal):"
+    );
 
-    const time = prompt("Enter time slot (e.g. 11:30 AM):");
-    if (!time || time.trim() === "") return;
+    if (!service || !service.trim()) return;
 
-    // Generate a mock token
-    const letters = "ABCDE";
-    const token = letters[Math.floor(Math.random() * letters.length)] +
-                  "-" + String(Math.floor(Math.random() * 900) + 100);
+    const date = prompt(
+        "Enter appointment date (YYYY-MM-DD):"
+    );
 
-    // Get a counter number
-    const counter = "Counter " + (Math.floor(Math.random() * 5) + 1);
+    if (!date || !date.trim()) return;
 
-    // Generate a new card ID
-    const newId = Date.now(); // use timestamp as unique id
+    const time = prompt(
+        "Enter appointment time (HH:MM:SS):"
+    );
 
-    // Remove empty state if present
-    const emptyState = document.querySelector("#upcomingGrid .empty-state");
-    if (emptyState) emptyState.remove();
+    if (!time || !time.trim()) return;
 
-    // Build the new card HTML and prepend it
-    const grid = document.getElementById("upcomingGrid");
-    if (!grid) return;
+    const headers = getAuthHeaders();
+    if (!headers) return;
 
-    const safeService = service.trim().replace(/'/g, "\\'");
-    const safeDate = date.trim().replace(/'/g, "\\'");
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/appointments`,
+            {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify({
+                    purpose: service.trim(),
+                    appointment_date: date.trim(),
+                    appointment_time: time.trim()
+                })
+            }
+        );
 
-    const card = document.createElement("div");
-    card.className = "appt-card pending";
-    card.setAttribute("data-id", newId);
-    card.innerHTML = `
-        <div class="appt-card-header">
-            <span class="appt-service-name">${service.trim()}</span>
-            <span class="card-badge badge-warning">Pending</span>
-        </div>
-        <div class="appt-meta-grid">
-            <div class="appt-meta-item">
-                <span class="appt-meta-label">Date</span>
-                <span class="appt-meta-value">${date.trim()}</span>
-            </div>
-            <div class="appt-meta-item">
-                <span class="appt-meta-label">Time</span>
-                <span class="appt-meta-value">${time.trim()}</span>
-            </div>
-            <div class="appt-meta-item">
-                <span class="appt-meta-label">Counter</span>
-                <span class="appt-meta-value">${counter}</span>
-            </div>
-            <div class="appt-meta-item">
-                <span class="appt-meta-label">Token</span>
-                <span class="appt-meta-value token">${token}</span>
-            </div>
-        </div>
-        <div class="appt-card-actions">
-            <button class="btn-action-ghost" onclick="viewDetails(${newId})">View Details</button>
-            <button class="btn-action-cancel" onclick="cancelAppointment(${newId}, '${safeService}', '${safeDate}', '${token}')">Cancel</button>
-        </div>
-    `;
+        const data = await response.json();
 
-    grid.prepend(card);
-    refreshCounts();
-    alert(`Appointment booked!\n\nToken: ${token}\nDate: ${date}\nCounter: ${counter}\n\n(This is a local demo. It will be saved to the backend in a future step.)`);
+        if (!response.ok) {
+            alert(data.detail || "Unable to book appointment.");
+            return;
+        }
+
+        alert(
+            `Appointment booked successfully!\n\n` +
+            `Token: ${data.token_id}\n` +
+            `Date: ${data.appointment_date}\n` +
+            `Time: ${data.appointment_time}`
+        );
+
+        await loadAppointments();
+
+    } catch (error) {
+        console.error("Booking error:", error);
+        alert("Unable to connect to the server.");
+    }
 }
 
-// ─────────────────────────────────────────────
-// On page ready
-// ─────────────────────────────────────────────
+
+function escapeHtml(value) {
+    const div = document.createElement("div");
+    div.textContent = value ?? "";
+    return div.innerHTML;
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
+
     const bookBtn = document.getElementById("btnBookNew");
+
     if (bookBtn) {
-        bookBtn.addEventListener("click", bookNewAppointment);
+        bookBtn.addEventListener(
+            "click",
+            bookNewAppointment
+        );
     }
 
-    const profileBadge = document.querySelector(".profile-badge");
+    const profileBadge =
+        document.querySelector(".profile-badge");
+
     if (profileBadge) {
         profileBadge.style.cursor = "pointer";
+
         profileBadge.addEventListener("click", () => {
             window.location.href = "profile.html";
         });
     }
 
-    const notifBtn = document.querySelector('.icon-btn[title="View alerts"], .icon-btn[title="Notifications"]');
+    const notifBtn =
+        document.querySelector(
+            '.icon-btn[title="View alerts"], .icon-btn[title="Notifications"]'
+        );
+
     if (notifBtn) {
         notifBtn.addEventListener("click", () => {
             window.location.href = "notifications.html";
         });
     }
 
-    const logoutLinks = document.querySelectorAll('.sidebar-footer a, #btnLogout');
+    const logoutLinks =
+        document.querySelectorAll(
+            '.sidebar-footer a, #btnLogout'
+        );
+
     logoutLinks.forEach(link => {
         link.addEventListener("click", () => {
+            localStorage.removeItem("access_token");
             localStorage.removeItem("isAuthenticated");
             localStorage.removeItem("userEmail");
         });
     });
 
-    refreshCounts();
-    console.log("appointments.js loaded. Appointment event handlers active.");
+    loadAppointments();
 });
-
