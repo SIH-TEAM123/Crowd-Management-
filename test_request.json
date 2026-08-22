@@ -1,0 +1,30 @@
+{
+  "facility_id": "TEST",
+  "institution_type": "service_center",
+  "timestamp": "2026-08-20T11:30:00",
+  "current_state": {
+    "active_counters": 4,
+    "queue_length": 0,
+    "arrival_rate_per_min": 0,
+    "service_rate_per_counter_per_min": 0,
+    "average_wait_minutes": 0,
+    "utilization": 0,
+    "completed_service_times": []
+  },
+  "prediction": {
+    "forecast_horizon_minutes": 10,
+    "predicted_queue_length": 0,
+    "predicted_arrival_rate_per_min": 0,
+    "predicted_wait_minutes": 0,
+    "predicted_congestion_level": "LOW",
+    "prediction_confidence": 0
+  },
+  "resources": {
+    "spare_counters": 2,
+    "reallocatable_resources": 2
+  },
+  "priority": {
+    "time_critical_users": 0,
+    "vulnerable_users": 0
+  }
+}
