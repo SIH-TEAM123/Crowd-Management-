@@ -30,10 +30,17 @@ async function loadAppointments() {
 
         const data = await response.json();
 
-        if (!response.ok) {
-            alert(data.detail || "Unable to load appointments.");
-            return;
-        }
+       if (!response.ok) {
+    console.error("Booking failed:", data);
+
+    const errorMessage =
+        typeof data.detail === "object"
+            ? JSON.stringify(data.detail, null, 2)
+            : (data.detail || "Unable to book appointment.");
+
+    alert("Booking failed:\n\n" + errorMessage);
+    return;
+}
 
         renderAppointments(data);
 
@@ -42,7 +49,37 @@ async function loadAppointments() {
         alert("Unable to connect to the server.");
     }
 }
+function formatDate(dateString) {
+    if (!dateString) return "Not available";
 
+    const date = new Date(`${dateString}T00:00:00`);
+
+    return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+    });
+}
+
+
+function formatTime(timeString) {
+    if (!timeString) return "Not available";
+
+    const cleanTime = timeString.split(".")[0];
+
+    const [hours, minutes] = cleanTime.split(":");
+
+    const date = new Date();
+    date.setHours(Number(hours));
+    date.setMinutes(Number(minutes));
+    date.setSeconds(0);
+
+    return date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+    });
+}
 
 function renderAppointments(appointments) {
     const grid = document.getElementById("upcomingGrid");
@@ -76,8 +113,8 @@ function renderAppointments(appointments) {
         card.className = "appt-card";
         card.dataset.id = appointment.appointment_id;
 
-        const date = appointment.appointment_date;
-        const time = appointment.appointment_time;
+        const date = formatDate(appointment.appointment_date);
+const time = formatTime(appointment.appointment_time);
 
         card.innerHTML = `
             <div class="appt-card-header">
@@ -218,28 +255,79 @@ async function cancelAppointment(id) {
 
 
 async function bookNewAppointment() {
+
     const service = prompt(
         "Enter service name (e.g. Blood Test, Passport Renewal):"
     );
 
-    if (!service || !service.trim()) return;
+    if (!service || !service.trim()) {
+        alert("Please enter a valid service name.");
+        return;
+    }
+
 
     const date = prompt(
-        "Enter appointment date (YYYY-MM-DD):"
+        "Enter appointment date (YYYY-MM-DD):\nExample: 2026-08-25"
     );
 
-    if (!date || !date.trim()) return;
+    if (!date || !date.trim()) {
+        alert("Please enter an appointment date.");
+        return;
+    }
+
+    // Validate YYYY-MM-DD
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+    if (!dateRegex.test(date.trim())) {
+        alert(
+            "Invalid date format.\n\n" +
+            "Please use: YYYY-MM-DD\n" +
+            "Example: 2026-08-25"
+        );
+        return;
+    }
+
+    // Check if it is a real calendar date
+    const parsedDate = new Date(`${date.trim()}T00:00:00`);
+
+    if (isNaN(parsedDate.getTime())) {
+        alert("Please enter a valid calendar date.");
+        return;
+    }
+
 
     const time = prompt(
-        "Enter appointment time (HH:MM:SS):"
+        "Enter appointment time (HH:MM or HH:MM:SS):\nExample: 10:30"
     );
 
-    if (!time || !time.trim()) return;
+    if (!time || !time.trim()) {
+        alert("Please enter an appointment time.");
+        return;
+    }
+
+    const cleanTime = time.trim();
+
+    // Validate HH:MM or HH:MM:SS
+    const timeRegex =
+        /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
+
+    if (!timeRegex.test(cleanTime)) {
+        alert(
+            "Invalid time format.\n\n" +
+            "Please use HH:MM or HH:MM:SS\n" +
+            "Examples: 10:30 or 10:30:00"
+        );
+        return;
+    }
+
 
     const headers = getAuthHeaders();
+
     if (!headers) return;
 
+
     try {
+
         const response = await fetch(
             `${API_BASE_URL}/appointments`,
             {
@@ -248,34 +336,63 @@ async function bookNewAppointment() {
                 body: JSON.stringify({
                     purpose: service.trim(),
                     appointment_date: date.trim(),
-                    appointment_time: time.trim()
+                    appointment_time: cleanTime
                 })
             }
         );
 
         const data = await response.json();
 
+
         if (!response.ok) {
-            alert(data.detail || "Unable to book appointment.");
+
+            let errorMessage =
+                "Unable to book appointment.";
+
+            // FastAPI validation errors
+            if (Array.isArray(data.detail)) {
+
+                errorMessage = data.detail
+                    .map(error =>
+                        `${error.loc?.slice(-1)[0] || "Field"}: ${error.msg}`
+                    )
+                    .join("\n");
+
+            } else if (
+                typeof data.detail === "string"
+            ) {
+
+                errorMessage = data.detail;
+
+            }
+
+            alert(errorMessage);
             return;
         }
+
 
         alert(
             `Appointment booked successfully!\n\n` +
             `Token: ${data.token_id}\n` +
-            `Date: ${data.appointment_date}\n` +
-            `Time: ${data.appointment_time}`
+            `Date: ${formatDate(data.appointment_date)}\n` +
+            `Time: ${formatTime(data.appointment_time)}`
         );
+
 
         await loadAppointments();
 
     } catch (error) {
-        console.error("Booking error:", error);
-        alert("Unable to connect to the server.");
+
+        console.error(
+            "Booking error:",
+            error
+        );
+
+        alert(
+            "Unable to connect to the server."
+        );
     }
 }
-
-
 function escapeHtml(value) {
     const div = document.createElement("div");
     div.textContent = value ?? "";
