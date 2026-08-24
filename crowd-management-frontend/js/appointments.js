@@ -89,10 +89,14 @@ function renderAppointments(appointments) {
 
     grid.innerHTML = "";
 
-    const upcoming = appointments.filter(
-        appointment =>
-            appointment.status !== "CANCELLED"
-    );
+    const upcoming = appointments.filter(appointment =>
+    appointment.status !== "COMPLETED" &&
+    appointment.status !== "CANCELLED"
+);
+
+const previous = appointments.filter(appointment =>
+    appointment.status === "COMPLETED"
+);
 
     if (count) {
         count.textContent = upcoming.length;
@@ -178,6 +182,27 @@ const time = formatTime(appointment.appointment_time);
 
         grid.appendChild(card);
     });
+
+// Render previous (completed) appointments
+const prevCount = document.getElementById("prevCount");
+const prevTableBody = document.getElementById("prevTableBody");
+
+prevCount.textContent = previous.length;
+
+prevTableBody.innerHTML = "";
+
+previous.forEach(appointment => {
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+        <td>${escapeHtml(appointment.purpose)}</td>
+        <td>${formatDate(appointment.appointment_date)}</td>
+        <td>${escapeHtml(appointment.token_number || appointment.token || "-")}</td>
+        <td>${escapeHtml(appointment.status)}</td>
+    `;
+
+    prevTableBody.appendChild(row);
+});
 }
 
 

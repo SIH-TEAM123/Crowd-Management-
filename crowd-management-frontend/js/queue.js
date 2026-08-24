@@ -1,134 +1,267 @@
-// Queue / Token page — driven by the shared /appointments/queue/status
-// endpoint, so it always matches Dashboard, Crowd Status, Profile, etc.
+const API_BASE = "http://127.0.0.1:8000";
 
-function getQueueStatusLabel(status) {
-    switch (status) {
-        case "BEING_SERVED": return "Being Served";
-        case "SERVED": return "Completed";
-        case "WAITING": return "Waiting";
-        default: return "Waiting";
+async function loadQueueStatus() {
+    try {
+        const token = localStorage.getItem("access_token");
+
+        if (!token) {
+            console.error("No access token found");
+            return;
+        }
+
+        const response = await fetch(
+            `${API_BASE}/appointments/queue/status`,
+            {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to load queue status");
+        }
+
+        const data = await response.json();
+
+        console.log("LIVE QUEUE DATA:", data);
+
+        updateQueuePage(data);
+
+    } catch (error) {
+        console.error("Queue error:", error);
     }
 }
 
-function updateStatusPills(statusLabel) {
-    const pills = document.querySelectorAll(".status-pill");
-    pills.forEach(pill => {
-        const base = pill.textContent.trim().replace("● ", "");
-        const isActive = base === statusLabel;
-        pill.classList.toggle("active-status", isActive);
-        pill.classList.toggle("inactive-status", !isActive);
-        if (isActive) {
-            pill.textContent = "● " + statusLabel;
-        } else {
-            pill.textContent = base;
+
+function updateQueuePage(data) {
+
+    const you = data.you;
+
+    // ===============================
+    // CURRENTLY SERVING
+    // ===============================
+
+    const currentToken =
+        document.getElementById("currentToken");
+
+    if (currentToken) {
+        currentToken.textContent =
+            data.currently_serving_token || "--";
+    }
+
+
+    // ===============================
+    // YOUR TOKEN
+    // ===============================
+
+    const userToken =
+        document.getElementById("userToken");
+
+    if (userToken) {
+        userToken.textContent =
+            you?.token_display || "--";
+    }
+
+
+    // ===============================
+    // PEOPLE AHEAD
+    // ===============================
+
+    const peopleAhead =
+        document.getElementById("peopleAhead");
+
+    if (peopleAhead) {
+        peopleAhead.textContent =
+            you?.people_ahead ?? 0;
+    }
+
+
+    // ===============================
+    // WAIT TIME
+    // ===============================
+
+    const waitTime =
+        document.getElementById("waitTime");
+
+    if (waitTime) {
+        const minutes =
+            Math.ceil(you?.estimated_wait_minutes ?? 0);
+
+        waitTime.innerHTML =
+            `${minutes}<span style="font-size:1rem;font-weight:600;"> min</span>`;
+    }
+
+
+    // ===============================
+    // STATUS BADGE
+    // ===============================
+
+    const statusPill =
+        document.getElementById("statusPill");
+
+    if (statusPill) {
+
+        if (you?.status === "BEING_SERVED") {
+            statusPill.textContent = "● Being Served";
         }
-    });
-}
 
-async function renderQueueState() {
-    const queueStatus = await VIZITOR.getQueueStatus();
-    if (!queueStatus) return;
+        else if (you?.status === "WAITING") {
+            statusPill.textContent = "● Waiting";
+        }
 
-    const currentTokenEl = document.getElementById("currentToken");
-    const userTokenEl = document.getElementById("userToken");
-    const peopleAheadEl = document.getElementById("peopleAhead");
-    const waitTimeEl = document.getElementById("waitTime");
-    const aheadSubEl = document.getElementById("aheadSub");
-    const noteTokenEl = document.getElementById("noteToken");
+        else if (you?.status === "SERVED") {
+            statusPill.textContent = "● Completed";
+        }
 
-    if (currentTokenEl) {
-        currentTokenEl.textContent = queueStatus.currently_serving_token || "--";
-    }
-
-    const you = queueStatus.you;
-
-    if (userTokenEl) userTokenEl.textContent = you ? you.token_display : "--";
-    if (peopleAheadEl) peopleAheadEl.textContent = you ? you.people_ahead : 0;
-
-    if (waitTimeEl) {
-        const wait = you ? you.estimated_wait_minutes : queueStatus.estimated_wait_minutes;
-        waitTimeEl.innerHTML = wait + `<span style="font-size:1rem;font-weight:600;"> min</span>`;
-    }
-
-    if (aheadSubEl) {
-        aheadSubEl.textContent = (you ? you.people_ahead : 0) + " ahead";
-    }
-
-    if (noteTokenEl) {
-        noteTokenEl.textContent = you ? ` ${you.token_display} ` : " -- ";
-    }
-
-    // Progress track nodes
-    const servingCircle = document.querySelector(".qp-circle.serving");
-    const userCircle = document.querySelector(".qp-circle.user");
-    if (servingCircle) servingCircle.textContent = queueStatus.currently_serving_token || "--";
-    if (userCircle) userCircle.textContent = you ? you.token_display : "--";
-
-    // Status pills + card badge
-    const statusLabel = getQueueStatusLabel(you ? you.status : "WAITING");
-    updateStatusPills(statusLabel);
-
-    const tokenBadge = document.querySelector(".card-panel .panel-header .card-badge");
-    if (tokenBadge && you) {
-        if (you.status === "BEING_SERVED") {
-            tokenBadge.textContent = "Being Served";
-            tokenBadge.className = "card-badge badge-success";
-        } else if (you.people_ahead <= 3) {
-            tokenBadge.textContent = "Almost There!";
-            tokenBadge.className = "card-badge badge-warning";
-        } else {
-            tokenBadge.textContent = "Waiting";
-            tokenBadge.className = "card-badge badge-neutral";
+        else {
+            statusPill.textContent =
+                "● " + (you?.status || "Waiting");
         }
     }
 
-    // Linked appointment card
-    const linkedBadge = document.getElementById("linkedApptBadge");
-    const linkedPurpose = document.getElementById("linkedApptPurpose");
-    const linkedDate = document.getElementById("linkedApptDate");
-    const linkedTime = document.getElementById("linkedApptTime");
-    const linkedToken = document.getElementById("linkedApptToken");
 
-    if (you) {
-        if (linkedBadge) linkedBadge.textContent = "Confirmed";
-        if (linkedPurpose) linkedPurpose.textContent = you.purpose;
-        if (linkedDate) linkedDate.textContent = VIZITOR.formatDate(you.appointment_date);
-        if (linkedTime) linkedTime.textContent = VIZITOR.formatTime(you.appointment_time);
-        if (linkedToken) linkedToken.textContent = you.token_display;
+    // ===============================
+    // QUEUE PROGRESS
+    // ===============================
+
+    const servingProgress =
+        document.querySelector(".qp-circle.serving");
+
+    if (servingProgress) {
+        servingProgress.textContent =
+            data.currently_serving_token || "--";
+    }
+
+
+    const userProgress =
+        document.querySelector(".qp-circle.user");
+
+    if (userProgress) {
+        userProgress.textContent =
+            you?.token_display || "--";
+    }
+
+
+    const aheadSub =
+        document.getElementById("aheadSub");
+
+    if (aheadSub) {
+        aheadSub.textContent =
+            `${you?.people_ahead ?? 0} ahead`;
+    }
+
+
+    // ===============================
+    // NOTE TOKEN
+    // ===============================
+
+    const noteToken =
+        document.getElementById("noteToken");
+
+    if (noteToken) {
+        noteToken.textContent =
+            you?.token_display || "--";
+    }
+
+
+    // ===============================
+    // LINKED APPOINTMENT
+    // ===============================
+
+    const appointment =
+        you?.appointment || data.appointment;
+
+    const purpose =
+        document.getElementById("linkedApptPurpose");
+
+    const date =
+        document.getElementById("linkedApptDate");
+
+    const time =
+        document.getElementById("linkedApptTime");
+
+    const appointmentToken =
+        document.getElementById("linkedApptToken");
+
+    const badge =
+        document.getElementById("linkedApptBadge");
+
+    if (appointment) {
+
+        if (purpose) {
+            purpose.textContent =
+                appointment.purpose ||
+                appointment.service ||
+                "Current Appointment";
+        }
+
+        if (date) {
+            date.textContent =
+                appointment.date || "--";
+        }
+
+        if (time) {
+            time.textContent =
+                appointment.time || "--";
+        }
+
+        if (appointmentToken) {
+            appointmentToken.textContent =
+                you?.token_display ||
+                appointment.token ||
+                "--";
+        }
+
+        if (badge) {
+            badge.textContent = "Active";
+        }
+
     } else {
-        if (linkedBadge) linkedBadge.textContent = "None";
-        if (linkedPurpose) linkedPurpose.textContent = "No linked appointment";
-        if (linkedDate) linkedDate.textContent = "--";
-        if (linkedTime) linkedTime.textContent = "--";
-        if (linkedToken) linkedToken.textContent = "--";
+
+        if (purpose) {
+            purpose.textContent =
+                "Current Queue Appointment";
+        }
+
+        if (date) {
+            date.textContent = "--";
+        }
+
+        if (time) {
+            time.textContent = "--";
+        }
+
+        if (appointmentToken) {
+            appointmentToken.textContent =
+                you?.token_display || "--";
+        }
+
+        if (badge) {
+            badge.textContent = "Active";
+        }
     }
 }
+
+
+// ===============================
+// PAGE LOAD
+// ===============================
 
 document.addEventListener("DOMContentLoaded", () => {
-    VIZITOR.requireAuthOrRedirect();
-    VIZITOR.wireCommonNav();
 
-    renderQueueState();
-    setInterval(renderQueueState, 15000);
+    loadQueueStatus();
 
-    const viewApptBtns = [
-        document.getElementById("btnViewAppt"),
-        document.getElementById("btnViewApptBottom")
-    ];
-    viewApptBtns.forEach(btn => {
-        if (btn) {
-            btn.addEventListener("click", () => {
-                window.location.href = "appointments.html";
-            });
-        }
-    });
+    setInterval(loadQueueStatus, 10000);
 
-    const refreshBtn = document.getElementById("btnRefresh");
-    if (refreshBtn) {
-        refreshBtn.addEventListener("click", async () => {
-            await renderQueueState();
-        });
+    const refreshButton =
+        document.getElementById("btnRefresh");
+
+    if (refreshButton) {
+        refreshButton.addEventListener(
+            "click",
+            loadQueueStatus
+        );
     }
-
-    console.log("queue.js loaded. Live queue status rendering active.");
 });

@@ -1,4 +1,20 @@
+# Environment secrets
 .env
+
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+
+# Local databases
 *.db
+*.sqlite
+*.sqlite3
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -36,7 +36,11 @@ function renderCrowdStatus(queueStatus) {
         levelText.className = `crowd-level-badge ${lvl}`;
     }
 
-    if (peopleEl) peopleEl.textContent = String(queueStatus.total_active);
+    if (peopleEl) {
+    peopleEl.textContent = String(
+        queueStatus.people_currently_present ?? 0
+    );
+}
     if (queueEl) queueEl.textContent = String(queueStatus.queue_size);
     if (waitEl) {
         waitEl.innerHTML = `${queueStatus.estimated_wait_minutes}<span class="wait-unit"> min</span>`;

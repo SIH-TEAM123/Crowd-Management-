@@ -20,26 +20,14 @@ router = APIRouter(
 
 
 # =========================================================
-# Shared "single source of truth" queue simulation config.
-#
-# There is one global, always-consistent queue derived from
-# real appointment rows: every non-cancelled appointment gets
-# a sequential display token (based on its global, ever
-# increasing appointment_id), and the "currently serving"
-# token advances automatically over real time. Every page in
-# the frontend (dashboard, queue, crowd status, profile,
-# notifications, reports, analytics) reads this same endpoint
-# so the numbers always match everywhere and change live.
+# QUEUE CONFIGURATION
 # =========================================================
 
 TOKEN_PREFIX = "A"
-TOKEN_BASE = 100  # first appointment_id (1) -> token A-101
+TOKEN_BASE = 100
 
-# Average minutes it takes to fully serve one token/appointment.
 SERVICE_RATE_MINUTES = 4
 
-# Crowd level thresholds, based on how many people are
-# still waiting in the live queue right now.
 LOW_CROWD_MAX = 5
 MODERATE_CROWD_MAX = 15
 
@@ -59,12 +47,12 @@ def crowd_level_for(queue_size: int) -> str:
 
 
 async def _get_active_appointments_ordered(db: AsyncSession):
-    """All non-cancelled appointments, oldest first -> this *is* the queue."""
     result = await db.execute(
         select(Appointment)
         .where(Appointment.status != "CANCELLED")
         .order_by(Appointment.appointment_id)
     )
+
     return result.scalars().all()
 
 
@@ -73,6 +61,10 @@ class AppointmentCreate(BaseModel):
     appointment_date: date
     appointment_time: time
 
+
+# =========================================================
+# CREATE APPOINTMENT
+# =========================================================
 
 @router.post("")
 async def create_appointment(
@@ -109,13 +101,19 @@ async def create_appointment(
         "appointment_id": appointment.appointment_id,
         "user_id": appointment.user_id,
         "token_id": appointment.token_id,
-        "token_display": token_display_for(appointment.appointment_id),
+        "token_display": token_display_for(
+            appointment.appointment_id
+        ),
         "purpose": appointment.purpose,
         "appointment_date": appointment.appointment_date,
         "appointment_time": appointment.appointment_time,
         "status": appointment.status,
     }
 
+
+# =========================================================
+# GET MY APPOINTMENTS
+# =========================================================
 
 @router.get("")
 async def get_my_appointments(
@@ -125,7 +123,10 @@ async def get_my_appointments(
     result = await db.execute(
         select(Appointment)
         .where(Appointment.user_id == current_user.user_id)
-        .order_by(Appointment.appointment_date, Appointment.appointment_time)
+        .order_by(
+            Appointment.appointment_date,
+            Appointment.appointment_time,
+        )
     )
 
     appointments = result.scalars().all()
@@ -135,7 +136,9 @@ async def get_my_appointments(
             "appointment_id": appointment.appointment_id,
             "user_id": appointment.user_id,
             "token_id": appointment.token_id,
-            "token_display": token_display_for(appointment.appointment_id),
+            "token_display": token_display_for(
+                appointment.appointment_id
+            ),
             "purpose": appointment.purpose,
             "appointment_date": appointment.appointment_date,
             "appointment_time": appointment.appointment_time,
@@ -145,88 +148,193 @@ async def get_my_appointments(
     ]
 
 
+# =========================================================
+# LIVE QUEUE STATUS
+# =========================================================
+
 @router.get("/queue/status")
 async def get_queue_status(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Single source of truth for queue / crowd numbers, shared by
-    every page (dashboard, queue, crowd status, profile,
-    notifications, reports, analytics).
-
-    The queue is built entirely from real appointment rows
-    (global across all users) and advances automatically with
-    real time, so refreshing any page - or opening a second
-    tab/user - always shows the exact same, live-updating state.
-    """
-
     active = await _get_active_appointments_ordered(db)
-    total_active = len(active)
 
-    if total_active == 0:
-        reference_time = datetime.utcnow()
-    else:
-        reference_time = min(a.created_at for a in active)
+    now = datetime.utcnow()
+
+    # No active appointments
+    if not active:
+        return {
+            "server_time": now.isoformat(),
+            "total_active": 0,
+            "served_so_far": 0,
+            "queue_size": 0,
+            "people_currently_present": 0,
+            "estimated_wait_minutes": 0,
+            "currently_serving_token": None,
+            "remaining_current_service_minutes": 0,
+            "crowd_level": "No Crowd",
+            "service_rate_minutes": SERVICE_RATE_MINUTES,
+            "low_crowd_max": LOW_CROWD_MAX,
+            "moderate_crowd_max": MODERATE_CROWD_MAX,
+            "you": None,
+        }
+
+    # First appointment starts the queue
+    first_appointment = active[0]
+    reference_time = first_appointment.created_at
 
     minutes_elapsed = max(
         0.0,
-        (datetime.utcnow() - reference_time).total_seconds() / 60,
+        (now - reference_time).total_seconds() / 60,
     )
 
-    served_so_far = min(
-        total_active,
-        int(minutes_elapsed // SERVICE_RATE_MINUTES),
+    tokens_advanced = int(
+        minutes_elapsed // SERVICE_RATE_MINUTES
     )
 
-    currently_serving = active[served_so_far - 1] if served_so_far > 0 else None
-    queue_size = max(0, total_active - served_so_far)
+    current_index = min(
+        tokens_advanced,
+        len(active) - 1,
+    )
 
-    my_active = [a for a in active if a.user_id == current_user.user_id]
+    currently_serving = active[current_index]
+    currently_serving_id = currently_serving.appointment_id
+
+    # Remaining time for current service
+    if (
+        current_index >= len(active) - 1
+        and tokens_advanced >= len(active)
+    ):
+        remaining_current_service = 0
+    else:
+        time_in_current_service = (
+            minutes_elapsed % SERVICE_RATE_MINUTES
+        )
+
+        remaining_current_service = max(
+            0,
+            SERVICE_RATE_MINUTES - time_in_current_service,
+        )
+
+    # People waiting after currently serving
+    waiting_appointments = [
+        appointment
+        for appointment in active
+        if appointment.appointment_id > currently_serving_id
+    ]
+
+    queue_size = len(waiting_appointments)
+
+    # Current person being served + waiting people
+    people_currently_present = 1 + queue_size
+
+    # Current user's latest active appointment
+    my_appointments = [
+        appointment
+        for appointment in active
+        if appointment.user_id == current_user.user_id
+    ]
 
     you = None
-    if my_active:
-        my_appointment = my_active[0]
-        position = active.index(my_appointment)  # 0-indexed
-        people_ahead = max(0, position - served_so_far)
 
-        if position < served_so_far:
+    if my_appointments:
+        my_appointment = max(
+            my_appointments,
+            key=lambda appointment: appointment.appointment_id,
+        )
+
+        my_id = my_appointment.appointment_id
+
+        if my_id < currently_serving_id:
             my_status = "SERVED"
-        elif position == served_so_far:
+            people_ahead = 0
+            estimated_wait = 0
+
+        elif my_id == currently_serving_id:
             my_status = "BEING_SERVED"
+            people_ahead = 0
+            estimated_wait = 0
+
         else:
             my_status = "WAITING"
 
+            people_ahead = len([
+                appointment
+                for appointment in active
+                if (
+                    currently_serving_id
+                    < appointment.appointment_id
+                    < my_id
+                )
+            ])
+
+            estimated_wait = (
+                remaining_current_service
+                + (
+                    people_ahead
+                    * SERVICE_RATE_MINUTES
+                )
+            )
+
+            estimated_wait = round(
+                estimated_wait,
+                1,
+            )
+
         you = {
             "appointment_id": my_appointment.appointment_id,
-            "token_display": token_display_for(my_appointment.appointment_id),
+            "token_display": token_display_for(
+                my_appointment.appointment_id
+            ),
             "purpose": my_appointment.purpose,
             "appointment_date": my_appointment.appointment_date,
             "appointment_time": my_appointment.appointment_time,
-            "position": position + 1,
+            "position": active.index(my_appointment) + 1,
             "people_ahead": people_ahead,
-            "estimated_wait_minutes": people_ahead * SERVICE_RATE_MINUTES,
+            "estimated_wait_minutes": estimated_wait,
             "status": my_status,
         }
 
+    # Global queue wait
+    if queue_size == 0:
+        estimated_wait_minutes = 0
+    else:
+        estimated_wait_minutes = round(
+            remaining_current_service
+            + (
+                max(queue_size - 1, 0)
+                * SERVICE_RATE_MINUTES
+            ),
+            1,
+        )
+
+    crowd_level = crowd_level_for(queue_size)
+
     return {
-        "server_time": datetime.utcnow().isoformat(),
-        "total_active": total_active,
-        "served_so_far": served_so_far,
+        "server_time": now.isoformat(),
+        "total_active": len(active),
+        "served_so_far": current_index,
         "queue_size": queue_size,
-        "estimated_wait_minutes": queue_size * SERVICE_RATE_MINUTES,
-        "currently_serving_token": (
-            token_display_for(currently_serving.appointment_id)
-            if currently_serving
-            else None
+        "people_currently_present": people_currently_present,
+        "estimated_wait_minutes": estimated_wait_minutes,
+        "currently_serving_token": token_display_for(
+            currently_serving_id
         ),
-        "crowd_level": crowd_level_for(queue_size),
+        "remaining_current_service_minutes": round(
+            remaining_current_service,
+            1,
+        ),
+        "crowd_level": crowd_level,
         "service_rate_minutes": SERVICE_RATE_MINUTES,
         "low_crowd_max": LOW_CROWD_MAX,
         "moderate_crowd_max": MODERATE_CROWD_MAX,
         "you": you,
     }
 
+
+# =========================================================
+# GET SINGLE APPOINTMENT
+# =========================================================
 
 @router.get("/{appointment_id}")
 async def get_appointment(
@@ -253,13 +361,19 @@ async def get_appointment(
         "appointment_id": appointment.appointment_id,
         "user_id": appointment.user_id,
         "token_id": appointment.token_id,
-        "token_display": token_display_for(appointment.appointment_id),
+        "token_display": token_display_for(
+            appointment.appointment_id
+        ),
         "purpose": appointment.purpose,
         "appointment_date": appointment.appointment_date,
         "appointment_time": appointment.appointment_time,
         "status": appointment.status,
     }
 
+
+# =========================================================
+# CANCEL APPOINTMENT
+# =========================================================
 
 @router.delete("/{appointment_id}")
 async def cancel_appointment(
@@ -285,7 +399,9 @@ async def cancel_appointment(
     appointment.status = "CANCELLED"
 
     token_result = await db.execute(
-        select(Token).where(Token.token_id == appointment.token_id)
+        select(Token).where(
+            Token.token_id == appointment.token_id
+        )
     )
 
     token = token_result.scalar_one_or_none()
