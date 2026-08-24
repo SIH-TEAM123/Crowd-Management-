@@ -4,6 +4,8 @@ from fastapi import FastAPI
 
 from app.database import engine, Base
 from app.models.user import User
+from app.models.token import Token
+from app.routes.tokens import router as token_router
 from app.routes.auth import router as auth_router
 from app.routes.person4 import router as person4_router
 
@@ -32,6 +34,7 @@ app = FastAPI(
 # Authentication routes
 app.include_router(auth_router)
 app.include_router(person4_router)
+app.include_router(token_router)
 
 
 @app.get("/")
