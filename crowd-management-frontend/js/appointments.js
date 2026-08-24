@@ -30,33 +30,29 @@ async function loadAppointments() {
 
         const data = await response.json();
 
-        if (!response.ok) {
-            console.error("Failed to load appointments:", data);
-            alert(data.detail || "Unable to load appointments.");
-            return;
-        }
+       if (!response.ok) {
+    console.error("Booking failed:", data);
 
-        renderAppointments(
-            Array.isArray(data) ? data : []
-        );
+    const errorMessage =
+        typeof data.detail === "object"
+            ? JSON.stringify(data.detail, null, 2)
+            : (data.detail || "Unable to book appointment.");
+
+    alert("Booking failed:\n\n" + errorMessage);
+    return;
+}
+
+        renderAppointments(data);
 
     } catch (error) {
-        console.error(
-            "Appointment loading error:",
-            error
-        );
-
+        console.error("Appointment loading error:", error);
         alert("Unable to connect to the server.");
     }
 }
-
-
 function formatDate(dateString) {
     if (!dateString) return "Not available";
 
-    const date = new Date(
-        `${dateString}T00:00:00`
-    );
+    const date = new Date(`${dateString}T00:00:00`);
 
     return date.toLocaleDateString("en-US", {
         month: "short",
@@ -69,14 +65,11 @@ function formatDate(dateString) {
 function formatTime(timeString) {
     if (!timeString) return "Not available";
 
-    const cleanTime =
-        timeString.split(".")[0];
+    const cleanTime = timeString.split(".")[0];
 
-    const [hours, minutes] =
-        cleanTime.split(":");
+    const [hours, minutes] = cleanTime.split(":");
 
     const date = new Date();
-
     date.setHours(Number(hours));
     date.setMinutes(Number(minutes));
     date.setSeconds(0);
@@ -88,484 +81,267 @@ function formatTime(timeString) {
     });
 }
 
-
-// ============================================================
-// CHECK WHETHER APPOINTMENT IS STILL UPCOMING
-// ============================================================
-
-function isUpcomingAppointment(appointment) {
-
-    // Backend statuses that are no longer active
-    if (
-        appointment.status === "CANCELLED" ||
-        appointment.status === "EXPIRED"
-    ) {
-        return false;
-    }
-
-    const now = new Date();
-
-    const appointmentDateTime = new Date(
-        `${appointment.appointment_date}T${appointment.appointment_time}`
-    );
-
-    return appointmentDateTime >= now;
-}
-
-
-// ============================================================
-// RENDER APPOINTMENTS
-// ============================================================
-
 function renderAppointments(appointments) {
-
-    const grid =
-        document.getElementById("upcomingGrid");
-
-    const count =
-        document.getElementById("upcomingCount");
+    const grid = document.getElementById("upcomingGrid");
+    const count = document.getElementById("upcomingCount");
 
     if (!grid) return;
 
     grid.innerHTML = "";
 
-
-    // Only genuinely future/current active appointments
-    const upcoming =
-        appointments.filter(
-            isUpcomingAppointment
-        );
-
+    const upcoming = appointments.filter(
+        appointment =>
+            appointment.status !== "CANCELLED"
+    );
 
     if (count) {
-        count.textContent =
-            upcoming.length;
+        count.textContent = upcoming.length;
     }
 
-
     if (upcoming.length === 0) {
-
         grid.innerHTML = `
-            <div
-                class="empty-state"
-                style="grid-column:1/-1;"
-            >
-                <p>
-                    No upcoming appointments.
-                    Book one using the button above!
-                </p>
+            <div class="empty-state" style="grid-column:1/-1;">
+                <p>No upcoming appointments. Book one using the button above!</p>
             </div>
         `;
-
         return;
     }
 
+    upcoming.forEach(appointment => {
+        const card = document.createElement("div");
 
-    upcoming
-        .sort((a, b) => {
+        card.className = "appt-card";
+        card.dataset.id = appointment.appointment_id;
 
-            const first =
-                new Date(
-                    `${a.appointment_date}T${a.appointment_time}`
-                );
+        const date = formatDate(appointment.appointment_date);
+const time = formatTime(appointment.appointment_time);
 
-            const second =
-                new Date(
-                    `${b.appointment_date}T${b.appointment_time}`
-                );
+        card.innerHTML = `
+            <div class="appt-card-header">
+                <span class="appt-service-name">
+                    ${escapeHtml(appointment.purpose)}
+                </span>
 
-            return first - second;
-        })
-        .forEach(appointment => {
+                <span class="card-badge badge-warning">
+                    ${escapeHtml(appointment.status)}
+                </span>
+            </div>
 
-            const card =
-                document.createElement("div");
+            <div class="appt-meta-grid">
 
-            card.className = "appt-card";
-
-            card.dataset.id =
-                appointment.appointment_id;
-
-
-            const date =
-                formatDate(
-                    appointment.appointment_date
-                );
-
-            const time =
-                formatTime(
-                    appointment.appointment_time
-                );
-
-
-            card.innerHTML = `
-
-                <div class="appt-card-header">
-
-                    <span class="appt-service-name">
-                        ${escapeHtml(
-                            appointment.purpose
-                        )}
+                <div class="appt-meta-item">
+                    <span class="appt-meta-label">Date</span>
+                    <span class="appt-meta-value">
+                        ${date}
                     </span>
+                </div>
 
-                    <span class="card-badge badge-warning">
-                        ${escapeHtml(
-                            appointment.status
-                        )}
+                <div class="appt-meta-item">
+                    <span class="appt-meta-label">Time</span>
+                    <span class="appt-meta-value">
+                        ${time}
                     </span>
-
                 </div>
 
-
-                <div class="appt-meta-grid">
-
-                    <div class="appt-meta-item">
-
-                        <span class="appt-meta-label">
-                            Date
-                        </span>
-
-                        <span class="appt-meta-value">
-                            ${date}
-                        </span>
-
-                    </div>
-
-
-                    <div class="appt-meta-item">
-
-                        <span class="appt-meta-label">
-                            Time
-                        </span>
-
-                        <span class="appt-meta-value">
-                            ${time}
-                        </span>
-
-                    </div>
-
-
-                    <div class="appt-meta-item">
-
-                        <span class="appt-meta-label">
-                            Counter
-                        </span>
-
-                        <span class="appt-meta-value">
-                            Not assigned
-                        </span>
-
-                    </div>
-
-
-                    <div class="appt-meta-item">
-
-                        <span class="appt-meta-label">
-                            Token
-                        </span>
-
-                        <span class="appt-meta-value token">
-                            ${escapeHtml(
-                                appointment.display_token ||
-                                appointment.token_id
-                            )}
-                        </span>
-
-                    </div>
-
+                <div class="appt-meta-item">
+                    <span class="appt-meta-label">Counter</span>
+                    <span class="appt-meta-value">
+                        Not assigned
+                    </span>
                 </div>
 
-
-                <div class="appt-card-actions">
-
-                    <button
-                        class="btn-action-ghost"
-                        onclick="viewDetails(${appointment.appointment_id})"
-                    >
-                        View Details
-                    </button>
-
-
-                    <button
-                        class="btn-action-cancel"
-                        onclick="cancelAppointment(${appointment.appointment_id})"
-                    >
-                        Cancel
-                    </button>
-
+                <div class="appt-meta-item">
+                    <span class="appt-meta-label">Token</span>
+                    <span class="appt-meta-value token">
+                        ${escapeHtml(appointment.token_display || appointment.token_id)}
+                    </span>
                 </div>
 
-            `;
+            </div>
 
-            grid.appendChild(card);
-        });
+            <div class="appt-card-actions">
+
+                <button
+                    class="btn-action-ghost"
+                    onclick="viewDetails(${appointment.appointment_id})">
+                    View Details
+                </button>
+
+                <button
+                    class="btn-action-cancel"
+                    onclick="cancelAppointment(${appointment.appointment_id})">
+                    Cancel
+                </button>
+
+            </div>
+        `;
+
+        grid.appendChild(card);
+    });
 }
 
 
-// ============================================================
-// VIEW DETAILS
-// ============================================================
-
 async function viewDetails(id) {
-
-    const headers =
-        getAuthHeaders();
-
+    const headers = getAuthHeaders();
     if (!headers) return;
 
-
     try {
+        const response = await fetch(
+            `${API_BASE_URL}/appointments/${id}`,
+            {
+                method: "GET",
+                headers: headers
+            }
+        );
 
-        const response =
-            await fetch(
-                `${API_BASE_URL}/appointments/${id}`,
-                {
-                    method: "GET",
-                    headers: headers
-                }
-            );
-
-
-        const data =
-            await response.json();
-
+        const data = await response.json();
 
         if (!response.ok) {
-
-            alert(
-                data.detail ||
-                "Unable to load appointment."
-            );
-
+            alert(data.detail || "Unable to load appointment.");
             return;
         }
-
 
         alert(
             `Appointment Details\n\n` +
             `Service: ${data.purpose}\n` +
-            `Date: ${formatDate(data.appointment_date)}\n` +
-            `Time: ${formatTime(data.appointment_time)}\n` +
-            `Token: ${data.display_token || data.token_id}\n` +
+            `Date: ${data.appointment_date}\n` +
+            `Time: ${data.appointment_time}\n` +
+            `Token: ${data.token_id}\n` +
             `Status: ${data.status}`
         );
 
     } catch (error) {
-
-        console.error(
-            "View appointment error:",
-            error
-        );
-
-        alert(
-            "Unable to connect to the server."
-        );
+        console.error("View appointment error:", error);
+        alert("Unable to connect to the server.");
     }
 }
 
 
-// ============================================================
-// CANCEL APPOINTMENT
-// ============================================================
-
 async function cancelAppointment(id) {
-
-    const confirmed =
-        confirm(
-            "Are you sure you want to cancel this appointment?"
-        );
+    const confirmed = confirm(
+        "Are you sure you want to cancel this appointment?"
+    );
 
     if (!confirmed) return;
 
-
-    const headers =
-        getAuthHeaders();
-
+    const headers = getAuthHeaders();
     if (!headers) return;
 
-
     try {
+        const response = await fetch(
+            `${API_BASE_URL}/appointments/${id}`,
+            {
+                method: "DELETE",
+                headers: headers
+            }
+        );
 
-        const response =
-            await fetch(
-                `${API_BASE_URL}/appointments/${id}`,
-                {
-                    method: "DELETE",
-                    headers: headers
-                }
-            );
-
-
-        const data =
-            await response.json();
-
+        const data = await response.json();
 
         if (!response.ok) {
-
-            alert(
-                data.detail ||
-                "Unable to cancel appointment."
-            );
-
+            alert(data.detail || "Unable to cancel appointment.");
             return;
         }
 
-
-        alert(
-            "Appointment cancelled successfully."
-        );
-
+        alert("Appointment cancelled successfully.");
 
         await loadAppointments();
 
     } catch (error) {
-
-        console.error(
-            "Cancel appointment error:",
-            error
-        );
-
-        alert(
-            "Unable to connect to the server."
-        );
+        console.error("Cancel appointment error:", error);
+        alert("Unable to connect to the server.");
     }
 }
 
 
-// ============================================================
-// BOOK NEW APPOINTMENT
-// ============================================================
-
 async function bookNewAppointment() {
 
-    const service =
-        prompt(
-            "Enter service name (e.g. Blood Test, Passport Renewal):"
-        );
-
+    const service = prompt(
+        "Enter service name (e.g. Blood Test, Passport Renewal):"
+    );
 
     if (!service || !service.trim()) {
-
-        alert(
-            "Please enter a valid service name."
-        );
-
+        alert("Please enter a valid service name.");
         return;
     }
 
 
-    const appointmentDate =
-        prompt(
-            "Enter appointment date (YYYY-MM-DD):\nExample: 2026-08-25"
-        );
+    const date = prompt(
+        "Enter appointment date (YYYY-MM-DD):\nExample: 2026-08-25"
+    );
 
-
-    if (
-        !appointmentDate ||
-        !appointmentDate.trim()
-    ) {
-
-        alert(
-            "Please enter an appointment date."
-        );
-
+    if (!date || !date.trim()) {
+        alert("Please enter an appointment date.");
         return;
     }
 
+    // Validate YYYY-MM-DD
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
-    const dateRegex =
-        /^\d{4}-\d{2}-\d{2}$/;
-
-
-    if (
-        !dateRegex.test(
-            appointmentDate.trim()
-        )
-    ) {
-
+    if (!dateRegex.test(date.trim())) {
         alert(
             "Invalid date format.\n\n" +
-            "Please use: YYYY-MM-DD"
+            "Please use: YYYY-MM-DD\n" +
+            "Example: 2026-08-25"
         );
+        return;
+    }
 
+    // Check if it is a real calendar date
+    const parsedDate = new Date(`${date.trim()}T00:00:00`);
+
+    if (isNaN(parsedDate.getTime())) {
+        alert("Please enter a valid calendar date.");
         return;
     }
 
 
-    const appointmentTime =
-        prompt(
-            "Enter appointment time (HH:MM or HH:MM:SS):\nExample: 10:30"
-        );
+    const time = prompt(
+        "Enter appointment time (HH:MM or HH:MM:SS):\nExample: 10:30"
+    );
 
-
-    if (
-        !appointmentTime ||
-        !appointmentTime.trim()
-    ) {
-
-        alert(
-            "Please enter an appointment time."
-        );
-
+    if (!time || !time.trim()) {
+        alert("Please enter an appointment time.");
         return;
     }
 
+    const cleanTime = time.trim();
 
-    const cleanTime =
-        appointmentTime.trim();
-
-
+    // Validate HH:MM or HH:MM:SS
     const timeRegex =
         /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
 
-
-    if (
-        !timeRegex.test(cleanTime)
-    ) {
-
+    if (!timeRegex.test(cleanTime)) {
         alert(
             "Invalid time format.\n\n" +
-            "Please use HH:MM or HH:MM:SS"
+            "Please use HH:MM or HH:MM:SS\n" +
+            "Examples: 10:30 or 10:30:00"
         );
-
         return;
     }
 
 
-    const headers =
-        getAuthHeaders();
+    const headers = getAuthHeaders();
 
     if (!headers) return;
 
 
     try {
 
-        const response =
-            await fetch(
-                `${API_BASE_URL}/appointments`,
-                {
-                    method: "POST",
-                    headers: headers,
+        const response = await fetch(
+            `${API_BASE_URL}/appointments`,
+            {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify({
+                    purpose: service.trim(),
+                    appointment_date: date.trim(),
+                    appointment_time: cleanTime
+                })
+            }
+        );
 
-                    body:
-                        JSON.stringify({
-
-                            purpose:
-                                service.trim(),
-
-                            appointment_date:
-                                appointmentDate.trim(),
-
-                            appointment_time:
-                                cleanTime
-
-                        })
-                }
-            );
-
-
-        const data =
-            await response.json();
+        const data = await response.json();
 
 
         if (!response.ok) {
@@ -573,38 +349,31 @@ async function bookNewAppointment() {
             let errorMessage =
                 "Unable to book appointment.";
 
+            // FastAPI validation errors
+            if (Array.isArray(data.detail)) {
 
-            if (
-                Array.isArray(data.detail)
-            ) {
-
-                errorMessage =
-                    data.detail
-                        .map(
-                            error =>
-                                `${error.loc?.slice(-1)[0] || "Field"}: ${error.msg}`
-                        )
-                        .join("\n");
+                errorMessage = data.detail
+                    .map(error =>
+                        `${error.loc?.slice(-1)[0] || "Field"}: ${error.msg}`
+                    )
+                    .join("\n");
 
             } else if (
                 typeof data.detail === "string"
             ) {
 
-                errorMessage =
-                    data.detail;
+                errorMessage = data.detail;
 
             }
 
-
             alert(errorMessage);
-
             return;
         }
 
 
         alert(
             `Appointment booked successfully!\n\n` +
-            `Token: ${data.display_token || data.token_id}\n` +
+            `Token: ${data.token_display || data.token_id}\n` +
             `Date: ${formatDate(data.appointment_date)}\n` +
             `Time: ${formatTime(data.appointment_time)}`
         );
@@ -624,123 +393,58 @@ async function bookNewAppointment() {
         );
     }
 }
-
-
-// ============================================================
-// HELPERS
-// ============================================================
-
 function escapeHtml(value) {
-
-    const div =
-        document.createElement("div");
-
-    div.textContent =
-        value ?? "";
-
+    const div = document.createElement("div");
+    div.textContent = value ?? "";
     return div.innerHTML;
 }
 
 
-// ============================================================
-// PAGE START
-// ============================================================
+document.addEventListener("DOMContentLoaded", () => {
 
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
+    const bookBtn = document.getElementById("btnBookNew");
 
-        const bookBtn =
-            document.getElementById(
-                "btnBookNew"
-            );
+    if (bookBtn) {
+        bookBtn.addEventListener(
+            "click",
+            bookNewAppointment
+        );
+    }
 
+    const profileBadge =
+        document.querySelector(".profile-badge");
 
-        if (bookBtn) {
+    if (profileBadge) {
+        profileBadge.style.cursor = "pointer";
 
-            bookBtn.addEventListener(
-                "click",
-                bookNewAppointment
-            );
+        profileBadge.addEventListener("click", () => {
+            window.location.href = "profile.html";
+        });
+    }
 
-        }
-
-
-        const profileBadge =
-            document.querySelector(
-                ".profile-badge"
-            );
-
-
-        if (profileBadge) {
-
-            profileBadge.style.cursor =
-                "pointer";
-
-            profileBadge.addEventListener(
-                "click",
-                () => {
-                    window.location.href =
-                        "profile.html";
-                }
-            );
-
-        }
-
-
-        const notifBtn =
-            document.querySelector(
-                '.icon-btn[title="View alerts"], ' +
-                '.icon-btn[title="Notifications"]'
-            );
-
-
-        if (notifBtn) {
-
-            notifBtn.addEventListener(
-                "click",
-                () => {
-                    window.location.href =
-                        "notifications.html";
-                }
-            );
-
-        }
-
-
-        const logoutLinks =
-            document.querySelectorAll(
-                '.sidebar-footer a, #btnLogout'
-            );
-
-
-        logoutLinks.forEach(
-            link => {
-
-                link.addEventListener(
-                    "click",
-                    () => {
-
-                        localStorage.removeItem(
-                            "access_token"
-                        );
-
-                        localStorage.removeItem(
-                            "isAuthenticated"
-                        );
-
-                        localStorage.removeItem(
-                            "userEmail"
-                        );
-
-                    }
-                );
-
-            }
+    const notifBtn =
+        document.querySelector(
+            '.icon-btn[title="View alerts"], .icon-btn[title="Notifications"]'
         );
 
-
-        loadAppointments();
-
+    if (notifBtn) {
+        notifBtn.addEventListener("click", () => {
+            window.location.href = "notifications.html";
+        });
     }
-);
+
+    const logoutLinks =
+        document.querySelectorAll(
+            '.sidebar-footer a, #btnLogout'
+        );
+
+    logoutLinks.forEach(link => {
+        link.addEventListener("click", () => {
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("isAuthenticated");
+            localStorage.removeItem("userEmail");
+        });
+    });
+
+    loadAppointments();
+});

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - VIZITOR Crowd</title>
+    <title>Dashboard - VIZITOR</title>
 
     <!-- Import Inter Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -874,107 +874,75 @@
                     </div>
 
 
-                    <div class="status-item">
-
-    <div class="status-item-header">
-
-        <div class="status-title-row">
-
-            <span class="status-dot status-dot-success"></span>
-
-            <span class="status-title">
-                Currently Serving
-            </span>
-
-        </div>
-
-        <span class="status-badge">
-            Live
-        </span>
-
-    </div>
-
-    <div class="status-item-details">
-
-        <span>Token Number</span>
-
-        <strong
-            id="currentlyServing"
-            style="color:#7c3aed;font-size:1.1rem;">
-            --
-        </strong>
-
-    </div>
-
-</div>
+                    <div class="status-list">
 
 
-<div class="status-item">
+                        <div class="status-item">
 
-    <div class="status-item-header">
+                            <div class="status-item-header">
 
-        <div class="status-title-row">
+                                <div class="status-title-row">
 
-            <span class="status-dot status-dot-warning"></span>
+                                    <span class="status-dot status-dot-active"></span>
 
-            <span class="status-title">
-                Your Token
-            </span>
+                                    <span class="status-title">
+                                        Currently Serving
+                                    </span>
 
-        </div>
+                                </div>
 
-        <span class="status-badge">
-            Registered
-        </span>
+                                <span class="status-badge">
+                                    Counter 1
+                                </span>
 
-    </div>
-
-
-    <div class="status-item-details">
-
-        <span>Token Number</span>
-
-        <strong
-            id="dashboardYourToken"
-            style="color:#0f172a;font-size:1.1rem;">
-            --
-        </strong>
-
-    </div>
-
-</div>
+                            </div>
 
 
-<div class="status-item">
+                            <div class="status-item-details">
 
-    <div class="status-item-header">
+                                <span>Token Number</span>
 
-        <div class="status-title-row">
+                                <strong style="color:#7c3aed;font-size:1.1rem;" id="svcCurrentServingToken">
+                                    --
+                                </strong>
 
-            <span class="status-dot status-dot-neutral"></span>
+                            </div>
 
-            <span class="status-title">
-                People Ahead
-            </span>
-
-        </div>
-
-    </div>
+                        </div>
 
 
-    <div class="status-item-details">
+                        <div class="status-item">
 
-        <span>Waiting in front</span>
+                            <div class="status-item-header">
 
-        <strong
-            id="dashboardPeopleAhead"
-            style="color:#ef4444;font-size:1.1rem;">
-            0 people
-        </strong>
+                                <div class="status-title-row">
 
-    </div>
+                                    <span class="status-dot status-dot-warning"></span>
 
-</div>
+                                    <span class="status-title">
+                                        Your Token
+                                    </span>
+
+                                </div>
+
+                                <span class="status-badge" id="svcYourTokenStatus">
+                                    No Token
+                                </span>
+
+                            </div>
+
+
+                            <div class="status-item-details">
+
+                                <span>Token Number</span>
+
+                                <strong style="color:#0f172a;font-size:1.1rem;" id="svcYourTokenNumber">
+                                    --
+                                </strong>
+
+                            </div>
+
+                        </div>
 
 
                         <div class="status-item">
@@ -998,8 +966,8 @@
 
                                 <span>Waiting in front</span>
 
-                                <strong style="color:#ef4444;font-size:1.1rem;">
-                                    <span id="dashboardPeopleAheadText">0 people</span>
+                                <strong style="color:#ef4444;font-size:1.1rem;" id="svcPeopleAhead">
+                                    0 people
                                 </strong>
 
                             </div>
@@ -1356,49 +1324,11 @@
 
                     <!-- Recent Activity -->
 
-                    <div class="activity-list">
-
-
-                        <div class="activity-item active">
-
-                            <strong>
-                                Appointment confirmed
-                            </strong>
-
-                            for 2:30 PM.
-
-                            <span class="time">
-                                10 mins ago
-                            </span>
-
-                        </div>
-
+                    <div class="activity-list" id="recentActivityList">
 
                         <div class="activity-item neutral">
-
-                            Joined queue block
-
-                            <strong>
-                                Token A-104
-                            </strong>.
-
-                            <span class="time">
-                                2 hours ago
-                            </span>
-
+                            Loading recent activity...
                         </div>
-
-
-                        <div class="activity-item neutral">
-
-                            Profile details updated successfully.
-
-                            <span class="time">
-                                Yesterday
-                            </span>
-
-                        </div>
-
 
                     </div>
 
@@ -1418,6 +1348,7 @@
 ============================================================== -->
 
 <script src="js/api.js"></script>
+<script src="js/shared.js"></script>
 <script src="js/dashboard.js"></script>
 
 </body>

@@ -1,701 +1,256 @@
-// ============================================================
-// VIZITOR CROWD - LIVE DASHBOARD
-// ============================================================
+// Dashboard logic for VIZITOR — driven entirely by real backend
+// data (auth/me, appointments, and the shared queue/status
+// endpoint), so it always matches Queue, Crowd Status, Profile,
+// Notifications, Reports and Analytics.
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    console.log("dashboard.js started");
+    VIZITOR.requireAuthOrRedirect();
+    VIZITOR.wireCommonNav();
 
     // ============================================================
-    // HELPER
+    // Dynamic Date and Time
     // ============================================================
 
-    function setText(id, value) {
-
-        const element = document.getElementById(id);
-
-        if (element) {
-            element.textContent = value;
-        }
-    }
-
-
-    // ============================================================
-    // DATE AND TIME
-    // ============================================================
+    const dateTimeElement = document.getElementById("currentDateTime");
 
     function updateDateTime() {
-
-        const element =
-            document.getElementById("currentDateTime");
-
-        if (!element) return;
-
         const now = new Date();
 
-        const dateText =
-            now.toLocaleDateString(
-                "en-US",
-                {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric"
-                }
-            );
+        const dateStr = now.toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+        });
 
-        const timeText =
-            now.toLocaleTimeString(
-                "en-US",
-                {
-                    hour: "2-digit",
-                    minute: "2-digit"
-                }
-            );
+        const timeStr = now.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        });
 
-        element.textContent =
-            `${dateText} • ${timeText}`;
+        if (dateTimeElement) {
+            dateTimeElement.textContent = `${dateStr} • ${timeStr}`;
+        }
     }
 
     updateDateTime();
-
-    setInterval(
-        updateDateTime,
-        1000
-    );
+    setInterval(updateDateTime, 1000);
 
 
     // ============================================================
-    // CROWD BAR
+    // Welcome Banner + avatar (real user)
     // ============================================================
 
-    function updateCrowdBar(crowdLevel) {
+    async function loadWelcomeUser() {
+        const user = await VIZITOR.getCurrentUser();
+        const welcomeUserEl = document.getElementById("welcomeUser");
 
-        const bar =
-            document.getElementById(
-                "dashboardCrowdBar"
-            );
-
-        if (!bar) return;
-
-        const level =
-            String(crowdLevel || "No Crowd")
-                .trim()
-                .toLowerCase();
-
-        let width = 0;
-
-        if (level === "low") {
-            width = 25;
+        if (user) {
+            const firstName = user.full_name?.split(" ")[0] || user.full_name;
+            if (welcomeUserEl) {
+                welcomeUserEl.textContent = `Welcome back, ${firstName}.`;
+            }
+            VIZITOR.applyAvatar(user.full_name);
         }
-
-        else if (level === "moderate") {
-            width = 55;
-        }
-
-        else if (level === "high") {
-            width = 85;
-        }
-
-        bar.style.width =
-            `${width}%`;
     }
 
 
     // ============================================================
-    // UPDATE ALL PEOPLE AHEAD DISPLAYS
+    // Summary cards + Service/Queue Status panel
+    // (single source of truth: /appointments/queue/status)
     // ============================================================
 
-    function updatePeopleAhead(value) {
+    async function loadQueueDrivenUI() {
+        const appointments = await VIZITOR.getAppointments();
+        const queueStatus = await VIZITOR.getQueueStatus();
 
-        const peopleAhead =
-            Math.max(
-                0,
-                Number(value) || 0
-            );
+        const today = new Date().toISOString().split("T")[0];
 
-        // Number-only displays
-        const numberIds = [
+        const todayAppointments = appointments.filter(
+            a => a.status !== "CANCELLED" && a.appointment_date === today
+        );
 
-            "dashboardPeopleAhead",
-            "peopleAhead",
-            "peopleAheadCount",
-            "dashboardAheadCount"
+        const appointmentCounter = document.getElementById("todayAppointments");
+        if (appointmentCounter) {
+            appointmentCounter.textContent = todayAppointments.length;
+        }
 
-        ];
+        if (!queueStatus) return;
 
-        numberIds.forEach(id => {
+        // Current Queue (people still waiting, facility-wide)
+        const queueElement = document.getElementById("dashboardQueueCount");
+        if (queueElement) {
+            queueElement.textContent = queueStatus.queue_size;
+        }
 
-            const element =
-                document.getElementById(id);
+        // Estimated Waiting Time — this user's own wait if they
+        // have an active token, otherwise the facility average.
+        const waitMinutes = queueStatus.you
+            ? queueStatus.you.estimated_wait_minutes
+            : queueStatus.estimated_wait_minutes;
 
-            if (element) {
+        const waitElement = document.getElementById("dashboardWaitTime");
+        if (waitElement) {
+            waitElement.textContent = waitMinutes === 0 ? "0 min" : `${waitMinutes} min`;
+        }
 
-                element.textContent =
-                    peopleAhead;
+        // Crowd Level
+        const crowdLevelElement = document.getElementById("dashboardCrowdLevel");
+        if (crowdLevelElement) {
+            crowdLevelElement.textContent = queueStatus.crowd_level;
+        }
 
+        // ---- Service / Queue Status panel ----
+        const currentServingEl = document.getElementById("svcCurrentServingToken");
+        if (currentServingEl) {
+            currentServingEl.textContent = queueStatus.currently_serving_token || "--";
+        }
+
+        const yourTokenStatusEl = document.getElementById("svcYourTokenStatus");
+        const yourTokenNumberEl = document.getElementById("svcYourTokenNumber");
+        const peopleAheadEl = document.getElementById("svcPeopleAhead");
+
+        if (queueStatus.you) {
+            if (yourTokenStatusEl) {
+                yourTokenStatusEl.textContent = VIZITOR.friendlyStatusLabel(queueStatus.you.status);
             }
-
-        });
-
-
-        // Displays containing "people"
-        const textIds = [
-
-            "dashboardPeopleAheadText",
-            "peopleAheadText",
-            "totalPeopleAhead",
-            "peopleInFront"
-
-        ];
-
-        textIds.forEach(id => {
-
-            const element =
-                document.getElementById(id);
-
-            if (element) {
-
-                element.textContent =
-                    `${peopleAhead} people`;
-
+            if (yourTokenNumberEl) {
+                yourTokenNumberEl.textContent = queueStatus.you.token_display;
             }
-
-        });
-
+            if (peopleAheadEl) {
+                peopleAheadEl.textContent = `${queueStatus.you.people_ahead} people`;
+            }
+        } else {
+            if (yourTokenStatusEl) yourTokenStatusEl.textContent = "No Token";
+            if (yourTokenNumberEl) yourTokenNumberEl.textContent = "--";
+            if (peopleAheadEl) peopleAheadEl.textContent = "0 people";
+        }
     }
 
 
     // ============================================================
-    // LOAD DASHBOARD
-    // ============================================================
-
-    async function loadDashboard() {
-
-        const accessToken =
-            localStorage.getItem(
-                "access_token"
-            );
-
-        if (!accessToken) {
-
-            console.warn(
-                "Dashboard: no access token"
-            );
-
-            return;
-
-        }
-
-        try {
-
-            console.log(
-                "Loading live dashboard..."
-            );
-
-            const response =
-                await fetch(
-                    `${API_BASE_URL}/appointments/dashboard`,
-                    {
-                        method: "GET",
-
-                        headers: {
-
-                            "Authorization":
-                                `Bearer ${accessToken}`
-
-                        }
-
-                    }
-                );
-
-
-            let data;
-
-            try {
-
-                data =
-                    await response.json();
-
-            }
-
-            catch {
-
-                throw new Error(
-                    "Backend returned invalid JSON"
-                );
-
-            }
-
-
-            console.log(
-                "DASHBOARD API RESPONSE:",
-                data
-            );
-
-
-            if (!response.ok) {
-
-                console.error(
-                    "Dashboard backend error:",
-                    data
-                );
-
-                return;
-
-            }
-
-
-            // ====================================================
-            // TODAY'S APPOINTMENTS
-            // ====================================================
-
-            const todayAppointments =
-                Math.max(
-                    0,
-                    Number(
-                        data.today_appointments
-                    ) || 0
-                );
-
-            setText(
-                "todayAppointments",
-                todayAppointments
-            );
-
-
-            // ====================================================
-            // CURRENT QUEUE
-            // ====================================================
-
-            const currentQueue =
-                Math.max(
-                    0,
-                    Number(
-                        data.current_queue
-                    ) || 0
-                );
-
-            setText(
-                "dashboardQueueCount",
-                currentQueue
-            );
-
-
-            // ====================================================
-            // WAIT TIME
-            // ====================================================
-
-            const waitMinutes =
-                Math.max(
-                    0,
-                    Number(
-                        data.estimated_wait_minutes
-                    ) || 0
-                );
-
-            setText(
-                "dashboardWaitTime",
-                `${waitMinutes} min`
-            );
-
-
-            // ====================================================
-            // CROWD LEVEL
-            // ====================================================
-
-            const crowdLevel =
-                data.crowd_level ||
-                "No Crowd";
-
-            setText(
-                "dashboardCrowdLevel",
-                crowdLevel
-            );
-
-            updateCrowdBar(
-                crowdLevel
-            );
-
-
-            // ====================================================
-            // CURRENTLY SERVING
-            // ====================================================
-
-            const currentlyServing =
-                data.currently_serving ||
-                "--";
-
-            setText(
-                "currentlyServing",
-                currentlyServing
-            );
-
-
-            // ====================================================
-            // YOUR TOKEN
-            // ====================================================
-
-            const yourToken =
-                data.your_token ||
-                "--";
-
-            setText(
-                "dashboardYourToken",
-                yourToken
-            );
-
-
-            // ====================================================
-            // PEOPLE AHEAD
-            // ====================================================
-
-            const peopleAhead =
-                Math.max(
-                    0,
-                    Number(
-                        data.people_ahead
-                    ) || 0
-                );
-
-            updatePeopleAhead(
-                peopleAhead
-            );
-
-
-            console.log(
-                "Dashboard updated successfully",
-                {
-                    todayAppointments,
-                    currentQueue,
-                    waitMinutes,
-                    crowdLevel,
-                    currentlyServing,
-                    yourToken,
-                    peopleAhead
-                }
-            );
-
-
-            // ====================================================
-            // UPDATE UPCOMING APPOINTMENT
-            // ====================================================
-
-            await loadUpcomingAppointment();
-
-        }
-
-        catch (error) {
-
-            console.error(
-                "Dashboard loading failed:",
-                error
-            );
-
-        }
-
-    }
-
-
-    // ============================================================
-    // UPCOMING APPOINTMENT
+    // Load Upcoming Appointment
     // ============================================================
 
     async function loadUpcomingAppointment() {
+        const purposeElement = document.getElementById("upcomingAppointmentPurpose");
+        const statusElement = document.getElementById("upcomingAppointmentStatus");
+        const infoElement = document.getElementById("upcomingAppointmentInfo");
+        const dateElement = document.getElementById("upcomingAppointmentDate");
+        const timeElement = document.getElementById("upcomingAppointmentTime");
 
-        const accessToken =
-            localStorage.getItem(
-                "access_token"
-            );
-
-        if (!accessToken) return;
-
-        try {
-
-            const response =
-                await fetch(
-                    `${API_BASE_URL}/appointments`,
-                    {
-                        headers: {
-
-                            "Authorization":
-                                `Bearer ${accessToken}`
-
-                        }
-                    }
-                );
-
-            const appointments =
-                await response.json();
-
-            if (
-                !response.ok ||
-                !Array.isArray(
-                    appointments
-                )
-            ) {
-
-                return;
-
-            }
-
-
-            const today =
-                new Date()
-                    .toISOString()
-                    .split("T")[0];
-
-
-            const upcoming =
-                appointments
-                    .filter(
-                        appointment =>
-
-                            appointment.status !==
-                                "CANCELLED" &&
-
-                            appointment.appointment_date >=
-                                today
-                    )
-
-                    .sort(
-                        (a, b) => {
-
-                            const first =
-                                `${a.appointment_date}T${a.appointment_time}`;
-
-                            const second =
-                                `${b.appointment_date}T${b.appointment_time}`;
-
-                            return first.localeCompare(
-                                second
-                            );
-
-                        }
-                    );
-
-
-            if (
-                upcoming.length === 0
-            ) {
-
-                setText(
-                    "upcomingAppointmentPurpose",
-                    "No upcoming appointment"
-                );
-
-                setText(
-                    "upcomingAppointmentStatus",
-                    "--"
-                );
-
-                setText(
-                    "upcomingAppointmentInfo",
-                    "You currently have no upcoming appointments."
-                );
-
-                setText(
-                    "upcomingAppointmentDate",
-                    "--"
-                );
-
-                setText(
-                    "upcomingAppointmentTime",
-                    "--"
-                );
-
-                return;
-
-            }
-
-
-            const appointment =
-                upcoming[0];
-
-
-            setText(
-                "upcomingAppointmentPurpose",
-                appointment.purpose
-            );
-
-            setText(
-                "upcomingAppointmentStatus",
-                appointment.status
-            );
-
-            setText(
-                "upcomingAppointmentInfo",
-                `Token: ${appointment.display_token || "--"}`
-            );
-
-            setText(
-                "upcomingAppointmentDate",
-                appointment.appointment_date
-            );
-
-            setText(
-                "upcomingAppointmentTime",
-                appointment.appointment_time
-            );
-
+        if (!purposeElement || !statusElement || !infoElement || !dateElement || !timeElement) {
+            return;
         }
 
-        catch (error) {
+        const appointments = await VIZITOR.getAppointments();
+        const today = new Date().toISOString().split("T")[0];
 
-            console.error(
-                "Upcoming appointment failed:",
-                error
-            );
+        const upcomingAppointments = appointments
+            .filter(a => a.status !== "CANCELLED" && a.appointment_date >= today)
+            .sort((a, b) => {
+                const first = `${a.appointment_date}T${a.appointment_time}`;
+                const second = `${b.appointment_date}T${b.appointment_time}`;
+                return first.localeCompare(second);
+            });
 
+        if (upcomingAppointments.length === 0) {
+            purposeElement.textContent = "No upcoming appointment";
+            statusElement.textContent = "--";
+            infoElement.textContent = "You currently have no upcoming appointments.";
+            dateElement.textContent = "--";
+            timeElement.textContent = "--";
+            return;
         }
 
+        const appointment = upcomingAppointments[0];
+
+        purposeElement.textContent = appointment.purpose;
+        statusElement.textContent = appointment.status;
+        infoElement.textContent = `Token: ${appointment.token_display || appointment.token_id}`;
+        dateElement.textContent = VIZITOR.formatDate(appointment.appointment_date);
+        timeElement.textContent = VIZITOR.formatTime(appointment.appointment_time);
     }
 
 
     // ============================================================
-    // BUTTONS
+    // Recent Activity (built from real appointment history)
     // ============================================================
 
-    const createButton =
-        document.getElementById(
-            "btnCreateAppt"
-        );
+    async function loadRecentActivity() {
+        const list = document.getElementById("recentActivityList");
+        if (!list) return;
 
-    if (createButton) {
+        const appointments = await VIZITOR.getAppointments();
 
-        createButton.addEventListener(
-            "click",
-            () => {
-
-                window.location.href =
-                    "appointments.html";
-
-            }
-        );
-
-    }
-
-
-    const profileBadge =
-        document.querySelector(
-            ".profile-badge"
-        );
-
-    if (profileBadge) {
-
-        profileBadge.style.cursor =
-            "pointer";
-
-        profileBadge.addEventListener(
-            "click",
-            () => {
-
-                window.location.href =
-                    "profile.html";
-
-            }
-        );
-
-    }
-
-
-    const notificationButton =
-        document.querySelector(
-            '.icon-btn[title="View alerts"], ' +
-            '.icon-btn[title="Notifications"]'
-        );
-
-    if (notificationButton) {
-
-        notificationButton.addEventListener(
-            "click",
-            () => {
-
-                window.location.href =
-                    "notifications.html";
-
-            }
-        );
-
-    }
-
-
-    // ============================================================
-    // LOGOUT
-    // ============================================================
-
-    document
-        .querySelectorAll(
-            ".sidebar-footer a, #btnLogout"
-        )
-        .forEach(
-            link => {
-
-                link.addEventListener(
-                    "click",
-                    () => {
-
-                        localStorage.removeItem(
-                            "access_token"
-                        );
-
-                        localStorage.removeItem(
-                            "isAuthenticated"
-                        );
-
-                        localStorage.removeItem(
-                            "userEmail"
-                        );
-
-                    }
-                );
-
-            }
-        );
-
-
-    // ============================================================
-    // INITIAL LOAD
-    // ============================================================
-
-    loadDashboard();
-
-
-    // ============================================================
-    // AUTO REFRESH
-    // ============================================================
-
-    setInterval(
-        loadDashboard,
-        15000
-    );
-
-
-    window.addEventListener(
-        "focus",
-        loadDashboard
-    );
-
-
-    document.addEventListener(
-        "visibilitychange",
-        () => {
-
-            if (
-                document.visibilityState ===
-                "visible"
-            ) {
-
-                loadDashboard();
-
-            }
-
+        if (appointments.length === 0) {
+            list.innerHTML = `
+                <div class="activity-item neutral">
+                    No activity yet — book your first appointment to get started.
+                </div>
+            `;
+            return;
         }
-    );
+
+        const sorted = [...appointments].sort(
+            (a, b) => b.appointment_id - a.appointment_id
+        );
+
+        list.innerHTML = sorted.slice(0, 3).map(appointment => {
+            const cls = appointment.status === "CANCELLED" ? "neutral" : "active";
+            const label = appointment.status === "CANCELLED"
+                ? "Appointment cancelled"
+                : "Appointment booked";
+
+            return `
+                <div class="activity-item ${cls}">
+                    <strong>${label}</strong>
+                    for ${VIZITOR.escapeHtml(appointment.purpose)}
+                    (Token ${VIZITOR.escapeHtml(appointment.token_display || "")}).
+                    <span class="time">${VIZITOR.formatDate(appointment.appointment_date)}</span>
+                </div>
+            `;
+        }).join("");
+    }
 
 
-    console.log(
-        "LIVE dashboard.js loaded successfully"
-    );
+    // ============================================================
+    // Load Dashboard Data
+    // ============================================================
 
+    loadWelcomeUser();
+    loadQueueDrivenUI();
+    loadUpcomingAppointment();
+    loadRecentActivity();
+
+    // Keep the dashboard live — queue/crowd numbers change with time.
+    setInterval(loadQueueDrivenUI, 30000);
+
+
+    // ============================================================
+    // Export Statistics
+    // ============================================================
+
+    const exportBtn = document.getElementById("btnExport");
+    if (exportBtn) {
+        exportBtn.addEventListener("click", () => {
+            window.location.href = "reports.html";
+        });
+    }
+
+
+    // ============================================================
+    // Book Appointment
+    // ============================================================
+
+    const bookApptHeaderBtn = document.getElementById("btnCreateAppt");
+    if (bookApptHeaderBtn) {
+        bookApptHeaderBtn.addEventListener("click", () => {
+            window.location.href = "appointments.html";
+        });
+    }
+
+    console.log("dashboard.js loaded successfully.");
 });

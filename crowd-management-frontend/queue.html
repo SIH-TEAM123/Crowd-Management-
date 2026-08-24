@@ -225,7 +225,7 @@
                         <!-- Dots representing people ahead (show up to 5 for clarity) -->
                         <div class="qp-node">
                             <div class="qp-circle ahead">···</div>
-                            <span class="qp-sub">17 ahead</span>
+                            <span class="qp-sub" id="aheadSub">0 ahead</span>
                         </div>
 
                         <!-- Line -->
@@ -245,7 +245,7 @@
                             <line x1="12" y1="8" x2="12" y2="12"/>
                             <line x1="12" y1="16" x2="12.01" y2="16"/>
                         </svg>
-                        Please stay available and proceed to Counter 1 when your token <strong>&nbsp;A-104&nbsp;</strong> is called.
+                        Please stay available and proceed to the counter when your token <strong id="noteToken">&nbsp;--&nbsp;</strong> is called.
                     </div>
                 </div>
 
@@ -253,22 +253,21 @@
                 <div class="card-panel">
                     <div class="panel-header">
                         <h3 class="panel-title">Linked Appointment</h3>
-                        <span class="card-badge badge-success">Confirmed</span>
+                        <span class="card-badge badge-success" id="linkedApptBadge">--</span>
                     </div>
 
-                    <div class="status-list">
+                    <div class="status-list" id="linkedApptList">
                         <div class="status-item">
                             <div class="status-item-header">
                                 <div class="status-title-row">
                                     <span class="status-dot status-dot-active"></span>
-                                    <span class="status-title">General Consultation</span>
+                                    <span class="status-title" id="linkedApptPurpose">No linked appointment</span>
                                 </div>
-                                <span class="status-badge">Counter 1</span>
                             </div>
                             <div class="status-item-details">
-                                <span>Date: <strong>Aug 17, 2026</strong></span>
-                                <span>Time: <strong>02:30 PM</strong></span>
-                                <span>Token: <strong style="color:#7c3aed;">A-104</strong></span>
+                                <span>Date: <strong id="linkedApptDate">--</strong></span>
+                                <span>Time: <strong id="linkedApptTime">--</strong></span>
+                                <span>Token: <strong style="color:#7c3aed;" id="linkedApptToken">--</strong></span>
                             </div>
                         </div>
                     </div>
@@ -292,6 +291,7 @@
     </div><!-- end dashboard-layout -->
 
     <script src="js/api.js"></script>
-<script src="js/queue.js"></script>
+<script src="js/shared.js"></script>
+    <script src="js/queue.js"></script>
 </body>
 </html>
