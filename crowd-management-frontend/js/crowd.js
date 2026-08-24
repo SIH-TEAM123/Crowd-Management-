@@ -1,179 +1,467 @@
-// Crowd Status page — sample data only (no backend yet)
+// Crowd Status page — LIVE backend data only
 
-const crowdData = {
-    level: "Moderate",
-    peopleCount: 64,
-    queueSize: 38,
-    waitMinutes: 24
-};
+document.addEventListener("DOMContentLoaded", () => {
 
-const trendData = [
-    { time: "8 AM",  count: 12, level: "low" },
-    { time: "9 AM",  count: 28, level: "low" },
-    { time: "10 AM", count: 47, level: "moderate" },
-    { time: "11 AM", count: 82, level: "high" },
-    { time: "12 PM", count: 93, level: "high" },
-    { time: "1 PM",  count: 64, level: "moderate", current: true },
-    { time: "2 PM",  count: 58, level: "moderate" },
-    { time: "3 PM",  count: 41, level: "moderate" }
-];
+    async function loadCrowdStatus() {
 
-const counters = [
-    { name: "Counter 1", service: "General Consultation", status: "Busy",        badge: "badge-warning" },
-    { name: "Counter 2", service: "Document Verification", status: "Available",  badge: "badge-success" },
-    { name: "Counter 3", service: "Health Screening",      status: "High Demand", badge: "badge-danger" },
-    { name: "Counter 4", service: "ID & License Services", status: "Available",   badge: "badge-success" }
-];
+        const accessToken = localStorage.getItem("access_token");
 
-function getRecommendation(level, waitMinutes) {
-    return `${level} crowd. Your current estimated waiting time is ${waitMinutes} minutes.`;
-}
+        if (!accessToken) {
+            alert("Please sign in again.");
+            window.location.href = "index.html";
+            return;
+        }
 
-function renderCrowdStatus() {
-    const lvl = crowdData.level.toLowerCase();
+        try {
 
-    const levelText = document.getElementById("levelText");
-    const levelBadge = document.getElementById("levelBadge");
-    const peopleEl = document.getElementById("peopleCount");
-    const queueEl = document.getElementById("queueSize");
-    const waitEl = document.getElementById("waitTime");
-    const recText = document.getElementById("recommendationText");
+            const response = await fetch(
+                `${API_BASE_URL}/appointments/dashboard`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${accessToken}`
+                    }
+                }
+            );
 
-    if (levelText) {
-        levelText.textContent = crowdData.level;
-        levelText.className = `crowd-level-badge ${lvl}`;
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error("Crowd backend error:", data);
+                throw new Error(
+                    data.detail || "Unable to load crowd status"
+                );
+            }
+
+            console.log("LIVE CROWD DATA:", data);
+
+            // =====================================================
+            // LIVE VALUES FROM BACKEND
+            // =====================================================
+
+            const queueSize =
+                Number(data.current_queue) || 0;
+
+            const waitMinutes =
+                Number(data.estimated_wait_minutes) || 0;
+
+            const currentlyServing =
+                data.currently_serving || null;
+
+            const peoplePresent =
+                queueSize + (currentlyServing ? 1 : 0);
+
+
+            // =====================================================
+            // USE BACKEND CROWD LEVEL
+            // =====================================================
+
+            let crowdLevel = data.crowd_level || "No Crowd";
+
+            const normalizedLevel =
+                String(crowdLevel).trim().toLowerCase();
+
+            if (
+                normalizedLevel === "medium"
+            ) {
+                crowdLevel = "Moderate";
+            }
+            else if (
+                normalizedLevel === "low"
+            ) {
+                crowdLevel = "Low";
+            }
+            else if (
+                normalizedLevel === "moderate"
+            ) {
+                crowdLevel = "Moderate";
+            }
+            else if (
+                normalizedLevel === "high"
+            ) {
+                crowdLevel = "High";
+            }
+            else if (
+                normalizedLevel === "none" ||
+                normalizedLevel === "no crowd"
+            ) {
+                crowdLevel = "No Crowd";
+            }
+
+
+            // =====================================================
+            // CROWD LEVEL MAIN DISPLAY
+            // =====================================================
+
+            const levelText =
+                document.getElementById("levelText");
+
+            if (levelText) {
+                levelText.textContent = crowdLevel;
+
+                levelText.className =
+                    "crowd-level-badge";
+            }
+
+
+            const levelBadge =
+                document.getElementById("levelBadge");
+
+            if (levelBadge) {
+
+                levelBadge.textContent = crowdLevel;
+
+                levelBadge.className = "card-badge";
+
+                if (crowdLevel === "Low") {
+                    levelBadge.classList.add("badge-success");
+                }
+                else if (crowdLevel === "Moderate") {
+                    levelBadge.classList.add("badge-warning");
+                }
+                else if (crowdLevel === "High") {
+                    levelBadge.classList.add("badge-danger");
+                }
+                else {
+                    levelBadge.classList.add("badge-neutral");
+                }
+            }
+
+
+            // =====================================================
+            // PEOPLE CURRENTLY PRESENT
+            // =====================================================
+
+            const peopleEl =
+                document.getElementById("peopleCount");
+
+            if (peopleEl) {
+                peopleEl.textContent =
+                    peoplePresent;
+            }
+
+
+            // =====================================================
+            // QUEUE SIZE
+            // =====================================================
+
+            const queueEl =
+                document.getElementById("queueSize");
+
+            if (queueEl) {
+                queueEl.textContent =
+                    queueSize;
+            }
+
+
+            // =====================================================
+            // WAIT TIME
+            // =====================================================
+
+            const waitEl =
+                document.getElementById("waitTime");
+
+            if (waitEl) {
+                waitEl.innerHTML =
+                    `${waitMinutes}<span class="wait-unit"> min</span>`;
+            }
+
+
+            // =====================================================
+            // VISUAL INDICATOR
+            //
+            // Shows ONLY the actual backend crowd level.
+            // No fake threshold logic.
+            // =====================================================
+
+            const dotLow =
+                document.getElementById("dotLow");
+
+            const dotModerate =
+                document.getElementById("dotModerate");
+
+            const dotHigh =
+                document.getElementById("dotHigh");
+
+            const labelLow =
+                document.getElementById("labelLow");
+
+            const labelModerate =
+                document.getElementById("labelModerate");
+
+            const labelHigh =
+                document.getElementById("labelHigh");
+
+
+            // Reset everything
+
+            [
+                dotLow,
+                dotModerate,
+                dotHigh
+            ].forEach(dot => {
+
+                if (dot) {
+                    dot.classList.remove("lit");
+                }
+
+            });
+
+
+            [
+                labelLow,
+                labelModerate,
+                labelHigh
+            ].forEach(label => {
+
+                if (label) {
+                    label.classList.remove(
+                        "active-label"
+                    );
+                }
+
+            });
+
+
+            // Activate ONLY actual backend level
+
+            if (crowdLevel === "Low") {
+
+                if (dotLow) {
+                    dotLow.classList.add("lit");
+                }
+
+                if (labelLow) {
+                    labelLow.classList.add(
+                        "active-label"
+                    );
+                }
+
+            }
+
+            else if (crowdLevel === "Moderate") {
+
+                if (dotModerate) {
+                    dotModerate.classList.add("lit");
+                }
+
+                if (labelModerate) {
+                    labelModerate.classList.add(
+                        "active-label"
+                    );
+                }
+
+            }
+
+            else if (crowdLevel === "High") {
+
+                if (dotHigh) {
+                    dotHigh.classList.add("lit");
+                }
+
+                if (labelHigh) {
+                    labelHigh.classList.add(
+                        "active-label"
+                    );
+                }
+
+            }
+
+
+            // =====================================================
+            // RECOMMENDATION
+            // =====================================================
+
+            const recommendationText =
+                document.getElementById(
+                    "recommendationText"
+                );
+
+            if (recommendationText) {
+
+                if (queueSize === 0) {
+
+                    recommendationText.textContent =
+                        "No active queue at the moment. You can visit now.";
+
+                }
+                else {
+
+                    recommendationText.textContent =
+                        `${crowdLevel} crowd. ` +
+                        `${queueSize} people are currently waiting. ` +
+                        `Estimated waiting time is ${waitMinutes} minutes.`;
+
+                }
+            }
+
+
+            // =====================================================
+            // LAST UPDATED
+            // =====================================================
+
+            const lastUpdated =
+                document.getElementById(
+                    "lastUpdated"
+                );
+
+            if (lastUpdated) {
+
+                const now = new Date();
+
+                const formattedTime =
+                    now.toLocaleTimeString(
+                        "en-US",
+                        {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                        }
+                    );
+
+                lastUpdated.textContent =
+                    `Last updated: ${formattedTime} — live backend data.`;
+            }
+
+
+            console.log(
+                "CROWD STATUS UPDATED:",
+                {
+                    queueSize,
+                    currentlyServing,
+                    peoplePresent,
+                    crowdLevel,
+                    waitMinutes
+                }
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Crowd status loading error:",
+                error
+            );
+
+            const lastUpdated =
+                document.getElementById(
+                    "lastUpdated"
+                );
+
+            if (lastUpdated) {
+                lastUpdated.textContent =
+                    "Unable to load live crowd data.";
+            }
+        }
     }
 
-    if (peopleEl) peopleEl.textContent = String(crowdData.peopleCount);
-    if (queueEl) queueEl.textContent = String(crowdData.queueSize);
-    if (waitEl) {
-        waitEl.innerHTML = `${crowdData.waitMinutes}<span class="wait-unit"> min</span>`;
-    }
 
-    if (levelBadge) {
-        levelBadge.textContent = crowdData.level;
-        if (lvl === "low") levelBadge.className = "card-badge badge-success";
-        if (lvl === "moderate") levelBadge.className = "card-badge badge-warning";
-        if (lvl === "high") levelBadge.className = "card-badge badge-danger";
-    }
+    // =====================================================
+    // REFRESH BUTTON
+    // =====================================================
 
-    const dots = {
-        low: document.getElementById("dotLow"),
-        moderate: document.getElementById("dotModerate"),
-        high: document.getElementById("dotHigh")
-    };
-    const labels = {
-        low: document.getElementById("labelLow"),
-        moderate: document.getElementById("labelModerate"),
-        high: document.getElementById("labelHigh")
-    };
+    const refreshBtn =
+        document.getElementById("btnRefresh");
 
-    Object.values(dots).forEach(function (dot) {
-        if (dot) dot.classList.remove("lit");
-    });
-    Object.values(labels).forEach(function (label) {
-        if (label) label.classList.remove("active-label");
-    });
-
-    if (dots[lvl]) dots[lvl].classList.add("lit");
-    if (labels[lvl]) labels[lvl].classList.add("active-label");
-
-    if (recText) {
-        recText.textContent = getRecommendation(crowdData.level, crowdData.waitMinutes);
-    }
-}
-
-function renderTrendBars() {
-    const container = document.getElementById("trendBars");
-    if (!container) return;
-
-    const counts = trendData.map(function (d) { return d.count; });
-    const maxCount = Math.max.apply(null, counts);
-    container.innerHTML = "";
-
-    trendData.forEach(function (d) {
-        const wrap = document.createElement("div");
-        wrap.className = "trend-bar-wrap";
-
-        const heightPct = Math.max(8, Math.round((d.count / maxCount) * 100));
-        const extraClass = d.current ? " current" : "";
-
-        wrap.innerHTML =
-            '<span class="trend-bar-val">' + d.count + "</span>" +
-            '<div class="trend-bar ' + d.level + extraClass + '" style="height:' + heightPct + '%;"></div>' +
-            '<span class="trend-bar-label">' + d.time + "</span>";
-
-        container.appendChild(wrap);
-    });
-}
-
-function renderCounters() {
-    const grid = document.getElementById("countersGrid");
-    if (!grid) return;
-
-    grid.innerHTML = "";
-    counters.forEach(function (c) {
-        const card = document.createElement("div");
-        card.className = "counter-card";
-        card.innerHTML =
-            '<div class="counter-card-header">' +
-                '<span class="counter-name">' + c.name + "</span>" +
-                '<span class="card-badge ' + c.badge + '">' + c.status + "</span>" +
-            "</div>" +
-            '<span class="counter-service">' + c.service + "</span>";
-        grid.appendChild(card);
-    });
-}
-
-function updateLastUpdated() {
-    const el = document.getElementById("lastUpdated");
-    if (!el) return;
-
-    const now = new Date();
-    const time = now.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit"
-    });
-    el.textContent = "Last updated: " + time + " — sample data (not connected to live services yet).";
-}
-
-function refreshStatus() {
-    renderCrowdStatus();
-    renderTrendBars();
-    renderCounters();
-    updateLastUpdated();
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-    refreshStatus();
-
-    const refreshBtn = document.getElementById("btnRefresh");
     if (refreshBtn) {
-        refreshBtn.addEventListener("click", refreshStatus);
+
+        refreshBtn.addEventListener(
+            "click",
+            loadCrowdStatus
+        );
+
     }
 
-    // Header & Logout Navigation Handlers
-    const profileBadge = document.querySelector(".profile-badge");
+
+    // =====================================================
+    // PROFILE NAVIGATION
+    // =====================================================
+
+    const profileBadge =
+        document.querySelector(".profile-badge");
+
     if (profileBadge) {
+
         profileBadge.style.cursor = "pointer";
-        profileBadge.addEventListener("click", function () {
-            window.location.href = "profile.html";
-        });
+
+        profileBadge.addEventListener(
+            "click",
+            () => {
+                window.location.href =
+                    "profile.html";
+            }
+        );
+
     }
 
-    const notifBtn = document.querySelector('.icon-btn[title="View alerts"], .icon-btn[title="Notifications"]');
+
+    // =====================================================
+    // NOTIFICATIONS
+    // =====================================================
+
+    const notifBtn =
+        document.querySelector(
+            '.icon-btn[title="View alerts"], ' +
+            '.icon-btn[title="Notifications"]'
+        );
+
     if (notifBtn) {
-        notifBtn.addEventListener("click", function () {
-            window.location.href = "notifications.html";
-        });
+
+        notifBtn.addEventListener(
+            "click",
+            () => {
+                window.location.href =
+                    "notifications.html";
+            }
+        );
+
     }
 
-    const logoutLinks = document.querySelectorAll('.sidebar-footer a, #btnLogout');
-    logoutLinks.forEach(function (link) {
-        link.addEventListener("click", function () {
-            localStorage.removeItem("isAuthenticated");
-            localStorage.removeItem("userEmail");
-        });
-    });
-});
 
+    // =====================================================
+    // LOGOUT
+    // =====================================================
+
+    const logoutLinks =
+        document.querySelectorAll(
+            '.sidebar-footer a, #btnLogout'
+        );
+
+    logoutLinks.forEach(link => {
+
+        link.addEventListener(
+            "click",
+            () => {
+
+                localStorage.removeItem(
+                    "isAuthenticated"
+                );
+
+                localStorage.removeItem(
+                    "userEmail"
+                );
+
+                localStorage.removeItem(
+                    "access_token"
+                );
+
+                localStorage.removeItem(
+                    "userProfile"
+                );
+
+            }
+        );
+
+    });
+
+
+    // =====================================================
+    // LOAD LIVE DATA
+    // =====================================================
+
+    loadCrowdStatus();
+
+    console.log(
+        "crowd.js loaded — LIVE backend data only"
+    );
+
+});

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Symmetry Crowd</title>
+    <title>Dashboard - VIZITOR Crowd</title>
 
     <!-- Import Inter Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,7 +36,7 @@
                 <circle cx="12" cy="12" r="3" fill="#7c3aed"/>
             </svg>
 
-            <span class="logo-text">Symmetry</span>
+            <span class="logo-text">VIZITOR</span>
         </div>
 
 
@@ -874,75 +874,107 @@
                     </div>
 
 
-                    <div class="status-list">
+                    <div class="status-item">
+
+    <div class="status-item-header">
+
+        <div class="status-title-row">
+
+            <span class="status-dot status-dot-success"></span>
+
+            <span class="status-title">
+                Currently Serving
+            </span>
+
+        </div>
+
+        <span class="status-badge">
+            Live
+        </span>
+
+    </div>
+
+    <div class="status-item-details">
+
+        <span>Token Number</span>
+
+        <strong
+            id="currentlyServing"
+            style="color:#7c3aed;font-size:1.1rem;">
+            --
+        </strong>
+
+    </div>
+
+</div>
 
 
-                        <div class="status-item">
+<div class="status-item">
 
-                            <div class="status-item-header">
+    <div class="status-item-header">
 
-                                <div class="status-title-row">
+        <div class="status-title-row">
 
-                                    <span class="status-dot status-dot-active"></span>
+            <span class="status-dot status-dot-warning"></span>
 
-                                    <span class="status-title">
-                                        Currently Serving
-                                    </span>
+            <span class="status-title">
+                Your Token
+            </span>
 
-                                </div>
+        </div>
 
-                                <span class="status-badge">
-                                    Counter 1
-                                </span>
+        <span class="status-badge">
+            Registered
+        </span>
 
-                            </div>
-
-
-                            <div class="status-item-details">
-
-                                <span>Token Number</span>
-
-                                <strong style="color:#7c3aed;font-size:1.1rem;">
-                                    A-087
-                                </strong>
-
-                            </div>
-
-                        </div>
+    </div>
 
 
-                        <div class="status-item">
+    <div class="status-item-details">
 
-                            <div class="status-item-header">
+        <span>Token Number</span>
 
-                                <div class="status-title-row">
+        <strong
+            id="dashboardYourToken"
+            style="color:#0f172a;font-size:1.1rem;">
+            --
+        </strong>
 
-                                    <span class="status-dot status-dot-warning"></span>
+    </div>
 
-                                    <span class="status-title">
-                                        Your Token
-                                    </span>
-
-                                </div>
-
-                                <span class="status-badge">
-                                    Registered
-                                </span>
-
-                            </div>
+</div>
 
 
-                            <div class="status-item-details">
+<div class="status-item">
 
-                                <span>Token Number</span>
+    <div class="status-item-header">
 
-                                <strong style="color:#0f172a;font-size:1.1rem;">
-                                    A-104
-                                </strong>
+        <div class="status-title-row">
 
-                            </div>
+            <span class="status-dot status-dot-neutral"></span>
 
-                        </div>
+            <span class="status-title">
+                People Ahead
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="status-item-details">
+
+        <span>Waiting in front</span>
+
+        <strong
+            id="dashboardPeopleAhead"
+            style="color:#ef4444;font-size:1.1rem;">
+            0 people
+        </strong>
+
+    </div>
+
+</div>
 
 
                         <div class="status-item">
@@ -967,7 +999,7 @@
                                 <span>Waiting in front</span>
 
                                 <strong style="color:#ef4444;font-size:1.1rem;">
-                                    17 people
+                                    <span id="dashboardPeopleAheadText">0 people</span>
                                 </strong>
 
                             </div>
