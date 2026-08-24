@@ -257,6 +257,126 @@ body {
     color: #6d28d9;
 }
 
+/* Validation & Feedback Banners */
+.field-error {
+    font-size: 0.775rem;
+    color: #ef4444;
+    font-weight: 500;
+    margin-top: 2px;
+    display: block;
+    min-height: 16px;
+}
+
+.input-group input.is-invalid {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
+}
+
+.form-error-banner {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-success-banner {
+    background-color: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* OTP Inputs Container & Digit Controls */
+.otp-input-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 1.25rem 0;
+}
+
+.otp-digit {
+    width: 46px;
+    height: 50px;
+    text-align: center;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    background-color: #ffffff;
+    transition: all 0.2s ease-in-out;
+}
+
+.otp-digit:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
+}
+
+.resend-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 1.25rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: #7c3aed;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 0.875rem;
+    padding: 0;
+    transition: color 0.15s ease;
+}
+
+.btn-link:hover:not(:disabled) {
+    color: #6d28d9;
+}
+
+.btn-link:disabled {
+    color: #9ca3af;
+    cursor: not-allowed;
+    text-decoration: none;
+}
+
+.demo-mode-badge {
+    background-color: #fffbebf5;
+    border: 1px dashed #f59e0b;
+    color: #b45309;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.775rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
 /* Responsive Rules */
 @media (max-width: 768px) {
     .login-container {

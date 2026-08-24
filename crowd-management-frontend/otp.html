@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - Symmetry</title>
+    <!-- Import modern Google Font (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="login-container">
+        
+        <!-- Left Side - Aesthetic Visual Section -->
+        <div class="login-visual">
+            <div class="login-visual-text">
+                <h2>Intelligence first.</h2>
+                <p>The ultimate artificial intelligence platform designed to unlock your potential and accelerate your workflow.</p>
+            </div>
+        </div>
+        
+        <!-- Right Side - Interactive OTP Verification Section -->
+        <div class="login-form-side">
+            <div class="login-form-wrapper">
+                
+                <!-- Branding Logo -->
+                <div class="logo-container">
+                    <!-- Clean SVG Hexagon Logo -->
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" fill="rgba(124, 58, 237, 0.15)" stroke="#7c3aed" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" fill="#7c3aed"/>
+                    </svg>
+                    <span class="logo-text">Symmetry</span>
+                </div>
+                
+                <!-- Welcome Headers -->
+                <div class="form-header">
+                    <h1>Verify your email</h1>
+                    <p>We've sent a verification code to <strong id="displayEmail" style="color: #111827;">your email</strong>.</p>
+                </div>
+
+                <!-- Global Feedback Banners -->
+                <div class="demo-mode-badge" id="demoBadge" style="display: none;">
+                    <span>⚠️ Demo Mode Active • Test OTP: <strong>123456</strong></span>
+                </div>
+                <div class="form-error-banner" id="formErrorBanner" style="display: none;"></div>
+                <div class="form-success-banner" id="formSuccessBanner" style="display: none;"></div>
+                
+                <!-- OTP Form -->
+                <form class="login-form" id="otpForm" novalidate>
+                    
+                    <!-- 6-digit OTP Inputs -->
+                    <div class="otp-input-group" id="otpGroup">
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" required>
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    </div>
+                    <span class="field-error" id="otpError" style="text-align: center; margin-bottom: 0.5rem;"></span>
+
+                    <!-- Action Button -->
+                    <button type="submit" class="btn-primary" id="btnVerifyOtp">Verify OTP</button>
+
+                    <!-- Resend Row -->
+                    <div class="resend-row">
+                        <span>Didn't receive the code?</span>
+                        <button type="button" class="btn-link" id="btnResendOtp">Resend OTP</button>
+                    </div>
+                    
+                </form>
+                
+                <!-- Bottom Sign In Link -->
+                <div class="form-footer">
+                    Back to <a href="index.html">Sign In</a>
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Script imports -->
+    <script src="js/api.js"></script>
+    <script src="js/otp.js"></script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Symmetry</title>
+    <title>Sign Up - Symmetry</title>
     <!-- Import modern Google Font (Inter) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +22,7 @@
             </div>
         </div>
         
-        <!-- Right Side - Interactive Login Form Section -->
+        <!-- Right Side - Interactive Signup Form Section -->
         <div class="login-form-side">
             <div class="login-form-wrapper">
                 
@@ -38,38 +38,59 @@
                 
                 <!-- Welcome Headers -->
                 <div class="form-header">
-                    <h1>Welcome back</h1>
-                    <p>Please enter your details to sign in.</p>
+                    <h1>Create an account</h1>
+                    <p>Please enter your details to sign up.</p>
                 </div>
+
+                <!-- Global Feedback Banners -->
+                <div class="demo-mode-badge" id="demoBadge" style="display: none;">
+                    <span>⚠️ Frontend Demo Mode Active (Local Testing)</span>
+                </div>
+                <div class="form-error-banner" id="formErrorBanner" style="display: none;"></div>
+                <div class="form-success-banner" id="formSuccessBanner" style="display: none;"></div>
                 
-                <!-- Login Form -->
-                <form class="login-form" id="loginForm">
+                <!-- Signup Form -->
+                <form class="login-form" id="signupForm" novalidate>
                     
+                    <!-- Full Name Field -->
+                    <div class="input-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" placeholder="Enter your full name" autocomplete="name">
+                        <span class="field-error" id="fullNameError"></span>
+                    </div>
+
                     <!-- Email Field -->
                     <div class="input-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" placeholder="Enter your email" required autocomplete="email">
+                        <input type="email" id="email" placeholder="Enter your email" autocomplete="email">
+                        <span class="field-error" id="emailError"></span>
+                    </div>
+
+                    <!-- Phone Number Field -->
+                    <div class="input-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" placeholder="Enter your phone number" autocomplete="tel">
+                        <span class="field-error" id="phoneError"></span>
                     </div>
                     
                     <!-- Password Field -->
                     <div class="input-group">
                         <label for="password">Password</label>
-                        <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+                        <input type="password" id="password" placeholder="••••••••" autocomplete="new-password">
+                        <span class="field-error" id="passwordError"></span>
                     </div>
-                    
-                    <!-- Remember Me & Forgot Password Link -->
-                    <div class="form-actions">
-                        <label class="remember-me">
-                            <input type="checkbox" id="rememberMe">
-                            <span>Remember for 30 days</span>
-                        </label>
-                        <a href="#" class="forgot-password">Forgot password?</a>
+
+                    <!-- Confirm Password Field -->
+                    <div class="input-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" placeholder="••••••••" autocomplete="new-password">
+                        <span class="field-error" id="confirmPasswordError"></span>
                     </div>
                     
                     <!-- Buttons -->
-                    <button type="submit" class="btn-primary">Sign in</button>
+                    <button type="submit" class="btn-primary" id="btnSubmit">Create Account</button>
                     
-                    <button type="button" class="btn-google" id="btnGoogle">
+                    <button type="button" class="btn-google" id="btnGoogleSignup">
                         <!-- Brand Google Logo Vector -->
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -77,14 +98,14 @@
                             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
                             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
                         </svg>
-                        Sign in with Google
+                        Sign up with Google
                     </button>
                     
                 </form>
                 
-                <!-- Bottom Sign Up Link -->
+                <!-- Bottom Sign In Link -->
                 <div class="form-footer">
-                    Don't have an account? <a href="signup.html">Sign Up</a>
+                    Already have an account? <a href="index.html">Sign In</a>
                 </div>
                 
             </div>
@@ -94,6 +115,6 @@
 
     <!-- Script imports -->
     <script src="js/api.js"></script>
-    <script src="js/auth.js"></script>
+    <script src="js/signup.js"></script>
 </body>
 </html>
