@@ -9,3 +9,4 @@ PyJWT
 pandas
 joblib
 numpy
+pwdlib
