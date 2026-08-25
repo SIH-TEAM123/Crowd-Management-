@@ -54,9 +54,32 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
 
             if (!response.ok) {
-                alert(data.detail || "Registration failed.");
-                return;
-            }
+
+    if (
+        data.detail &&
+        data.detail.toLowerCase().includes("already registered")
+    ) {
+        // Save email for OTP verification
+        localStorage.setItem(
+            "pendingVerificationEmail",
+            email
+        );
+
+        localStorage.setItem(
+            "signupEmail",
+            email
+        );
+
+        alert("Email already registered. Please verify your email.");
+
+        // Go to OTP verification page
+        window.location.href = "verify-otp.html";
+        return;
+    }
+
+    alert(data.detail || "Registration failed.");
+    return;
+}
 
             // Save email for OTP verification
             localStorage.setItem(
