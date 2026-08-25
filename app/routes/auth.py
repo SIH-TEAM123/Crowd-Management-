@@ -493,3 +493,22 @@ async def get_current_user_info(
         "role": user.role,
         "is_verified": user.is_verified
     }
+
+@router.get("/debug-users")
+async def debug_users(
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(User.user_id, User.email, User.is_verified)
+    )
+
+    users = result.all()
+
+    return [
+        {
+            "user_id": row.user_id,
+            "email": row.email,
+            "is_verified": row.is_verified
+        }
+        for row in users
+    ]
