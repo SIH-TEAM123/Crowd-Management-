@@ -32,11 +32,15 @@ Queue Management Team
 """
     )
 
-    with smtplib.SMTP_SSL(
+    with smtplib.SMTP(
         settings.SMTP_HOST,
         settings.SMTP_PORT,
         timeout=30
     ) as server:
+
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
 
         server.login(
             settings.SMTP_USERNAME,
