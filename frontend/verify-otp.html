@@ -59,23 +59,32 @@
 
                 <form class="login-form" id="verifyOtpForm">
 
-                    <div class="input-group">
-                        <label for="otp">Verification Code</label>
+    <div class="input-group">
+        <label for="otp">Verification Code</label>
 
-                        <input
-                            type="text"
-                            id="otp"
-                            placeholder="Enter 6-digit OTP"
-                            maxlength="6"
-                            required
-                        >
-                    </div>
+        <input
+            type="text"
+            id="otp"
+            placeholder="Enter 6-digit OTP"
+            maxlength="6"
+            required
+        >
+    </div>
 
-                    <button type="submit" class="btn-primary">
-                        Verify OTP
-                    </button>
+    <button type="submit" class="btn-primary">
+        Verify OTP
+    </button>
 
-                </form>
+    <button
+        type="button"
+        id="resendOtp"
+        class="btn-primary"
+        style="margin-top: 10px;"
+    >
+        Resend OTP
+    </button>
+
+</form>
 
                 <div class="form-footer">
                     <a href="index.html">Back to Sign In</a>
