@@ -9,4 +9,4 @@ PyJWT
 pandas
 joblib
 numpy
-pwdlib
+pwdlib[argon2]
