@@ -10,3 +10,4 @@ pandas
 joblib
 numpy
 pwdlib[argon2]
+scikit-learn
