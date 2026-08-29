@@ -52,6 +52,29 @@ def evaluate_fairness(
         or input_data.priority.vulnerable_users > 0
     )
 
+    avg_wait = input_data.current_state.average_wait_minutes
+    is_normal_user_starving = avg_wait > 25.0
+
+    # 1. Resource Availability / Feasibility Checks
+    if action == ActionType.OPEN_COUNTER and input_data.resources.spare_counters <= 0:
+        return FairnessEvaluationResult(
+            fairness_score=0.0,
+            priority_users_protected=False,
+            constraint_satisfied=False,
+            evaluation_status=FairnessEvaluationStatus.VIOLATION,
+            reason="Cannot open counter: 0 spare counters available.",
+        )
+
+    if action == ActionType.REALLOCATE_RESOURCE and input_data.resources.reallocatable_resources <= 0:
+        return FairnessEvaluationResult(
+            fairness_score=0.0,
+            priority_users_protected=False,
+            constraint_satisfied=False,
+            evaluation_status=FairnessEvaluationStatus.VIOLATION,
+            reason="Cannot reallocate resources: 0 reallocatable resources available.",
+        )
+
+    # 2. Action Evaluation Logic
     if action == ActionType.NO_ACTION:
         return FairnessEvaluationResult(
             fairness_score=1.0,
@@ -98,6 +121,14 @@ def evaluate_fairness(
 
     elif action == ActionType.PRIORITY_ADJUSTMENT:
         if has_priority_users:
+            if is_normal_user_starving:
+                return FairnessEvaluationResult(
+                    fairness_score=0.7,
+                    priority_users_protected=True,
+                    constraint_satisfied=True,
+                    evaluation_status=FairnessEvaluationStatus.LIMITED_DATA,
+                    reason="Priority adjustment protects time-critical and vulnerable users, but high normal user wait time requires capacity expansion to prevent starvation.",
+                )
             return FairnessEvaluationResult(
                 fairness_score=0.8,
                 priority_users_protected=True,
@@ -114,3 +145,11 @@ def evaluate_fairness(
                 reason="Priority adjustment requested, but no eligible time-critical or vulnerable priority users are present in the queue.",
             )
 
+    # Fallback
+    return FairnessEvaluationResult(
+        fairness_score=0.5,
+        priority_users_protected=False,
+        constraint_satisfied=True,
+        evaluation_status=FairnessEvaluationStatus.EVALUATED,
+        reason=f"Action {action.value} evaluated under default fairness rules.",
+    )
