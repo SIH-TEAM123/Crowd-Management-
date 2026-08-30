@@ -175,7 +175,13 @@
                                 <line x1="12" y1="5" x2="12" y2="19"/>
                                 <line x1="5" y1="12" x2="19" y2="12"/>
                             </svg>
-                            Book Appointment
+                            Book Token
+                        </button>
+                        <button class="btn-create btn-emergency" id="btnEmergencyBooking" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; font-weight: 600; gap: 6px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                            </svg>
+                            Emergency Booking
                         </button>
                     </div>
                 </div>
@@ -537,6 +543,63 @@
             
         </main>
         
+    </div>
+
+    <!-- ====== Emergency Booking Modal ====== -->
+    <div id="emergencyModal" class="modal-backdrop" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); z-index:999; align-items:center; justify-content:center;">
+        <div class="modal-card" style="background:white; border-radius:16px; width:90%; max-width:520px; padding:24px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); border:1px solid #fee2e2;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid #fecdd3; padding-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="background:#ffe4e6; color:#e11d48; padding:8px; border-radius:10px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px;">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                    </div>
+                    <h3 style="margin:0; font-size:1.25rem; font-weight:700; color:#9f1239;">Emergency Booking</h3>
+                </div>
+                <button id="closeEmergencyModal" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;">&times;</button>
+            </div>
+            
+            <form id="emergencyForm">
+                <div style="margin-bottom:14px;">
+                    <label style="display:block; font-size:0.875rem; font-weight:600; color:#334155; margin-bottom:6px;">Emergency Type / Severity</label>
+                    <select id="emergencyTypeSelect" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; font-family:inherit; font-size:0.9rem;">
+                        <option value="CRITICAL_CARE">Critical Care / Severe Trauma</option>
+                        <option value="ACUTE_CHEST_PAIN">Acute Chest Pain / Cardiac Event</option>
+                        <option value="HIGH_FEVER_VULNERABLE">High Fever / Vulnerable Patient</option>
+                        <option value="GENERAL_EMERGENCY" selected>General Medical Emergency</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom:16px;">
+                    <label style="display:block; font-size:0.875rem; font-weight:600; color:#334155; margin-bottom:6px;">Emergency Details / Symptoms</label>
+                    <textarea id="emergencyDetailsInput" rows="3" placeholder="Enter patient condition or symptoms..." style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; font-family:inherit; font-size:0.9rem; resize:vertical;"></textarea>
+                </div>
+
+                <div style="background:#fff1f2; border-left:4px solid #f43f5e; padding:12px; border-radius:6px; margin-bottom:20px; font-size:0.825rem; color:#9f1239;">
+                    ℹ️ Emergency submissions are evaluated directly by the P5 backend & P4 fairness/priority pipeline. The frontend does not modify queue position.
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:12px;">
+                    <button type="button" id="cancelEmergencyBtn" style="padding:10px 18px; border-radius:8px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; cursor:pointer;">Cancel</button>
+                    <button type="submit" id="submitEmergencyBtn" style="padding:10px 20px; border-radius:8px; border:none; background:linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color:white; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(239,68,68,0.3);">Submit Emergency Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ====== QR Code Modal ====== -->
+    <div id="qrModal" class="modal-backdrop" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); z-index:999; align-items:center; justify-content:center;">
+        <div class="modal-card" style="background:white; border-radius:16px; width:90%; max-width:420px; padding:24px; text-align:center; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
+                <h3 style="margin:0; font-size:1.15rem; font-weight:700; color:#0f172a;">Digital QR Token</h3>
+                <button id="closeQrModal" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;">&times;</button>
+            </div>
+            <div id="qrModalDisplay" style="display:flex; justify-content:center; align-items:center; margin:16px 0;"></div>
+            <div id="qrModalTokenRef" style="font-size:1.1rem; font-weight:700; color:#7c3aed; margin-bottom:4px;"></div>
+            <div id="qrModalStatus" style="font-size:0.85rem; color:#64748b; margin-bottom:16px;">Scan at facility counter for check-in</div>
+            <button id="doneQrBtn" style="width:100%; padding:10px; border-radius:8px; border:none; background:#7c3aed; color:white; font-weight:600; cursor:pointer;">Return to Dashboard</button>
+        </div>
     </div>
 
     <!-- Script imports -->

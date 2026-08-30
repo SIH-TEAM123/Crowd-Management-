@@ -147,20 +147,31 @@
                     </div>
                 </div>
 
-                <!-- ====== Row 1: Your Token + Currently Serving ====== -->
-                <div class="queue-top-grid">
+                <!-- ====== Row 1: Your Token + Currently Serving + Digital QR ====== -->
+                <div class="queue-top-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
 
                     <!-- Your Token Card -->
                     <div class="card-panel">
                         <div class="panel-header">
                             <h3 class="panel-title">Your Token</h3>
-                            <span class="card-badge badge-warning">Waiting</span>
+                            <span class="card-badge badge-warning" id="userTokenStatusBadge">Waiting</span>
                         </div>
                         <div class="token-display-box">
                             <span class="token-label">Token Number</span>
                             <span class="token-number-large" id="userToken">A-104</span>
-                            <span class="token-label">Registered · Counter 1</span>
+                            <span class="token-label" id="tokenPriorityLabel">Priority: NORMAL</span>
                         </div>
+                    </div>
+
+                    <!-- Digital QR Token Card -->
+                    <div class="card-panel" style="text-align:center;">
+                        <div class="panel-header" style="justify-content:center;">
+                            <h3 class="panel-title">Digital QR Pass</h3>
+                        </div>
+                        <div id="queueQrContainer" style="display:flex; justify-content:center; align-items:center; margin:10px 0;">
+                            <!-- Dynamic QR Code SVG rendered by js/queue.js -->
+                        </div>
+                        <span class="token-label" style="font-size:0.8rem; color:#64748b;">Present QR at counter check-in terminal</span>
                     </div>
 
                     <!-- Currently Serving Card -->
@@ -176,6 +187,32 @@
                         </div>
                     </div>
 
+                </div>
+
+                <!-- ====== Emergency & Backend Decision Status Banner ====== -->
+                <div class="card-panel" id="backendDetailsPanel" style="background:#f8fafc; border:1px solid #e2e8f0; margin-bottom:1.5rem;">
+                    <div class="panel-header">
+                        <h3 class="panel-title">P5 Backend & P4 Optimization Status</h3>
+                        <span class="card-badge badge-neutral" id="backendBadge">Synced</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-top:12px; font-size:0.875rem;">
+                        <div>
+                            <span style="color:#64748b; display:block;">Priority Classification</span>
+                            <strong id="priorityVal" style="color:#7c3aed; font-weight:700;">NORMAL</strong>
+                        </div>
+                        <div>
+                            <span style="color:#64748b; display:block;">Fairness Score</span>
+                            <strong id="fairnessVal" style="color:#0f172a; font-weight:700;">0.85</strong>
+                        </div>
+                        <div>
+                            <span style="color:#64748b; display:block;">Emergency Active</span>
+                            <strong id="emergencyActiveVal" style="color:#10b981; font-weight:700;">No</strong>
+                        </div>
+                        <div>
+                            <span style="color:#64748b; display:block;">Crowd State</span>
+                            <strong id="crowdStateVal" style="color:#0f172a; font-weight:700;">18 In Facility</strong>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- ====== Row 2: Queue Stats ====== -->

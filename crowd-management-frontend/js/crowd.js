@@ -170,10 +170,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const logoutLinks = document.querySelectorAll('.sidebar-footer a, #btnLogout');
     logoutLinks.forEach(function (link) {
-        link.addEventListener("click", function () {
-            localStorage.removeItem("isAuthenticated");
-            localStorage.removeItem("userEmail");
+        link.addEventListener("click", function (e) {
+            e.preventDefault();
+            logoutUser();
         });
     });
 });
+
 

@@ -105,73 +105,76 @@ function cancelAppointment(id, service, date, token) {
 // ─────────────────────────────────────────────
 // Book New Appointment
 // ─────────────────────────────────────────────
-function bookNewAppointment() {
-    const service = prompt("Enter service name (e.g. Blood Test, Passport Renewal):");
+// Book New Appointment / Token via FastAPI backend
+async function bookNewAppointment() {
+    const service = prompt("Enter service name (e.g. General Consultation, Health Screening):", "General Consultation");
     if (!service || service.trim() === "") return;
 
-    const date = prompt("Enter appointment date (e.g. Sep 5, 2026):");
-    if (!date || date.trim() === "") return;
+    const bookBtn = document.getElementById("btnBookNew");
+    let orig = "";
+    if (bookBtn) {
+        orig = bookBtn.textContent;
+        bookBtn.disabled = true;
+        bookBtn.textContent = "Booking Token...";
+    }
 
-    const time = prompt("Enter time slot (e.g. 11:30 AM):");
-    if (!time || time.trim() === "") return;
+    const res = await createToken("NORMAL");
+    if (bookBtn) {
+        bookBtn.disabled = false;
+        bookBtn.textContent = orig;
+    }
 
-    // Generate a mock token
-    const letters = "ABCDE";
-    const token = letters[Math.floor(Math.random() * letters.length)] +
-                  "-" + String(Math.floor(Math.random() * 900) + 100);
+    if (res.success && res.data) {
+        const tokenData = res.data;
+        const tokenNum = tokenData.token_number || "A-104";
+        const counter = "Counter 1";
+        const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        const newId = Date.now();
 
-    // Get a counter number
-    const counter = "Counter " + (Math.floor(Math.random() * 5) + 1);
+        const emptyState = document.querySelector("#upcomingGrid .empty-state");
+        if (emptyState) emptyState.remove();
 
-    // Generate a new card ID
-    const newId = Date.now(); // use timestamp as unique id
-
-    // Remove empty state if present
-    const emptyState = document.querySelector("#upcomingGrid .empty-state");
-    if (emptyState) emptyState.remove();
-
-    // Build the new card HTML and prepend it
-    const grid = document.getElementById("upcomingGrid");
-    if (!grid) return;
-
-    const safeService = service.trim().replace(/'/g, "\\'");
-    const safeDate = date.trim().replace(/'/g, "\\'");
-
-    const card = document.createElement("div");
-    card.className = "appt-card pending";
-    card.setAttribute("data-id", newId);
-    card.innerHTML = `
-        <div class="appt-card-header">
-            <span class="appt-service-name">${service.trim()}</span>
-            <span class="card-badge badge-warning">Pending</span>
-        </div>
-        <div class="appt-meta-grid">
-            <div class="appt-meta-item">
-                <span class="appt-meta-label">Date</span>
-                <span class="appt-meta-value">${date.trim()}</span>
-            </div>
-            <div class="appt-meta-item">
-                <span class="appt-meta-label">Time</span>
-                <span class="appt-meta-value">${time.trim()}</span>
-            </div>
-            <div class="appt-meta-item">
-                <span class="appt-meta-label">Counter</span>
-                <span class="appt-meta-value">${counter}</span>
-            </div>
-            <div class="appt-meta-item">
-                <span class="appt-meta-label">Token</span>
-                <span class="appt-meta-value token">${token}</span>
-            </div>
-        </div>
-        <div class="appt-card-actions">
-            <button class="btn-action-ghost" onclick="viewDetails(${newId})">View Details</button>
-            <button class="btn-action-cancel" onclick="cancelAppointment(${newId}, '${safeService}', '${safeDate}', '${token}')">Cancel</button>
-        </div>
-    `;
-
-    grid.prepend(card);
-    refreshCounts();
-    alert(`Appointment booked!\n\nToken: ${token}\nDate: ${date}\nCounter: ${counter}\n\n(This is a local demo. It will be saved to the backend in a future step.)`);
+        const grid = document.getElementById("upcomingGrid");
+        if (grid) {
+            const card = document.createElement("div");
+            card.className = "appt-card confirmed";
+            card.setAttribute("data-id", newId);
+            card.innerHTML = `
+                <div class="appt-card-header">
+                    <span class="appt-service-name">${service.trim()}</span>
+                    <span class="card-badge badge-success">Active</span>
+                </div>
+                <div class="appt-meta-grid">
+                    <div class="appt-meta-item">
+                        <span class="appt-meta-label">Date</span>
+                        <span class="appt-meta-value">${date}</span>
+                    </div>
+                    <div class="appt-meta-item">
+                        <span class="appt-meta-label">Time</span>
+                        <span class="appt-meta-value">${time}</span>
+                    </div>
+                    <div class="appt-meta-item">
+                        <span class="appt-meta-label">Counter</span>
+                        <span class="appt-meta-value">${counter}</span>
+                    </div>
+                    <div class="appt-meta-item">
+                        <span class="appt-meta-label">Token</span>
+                        <span class="appt-meta-value token">${tokenNum}</span>
+                    </div>
+                </div>
+                <div class="appt-card-actions">
+                    <button class="btn-action-ghost" onclick="viewDetails(${newId})">View Details</button>
+                    <button class="btn-action-cancel" onclick="cancelAppointment(${newId}, '${service}', '${date}', '${tokenNum}')">Cancel</button>
+                </div>
+            `;
+            grid.prepend(card);
+            refreshCounts();
+        }
+        alert(`Token Booked Successfully!\n\nToken Number: ${tokenNum}\nQueue Position: #${tokenData.queue_position}\nDate: ${date}`);
+    } else {
+        alert(res.message || "Unable to book token. Check backend service.");
+    }
 }
 
 // ─────────────────────────────────────────────
@@ -200,13 +203,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const logoutLinks = document.querySelectorAll('.sidebar-footer a, #btnLogout');
     logoutLinks.forEach(link => {
-        link.addEventListener("click", () => {
-            localStorage.removeItem("isAuthenticated");
-            localStorage.removeItem("userEmail");
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            logoutUser();
         });
     });
 
     refreshCounts();
-    console.log("appointments.js loaded. Appointment event handlers active.");
+    console.log("appointments.js loaded. Real backend token booking active.");
 });
+
 

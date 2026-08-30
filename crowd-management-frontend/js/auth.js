@@ -5,8 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const googleButton = document.getElementById("btnGoogle");
 
     if (loginForm) {
-        loginForm.addEventListener("submit", (event) => {
-            event.preventDefault(); // Prevent the page from refreshing
+        loginForm.addEventListener("submit", async (event) => {
+            event.preventDefault(); // Prevent page refresh
 
             const emailInput = document.getElementById("email");
             const passwordInput = document.getElementById("password");
@@ -14,38 +14,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const email = emailInput ? emailInput.value.trim() : "";
             const password = passwordInput ? passwordInput.value.trim() : "";
-            const rememberMe = rememberMeInput ? rememberMeInput.checked : false;
 
             if (!email || !password) {
                 alert("Please fill in both email and password.");
                 return;
             }
 
-            console.log("Mock Sign In Event triggered:");
-            console.log("Email:", email);
-            console.log("Password:", password ? "••••••••" : "Empty");
-            console.log("Remember for 30 days:", rememberMe);
+            const submitBtn = loginForm.querySelector("button[type='submit']");
+            let originalText = "";
+            if (submitBtn) {
+                originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Signing in...";
+            }
 
-            // Persist mock authentication state
-            localStorage.setItem("isAuthenticated", "true");
-            localStorage.setItem("userEmail", email);
+            const result = await loginUser(email, password);
 
-            // Redirect to dashboard
-            window.location.href = "dashboard.html";
+            if (result.success) {
+                console.log("Login successful:", result.data);
+                window.location.href = "dashboard.html";
+            } else {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+                alert(result.message || "Login failed. Please check your credentials.");
+            }
         });
     }
 
     if (googleButton) {
         googleButton.addEventListener("click", () => {
-            console.log("Mock Sign In with Google triggered");
-
-            // Persist mock authentication state
-            localStorage.setItem("isAuthenticated", "true");
-            localStorage.setItem("userEmail", "google.user@example.com");
-
-            // Redirect to dashboard
-            window.location.href = "dashboard.html";
+            alert("Google Sign-In is for demo purposes. Please log in using your registered email and password.");
         });
     }
 });
+
 
