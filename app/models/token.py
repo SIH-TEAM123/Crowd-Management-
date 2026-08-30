@@ -6,7 +6,7 @@ from sqlalchemy import String, DateTime, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
-
+from app.services.p4_fairness import run_fairness_for_queue
 
 class TokenStatus(str, Enum):
     WAITING = "WAITING"
