@@ -24,7 +24,8 @@ router = APIRouter(
 # =========================================================
 
 TOKEN_PREFIX = "A"
-TOKEN_BASE = 100
+
+SERVICE_RATE_MINUTES = 4
 
 SERVICE_RATE_MINUTES = 4
 
@@ -33,7 +34,7 @@ MODERATE_CROWD_MAX = 15
 
 
 def token_display_for(appointment_id: int) -> str:
-    return f"{TOKEN_PREFIX}-{TOKEN_BASE + appointment_id}"
+    return f"{TOKEN_PREFIX}-{appointment_id:03d}"
 
 
 def crowd_level_for(queue_size: int) -> str:

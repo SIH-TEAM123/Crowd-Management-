@@ -2,7 +2,7 @@
 
 const API_BASE_URL =
     window.VIZITOR_API_URL ||
-    "https://vizitor.onrender.com";
+    "http://127.0.0.1:8000";
 
 console.log(
     "VIZITOR API:",

@@ -34,13 +34,10 @@ Queue Management Team
 
     with smtplib.SMTP(
         settings.SMTP_HOST,
-        settings.SMTP_PORT,
-        timeout=30
+        settings.SMTP_PORT
     ) as server:
 
-        server.ehlo()
         server.starttls()
-        server.ehlo()
 
         server.login(
             settings.SMTP_USERNAME,

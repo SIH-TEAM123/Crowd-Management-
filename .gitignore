@@ -17,4 +17,11 @@ __pycache__/
 # Virtual environments
 venv/
 .venv/
-env/
+env/.env
+queue_system.db
+__pycache__/
+*.pyc
+.env
+queue_system.db
+__pycache__/
+*.pyc
