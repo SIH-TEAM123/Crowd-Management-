@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - VIZITOR</title>
+
+    <!-- Import Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="dashboard-layout">
+
+    <!-- =========================================================
+         SIDEBAR
+    ========================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+            <svg class="logo-icon" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+
+                <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"
+                      fill="rgba(124, 58, 237, 0.15)"
+                      stroke="#7c3aed"
+                      stroke-width="2"/>
+
+                <circle cx="12" cy="12" r="3" fill="#7c3aed"/>
+            </svg>
+
+            <span class="logo-text">VIZITOR</span>
+        </div>
+
+
+        <nav class="sidebar-menu">
+
+            <a href="dashboard.html" class="menu-item active">
+                <svg viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/>
+                </svg>
+
+                <span>Dashboard</span>
+            </a>
+
+
+            <a href="appointments.html" class="menu-item">
+                <svg viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+
+                <span>Appointments</span>
+            </a>
+
+
+            <a href="queue.html" class="menu-item">
+                <svg viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+
+                    <rect x="2" y="6" width="20" height="12" rx="2"/>
+                    <line x1="6" y1="12" x2="18" y2="12"/>
+                    <line x1="6" y1="8" x2="6" y2="16"/>
+                    <line x1="18" y1="8" x2="18" y2="16"/>
+                </svg>
+
+                <span>Queue / Token</span>
+            </a>
+
+
+            <a href="crowd.html" class="menu-item">
+                <svg viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+
+                <span>Crowd Status</span>
+            </a>
+
+
+            <a href="profile.html" class="menu-item">
+                <svg viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+
+                <span>Profile</span>
+            </a>
+
+
+            <a href="notifications.html" class="menu-item">
+                <svg viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+
+                <span>Notifications</span>
+            </a>
+
+        </nav>
+
+
+        <div class="sidebar-footer">
+
+            <a href="index.html" class="menu-item">
+
+                <svg viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+
+                <span>Logout</span>
+
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================================================
+         MAIN CONTENT
+    ========================================================== -->
+
+    <main class="main-content">
+
+
+        <!-- =====================================================
+             TOP HEADER
+        ====================================================== -->
+
+        <header class="top-header">
+
+    <div class="header-left">
+
+        <div class="search-bar">
+
+            <svg viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21"
+                      x2="16.65" y2="16.65"/>
+
+            </svg>
+
+            <input
+                type="text"
+                placeholder="Search services..."
+            >
+
+        </div>
+
+
+        <!-- Top Navigation Tabs -->
+        <div class="header-tabs">
+
+            <a href="dashboard.html"
+               class="header-tab active">
+                Overview
+            </a>
+
+            <a href="analytics.html"
+               class="header-tab">
+                Analytics
+            </a>
+
+            <a href="reports.html"
+               class="header-tab">
+                Reports
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- Header Right -->
+    <div class="header-right">
+
+        <!-- Help Centre -->
+        <button
+            class="icon-btn"
+            title="Help Centre"
+            onclick="window.location.href='help.html'"
+        >
+
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17"
+                      x2="12.01" y2="17"/>
+
+            </svg>
+
+        </button>
+
+
+        <!-- Notifications -->
+        <button
+            class="icon-btn"
+            title="View alerts"
+        >
+
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+
+            </svg>
+
+            <span class="notification-dot"></span>
+
+        </button>
+
+
+        <!-- Profile -->
+        <div class="profile-badge">
+
+            <div class="profile-avatar">
+                A
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+        <!-- =====================================================
+             DASHBOARD BODY
+        ====================================================== -->
+
+        <div class="dashboard-body">
+
+
+            <!-- =================================================
+                 WELCOME ROW
+            ================================================== -->
+
+            <div class="welcome-row">
+
+                <div class="welcome-text">
+
+                    <h2 id="welcomeUser">
+                        Welcome back, Alex.
+                    </h2>
+
+                    <p id="currentDateTime">
+                        August 17, 2026 • 12:00 PM
+                    </p>
+
+                </div>
+
+
+                <div class="welcome-actions">
+
+                    <button class="btn-report" id="btnExport">
+
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15"
+                                  x2="12" y2="3"/>
+
+                        </svg>
+
+                        Export Stats
+
+                    </button>
+
+
+                    <button class="btn-create" id="btnCreateAppt">
+
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+
+                            <line x1="12" y1="5"
+                                  x2="12" y2="19"/>
+
+                            <line x1="5" y1="12"
+                                  x2="19" y2="12"/>
+
+                        </svg>
+
+                        Book Appointment
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 SUMMARY CARDS
+            ================================================== -->
+
+            <div class="summary-grid">
+
+
+                <!-- Today's Appointments -->
+
+                <div class="summary-card">
+
+                    <div class="card-header-row">
+
+                        <span class="card-title">
+                            Today's Appointments
+                        </span>
+
+                        <div class="card-icon-container card-icon-purple">
+
+                            <svg viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round">
+
+                                <rect x="3" y="4"
+                                      width="18" height="18"
+                                      rx="2"/>
+
+                                <line x1="16" y1="2"
+                                      x2="16" y2="6"/>
+
+                                <line x1="8" y1="2"
+                                      x2="8" y2="6"/>
+
+                                <line x1="3" y1="10"
+                                      x2="21" y2="10"/>
+
+                            </svg>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card-value-row">
+
+                        <span
+                            class="card-value"
+                            id="todayAppointments">
+                            0
+                        </span>
+
+                        <span class="card-badge badge-success">
+
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2.5"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round">
+
+                                <polyline points="18 15 12 9 6 15"/>
+
+                            </svg>
+
+                            +12%
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Current Queue -->
+
+                <div class="summary-card">
+
+                    <div class="card-header-row">
+
+                        <span class="card-title">
+                            Current Queue
+                        </span>
+
+                        <div class="card-icon-container card-icon-amber">
+
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round">
+
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+
+                            </svg>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card-value-row">
+
+                        <span class="card-value" id="dashboardQueueCount">
+    --
+</span>
+
+                        <svg class="card-visual-wave"
+                             viewBox="0 0 60 20">
+
+                            <path
+                                d="M 0 10 C 15 2, 15 18, 30 10 C 45 2, 45 18, 60 10"
+                            />
+
+                        </svg>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Estimated Waiting Time -->
+
+                <div class="summary-card">
+
+                    <div class="card-header-row">
+
+                        <span class="card-title">
+                            Est. Waiting Time
+                        </span>
+
+                        <div class="card-icon-container card-icon-blue">
+
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round">
+
+                                <circle cx="12" cy="12" r="10"/>
+
+                                <polyline points="12 6 12 12 16 14"/>
+
+                            </svg>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card-value-row">
+
+                        <span class="card-value" id="dashboardWaitTime">
+    --
+</span>
+
+                        <span class="card-badge badge-neutral">
+                            p99 avg
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Crowd Level -->
+
+                <div class="summary-card">
+
+                    <div class="card-header-row">
+
+                        <span class="card-title">
+                            Crowd Level
+                        </span>
+
+                        <div class="card-icon-container card-icon-rose">
+
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round">
+
+                                <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+
+                            </svg>
+
+                        </div>
+
+                    </div>
+
+
+                    <div>
+
+                        <div class="card-value-row">
+
+                            <span
+    class="card-value"
+    id="dashboardCrowdLevel"
+    style="font-size: 1.5rem;">
+    --
+</span>
+
+                        </div>
+
+
+                        <div class="card-progress-container">
+
+                            <div
+                                class="card-progress-bar progress-amber"
+                                style="width: 55%;">
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 MIDDLE SECTION
+            ================================================== -->
+
+            <div class="mid-layout">
+
+
+                <!-- Crowd Statistics -->
+
+                <div class="card-panel">
+
+                    <div class="panel-header">
+
+                        <h3 class="panel-title">
+                            Crowd Statistics
+                        </h3>
+
+
+                        <div class="chart-legend">
+
+                            <span class="legend-item">
+                                <span class="legend-dot dot-purple"></span>
+                                Wait Times (mins)
+                            </span>
+
+                            <span class="legend-item">
+                                <span class="legend-dot dot-amber"></span>
+                                Queue Size
+                            </span>
+
+                        </div>
+
+
+                        <div class="chart-toggle">
+
+                            <button class="chart-toggle-btn active">
+                                7D
+                            </button>
+
+                            <button class="chart-toggle-btn">
+                                30D
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="chart-container">
+
+                        <svg viewBox="0 0 600 220"
+                             width="100%"
+                             height="100%">
+
+                            <line x1="40" y1="30"
+                                  x2="580" y2="30"
+                                  stroke="#f1f5f9"
+                                  stroke-width="1.5"/>
+
+                            <line x1="40" y1="75"
+                                  x2="580" y2="75"
+                                  stroke="#f1f5f9"
+                                  stroke-width="1.5"/>
+
+                            <line x1="40" y1="120"
+                                  x2="580" y2="120"
+                                  stroke="#f1f5f9"
+                                  stroke-width="1.5"/>
+
+                            <line x1="40" y1="165"
+                                  x2="580" y2="165"
+                                  stroke="#f1f5f9"
+                                  stroke-width="1.5"/>
+
+                            <line x1="40" y1="210"
+                                  x2="580" y2="210"
+                                  stroke="#e2e8f0"
+                                  stroke-width="1.5"/>
+
+
+                            <text x="15" y="34"
+                                  fill="#94a3b8"
+                                  font-size="10"
+                                  font-weight="600"
+                                  text-anchor="middle">
+                                100
+                            </text>
+
+                            <text x="15" y="79"
+                                  fill="#94a3b8"
+                                  font-size="10"
+                                  font-weight="600"
+                                  text-anchor="middle">
+                                75
+                            </text>
+
+                            <text x="15" y="124"
+                                  fill="#94a3b8"
+                                  font-size="10"
+                                  font-weight="600"
+                                  text-anchor="middle">
+                                50
+                            </text>
+
+                            <text x="15" y="169"
+                                  fill="#94a3b8"
+                                  font-size="10"
+                                  font-weight="600"
+                                  text-anchor="middle">
+                                25
+                            </text>
+
+                            <text x="15" y="214"
+                                  fill="#94a3b8"
+                                  font-size="10"
+                                  font-weight="600"
+                                  text-anchor="middle">
+                                0
+                            </text>
+
+
+                            <!-- Queue bars -->
+
+                            <rect x="75" y="165"
+                                  width="22"
+                                  height="45"
+                                  rx="3"
+                                  fill="#fef08a"/>
+
+                            <rect x="150" y="120"
+                                  width="22"
+                                  height="90"
+                                  rx="3"
+                                  fill="#fef08a"/>
+
+                            <rect x="225" y="180"
+                                  width="22"
+                                  height="30"
+                                  rx="3"
+                                  fill="#fef08a"/>
+
+                            <rect x="300" y="90"
+                                  width="22"
+                                  height="120"
+                                  rx="3"
+                                  fill="#fef08a"/>
+
+                            <rect x="375" y="60"
+                                  width="22"
+                                  height="150"
+                                  rx="3"
+                                  fill="#fef08a"/>
+
+                            <rect x="450" y="45"
+                                  width="22"
+                                  height="165"
+                                  rx="3"
+                                  fill="#fef08a"/>
+
+                            <rect x="525" y="135"
+                                  width="22"
+                                  height="75"
+                                  rx="3"
+                                  fill="#fef08a"/>
+
+
+                            <!-- Wait time graph -->
+
+                            <path
+                                d="M 86 170 C 120 160, 120 140, 161 130 C 200 120, 200 150, 236 155 C 270 160, 280 110, 311 95 C 340 80, 350 55, 386 50 C 420 45, 430 75, 461 80 C 490 85, 500 125, 536 128"
+                                fill="none"
+                                stroke="#7c3aed"
+                                stroke-width="4"
+                                stroke-linecap="round"
+                            />
+
+
+                            <circle cx="86" cy="170"
+                                    r="5"
+                                    fill="#7c3aed"
+                                    stroke="#ffffff"
+                                    stroke-width="2"/>
+
+                            <circle cx="161" cy="130"
+                                    r="5"
+                                    fill="#7c3aed"
+                                    stroke="#ffffff"
+                                    stroke-width="2"/>
+
+                            <circle cx="236" cy="155"
+                                    r="5"
+                                    fill="#7c3aed"
+                                    stroke="#ffffff"
+                                    stroke-width="2"/>
+
+                            <circle cx="311" cy="95"
+                                    r="5"
+                                    fill="#7c3aed"
+                                    stroke="#ffffff"
+                                    stroke-width="2"/>
+
+                            <circle cx="386" cy="50"
+                                    r="5"
+                                    fill="#7c3aed"
+                                    stroke="#ffffff"
+                                    stroke-width="2"/>
+
+                            <circle cx="461" cy="80"
+                                    r="5"
+                                    fill="#7c3aed"
+                                    stroke="#ffffff"
+                                    stroke-width="2"/>
+
+                            <circle cx="536" cy="128"
+                                    r="5"
+                                    fill="#7c3aed"
+                                    stroke="#ffffff"
+                                    stroke-width="2"/>
+
+
+                            <!-- Days -->
+
+                            <text x="86" y="235"
+                                  fill="#64748b"
+                                  font-size="10"
+                                  font-weight="600"
+                                  text-anchor="middle">
+                                Mon
+                            </text>
+
+                            <text x="161" y="235"
+                                  fill="#64748b"
+                                  font-size="10"
+                                  font-weight="600"
+                                  text-anchor="middle">
+                                Tue
+                            </text>
+
+                            <text x="236" y="235"
+                                  fill="#64748b"
+                                  font-size="10"
+                                  font-weight="600"
+                                  text-anchor="middle">
+                                Wed
+                            </text>
+
+                            <text x="311" y="235"
+                                  fill="#64748b"
+                                  font-size="10"
+                                  font-weight="600"
+                                  text-anchor="middle">
+                                Thu
+                            </text>
+
+                            <text x="386" y="235"
+                                  fill="#64748b"
+                                  font-size="10"
+                                  font-weight="600"
+                                  text-anchor="middle">
+                                Fri
+                            </text>
+
+                            <text x="461" y="235"
+                                  fill="#64748b"
+                                  font-size="10"
+                                  font-weight="600"
+                                  text-anchor="middle">
+                                Sat
+                            </text>
+
+                            <text x="536" y="235"
+                                  fill="#64748b"
+                                  font-size="10"
+                                  font-weight="600"
+                                  text-anchor="middle">
+                                Sun
+                            </text>
+
+                        </svg>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Service / Queue Status -->
+
+                <div class="card-panel">
+
+                    <div class="panel-header">
+
+                        <h3 class="panel-title">
+                            Service / Queue Status
+                        </h3>
+
+                    </div>
+
+
+                    <div class="status-list">
+
+
+                        <div class="status-item">
+
+                            <div class="status-item-header">
+
+                                <div class="status-title-row">
+
+                                    <span class="status-dot status-dot-active"></span>
+
+                                    <span class="status-title">
+                                        Currently Serving
+                                    </span>
+
+                                </div>
+
+                                <span class="status-badge">
+                                    Counter 1
+                                </span>
+
+                            </div>
+
+
+                            <div class="status-item-details">
+
+                                <span>Token Number</span>
+
+                                <strong style="color:#7c3aed;font-size:1.1rem;" id="svcCurrentServingToken">
+                                    --
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="status-item">
+
+                            <div class="status-item-header">
+
+                                <div class="status-title-row">
+
+                                    <span class="status-dot status-dot-warning"></span>
+
+                                    <span class="status-title">
+                                        Your Token
+                                    </span>
+
+                                </div>
+
+                                <span class="status-badge" id="svcYourTokenStatus">
+                                    No Token
+                                </span>
+
+                            </div>
+
+
+                            <div class="status-item-details">
+
+                                <span>Token Number</span>
+
+                                <strong style="color:#0f172a;font-size:1.1rem;" id="svcYourTokenNumber">
+                                    --
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="status-item">
+
+                            <div class="status-item-header">
+
+                                <div class="status-title-row">
+
+                                    <span class="status-dot status-dot-neutral"></span>
+
+                                    <span class="status-title">
+                                        People Ahead
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="status-item-details">
+
+                                <span>Waiting in front</span>
+
+                                <strong style="color:#ef4444;font-size:1.1rem;" id="svcPeopleAhead">
+                                    0 people
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <a href="queue.html" class="status-link">
+                        View Full Queue Details
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 BOTTOM SECTION
+            ================================================== -->
+
+            <div class="bottom-layout">
+
+
+                <!-- =================================================
+                     UPCOMING APPOINTMENT
+                ================================================== -->
+
+                <div class="card-panel">
+
+                    <div class="panel-header">
+
+                        <h3 class="panel-title">
+                            Upcoming Appointment
+                        </h3>
+
+                    </div>
+
+
+                    <div class="recent-projects-grid">
+
+                        <div class="project-card">
+
+                            <div class="project-card-header">
+
+                                <h3 id="upcomingAppointmentPurpose">
+                                    No upcoming appointment
+                                </h3>
+
+
+                                <span
+                                    class="card-badge badge-success"
+                                    id="upcomingAppointmentStatus">
+                                    --
+                                </span>
+
+                            </div>
+
+
+                            <p id="upcomingAppointmentInfo">
+                                Your upcoming appointment will appear here.
+                            </p>
+
+
+                            <div class="project-card-footer">
+
+                                <span id="upcomingAppointmentDate">
+                                    --
+                                </span>
+
+                                <span id="upcomingAppointmentTime">
+                                    --
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     RECENT SYSTEM UPDATES
+                ================================================== -->
+
+                <div class="card-panel">
+
+                    <div class="panel-header">
+
+                        <h3 class="panel-title">
+                            Recent System Updates
+                        </h3>
+
+                        <a href="notifications.html"
+                           class="table-link">
+                            View All
+                        </a>
+
+                    </div>
+
+
+                    <div class="table-container">
+
+                        <table class="dashboard-table">
+
+                            <thead>
+
+                                <tr>
+                                    <th>Event Alert</th>
+                                    <th>Status</th>
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+
+                                <tr>
+
+                                    <td>
+
+                                        <div class="table-icon-row">
+
+                                            <svg fill="none"
+                                                 stroke="currentColor"
+                                                 stroke-width="2"
+                                                 viewBox="0 0 24 24">
+
+                                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/>
+
+                                            </svg>
+
+                                            <span>
+                                                Counter 4 is now active
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td>
+                                        <span class="card-badge badge-success">
+                                            Live
+                                        </span>
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <td>
+
+                                        <div class="table-icon-row">
+
+                                            <svg fill="none"
+                                                 stroke="currentColor"
+                                                 stroke-width="2"
+                                                 viewBox="0 0 24 24">
+
+                                                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+
+                                            </svg>
+
+                                            <span>
+                                                Peak hour delay expected
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td>
+                                        <span class="card-badge badge-warning">
+                                            20m delay
+                                        </span>
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <td>
+
+                                        <div class="table-icon-row">
+
+                                            <svg fill="none"
+                                                 stroke="currentColor"
+                                                 stroke-width="2"
+                                                 viewBox="0 0 24 24">
+
+                                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+
+                                            </svg>
+
+                                            <span>
+                                                Weekly report compiled
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td>
+                                        <span class="card-badge badge-neutral">
+                                            PDF Report
+                                        </span>
+                                    </td>
+
+                                </tr>
+
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     QUICK ACTIONS
+                ================================================== -->
+
+                <div class="card-panel">
+
+                    <div class="panel-header">
+
+                        <h3 class="panel-title">
+                            Quick Actions
+                        </h3>
+
+                    </div>
+
+
+                    <div
+                        class="quick-actions-grid"
+                        style="margin-bottom:1.5rem;">
+
+
+                        <a
+                            href="appointments.html"
+                            class="quick-action-btn">
+
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round">
+
+                                <rect x="3" y="4"
+                                      width="18"
+                                      height="18"
+                                      rx="2"
+                                      ry="2"/>
+
+                                <line x1="16" y1="2"
+                                      x2="16" y2="6"/>
+
+                                <line x1="8" y1="2"
+                                      x2="8" y2="6"/>
+
+                                <line x1="3" y1="10"
+                                      x2="21" y2="10"/>
+
+                            </svg>
+
+                            Book Appt
+
+                        </a>
+
+
+                        <a
+                            href="queue.html"
+                            class="quick-action-btn">
+
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round">
+
+                                <rect x="2" y="6"
+                                      width="20"
+                                      height="12"
+                                      rx="2"/>
+
+                                <line x1="6" y1="12"
+                                      x2="18" y2="12"/>
+
+                            </svg>
+
+                            View Queue
+
+                        </a>
+
+
+                        <a
+                            href="crowd.html"
+                            class="quick-action-btn">
+
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round">
+
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+
+                            </svg>
+
+                            Crowd Stats
+
+                        </a>
+
+
+                        <a
+                            href="profile.html"
+                            class="quick-action-btn">
+
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round">
+
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+
+                                <circle cx="12" cy="7" r="4"/>
+
+                            </svg>
+
+                            Profile
+
+                        </a>
+
+
+                    </div>
+
+
+                    <!-- Recent Activity -->
+
+                    <div class="activity-list" id="recentActivityList">
+
+                        <div class="activity-item neutral">
+                            Loading recent activity...
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- =============================================================
+     JAVASCRIPT
+============================================================== -->
+
+<script src="js/api.js"></script>
+<script src="js/shared.js"></script>
+<script src="js/dashboard.js"></script>
+
+</body>
+</html>
