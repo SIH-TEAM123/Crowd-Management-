@@ -1,5 +1,4 @@
-import smtplib
-from email.message import EmailMessage
+import requests
 
 from app.config import settings
 
@@ -8,15 +7,26 @@ def send_otp_email(
     recipient_email: str,
     otp: str
 ):
+    url = "https://api.brevo.com/v3/smtp/email"
 
-    message = EmailMessage()
+    headers = {
+        "accept": "application/json",
+        "api-key": settings.BREVO_API_KEY,
+        "content-type": "application/json"
+    }
 
-    message["Subject"] = "Queue Management - Email Verification OTP"
-    message["From"] = settings.SMTP_FROM
-    message["To"] = recipient_email
-
-    message.set_content(
-        f"""
+    payload = {
+        "sender": {
+            "name": settings.BREVO_FROM_NAME,
+            "email": settings.BREVO_FROM_EMAIL
+        },
+        "to": [
+            {
+                "email": recipient_email
+            }
+        ],
+        "subject": "Queue Management - Email Verification OTP",
+        "textContent": f"""
 Hello,
 
 Your OTP for email verification is:
@@ -30,21 +40,15 @@ If you did not create this account, please ignore this email.
 Regards,
 Queue Management Team
 """
+    }
+
+    response = requests.post(
+        url,
+        headers=headers,
+        json=payload,
+        timeout=30
     )
 
-    with smtplib.SMTP(
-        settings.SMTP_HOST,
-        settings.SMTP_PORT,
-        timeout=30
-    ) as server:
+    response.raise_for_status()
 
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
-
-        server.login(
-            settings.SMTP_USERNAME,
-            settings.SMTP_PASSWORD
-        )
-
-        server.send_message(message)
+    return response.json()
