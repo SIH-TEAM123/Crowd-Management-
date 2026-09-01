@@ -2417,6 +2417,40 @@ body {
     filter: invert(0.1);
 }
 
+/* Date & Time Validation Feedback Styling */
+.field-error {
+    display: block;
+    color: #dc2626;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-top: 4px;
+    min-height: 1.1rem;
+    line-height: 1.2;
+}
+
+.input-group input.invalid {
+    border-color: #ef4444 !important;
+    background-color: #fff5f5;
+}
+
+.input-group input.invalid:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}
+
+.form-error-banner {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    font-size: 0.825rem;
+    font-weight: 500;
+    padding: 0.65rem 0.85rem;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 @media (max-width: 480px) {
     .modal-card {
         padding: 1.25rem;
@@ -2438,6 +2472,7 @@ body {
         justify-content: center;
     }
 }
+
 
 
 

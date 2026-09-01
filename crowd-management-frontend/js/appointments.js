@@ -105,6 +105,60 @@ function cancelAppointment(id, service, date, token) {
 // ─────────────────────────────────────────────
 // Modal & Date/Time Picker Logic
 // ─────────────────────────────────────────────
+function validateDateTimeFields() {
+    const dateInput = document.getElementById("apptDate");
+    const timeInput = document.getElementById("apptTime");
+    const dateError = document.getElementById("dateError");
+    const timeError = document.getElementById("timeError");
+
+    let isValid = true;
+
+    if (!dateInput || !timeInput) return false;
+
+    // Reset single field errors
+    if (dateError) dateError.textContent = "";
+    if (timeError) timeError.textContent = "";
+    dateInput.classList.remove("invalid");
+    timeInput.classList.remove("invalid");
+
+    const dateVal = dateInput.value;
+    const timeVal = timeInput.value;
+
+    const now = new Date();
+    const todayYyyy = now.getFullYear();
+    const todayMm = String(now.getMonth() + 1).padStart(2, '0');
+    const todayDd = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${todayYyyy}-${todayMm}-${todayDd}`;
+
+    if (!dateVal) {
+        if (dateError) dateError.textContent = "Please select a valid date.";
+        dateInput.classList.add("invalid");
+        isValid = false;
+    } else if (dateVal < todayStr) {
+        if (dateError) dateError.textContent = "Past dates cannot be selected.";
+        dateInput.classList.add("invalid");
+        isValid = false;
+    }
+
+    if (!timeVal) {
+        if (timeError) timeError.textContent = "Please select a valid time.";
+        timeInput.classList.add("invalid");
+        isValid = false;
+    } else if (dateVal === todayStr && timeVal) {
+        const [selHours, selMins] = timeVal.split(':').map(Number);
+        const currentHours = now.getHours();
+        const currentMins = now.getMinutes();
+
+        if (selHours < currentHours || (selHours === currentHours && selMins < currentMins)) {
+            if (timeError) timeError.textContent = "Time cannot be in the past for today.";
+            timeInput.classList.add("invalid");
+            isValid = false;
+        }
+    }
+
+    return isValid;
+}
+
 function openBookingModal() {
     const backdrop = document.getElementById("bookModalBackdrop");
     const dateInput = document.getElementById("apptDate");
@@ -120,6 +174,8 @@ function openBookingModal() {
     if (errorBanner) { errorBanner.style.display = "none"; errorBanner.textContent = ""; }
     if (dateError) dateError.textContent = "";
     if (timeError) timeError.textContent = "";
+    dateInput.classList.remove("invalid");
+    timeInput.classList.remove("invalid");
 
     // Set minimum date to today (YYYY-MM-DD)
     const today = new Date();
@@ -128,7 +184,17 @@ function openBookingModal() {
     const dd = String(today.getDate()).padStart(2, '0');
     const todayStr = `${yyyy}-${mm}-${dd}`;
 
+    // Set maximum date limit (90 days in advance)
+    const maxDate = new Date();
+    maxDate.setDate(today.getDate() + 90);
+    const maxYyyy = maxDate.getFullYear();
+    const maxMm = String(maxDate.getMonth() + 1).padStart(2, '0');
+    const maxDd = String(maxDate.getDate()).padStart(2, '0');
+    const maxStr = `${maxYyyy}-${maxMm}-${maxDd}`;
+
     dateInput.min = todayStr;
+    dateInput.max = maxStr;
+
     if (!dateInput.value || dateInput.value < todayStr) {
         dateInput.value = todayStr;
     }
@@ -161,18 +227,12 @@ async function handleBookingSubmit(e) {
     const dateInput = document.getElementById("apptDate");
     const timeInput = document.getElementById("apptTime");
     const errorBanner = document.getElementById("modalErrorBanner");
-    const dateError = document.getElementById("dateError");
-    const timeError = document.getElementById("timeError");
     const submitBtn = document.getElementById("btnSubmitBooking");
 
-    // Clear previous errors
+    // Clear banner
     if (errorBanner) { errorBanner.style.display = "none"; errorBanner.textContent = ""; }
-    if (dateError) dateError.textContent = "";
-    if (timeError) timeError.textContent = "";
 
     const serviceVal = serviceInput ? serviceInput.value.trim() : "General Consultation";
-    const dateVal = dateInput ? dateInput.value : "";
-    const timeVal = timeInput ? timeInput.value : "";
 
     if (!serviceVal) {
         if (errorBanner) {
@@ -182,38 +242,13 @@ async function handleBookingSubmit(e) {
         return;
     }
 
-    if (!dateVal) {
-        if (dateError) dateError.textContent = "Please select a valid date.";
+    // Run Date + Time validation
+    if (!validateDateTimeFields()) {
         return;
     }
 
-    if (!timeVal) {
-        if (timeError) timeError.textContent = "Please select a valid time.";
-        return;
-    }
-
-    // Validation: prevent selecting past dates or past times on today
-    const now = new Date();
-    const todayYyyy = now.getFullYear();
-    const todayMm = String(now.getMonth() + 1).padStart(2, '0');
-    const todayDd = String(now.getDate()).padStart(2, '0');
-    const todayStr = `${todayYyyy}-${todayMm}-${todayDd}`;
-
-    if (dateVal < todayStr) {
-        if (dateError) dateError.textContent = "Past dates cannot be selected.";
-        return;
-    }
-
-    if (dateVal === todayStr) {
-        const [selHours, selMins] = timeVal.split(':').map(Number);
-        const currentHours = now.getHours();
-        const currentMins = now.getMinutes();
-
-        if (selHours < currentHours || (selHours === currentHours && selMins < currentMins)) {
-            if (timeError) timeError.textContent = "Time cannot be in the past for today.";
-            return;
-        }
-    }
+    const dateVal = dateInput ? dateInput.value : "";
+    const timeVal = timeInput ? timeInput.value : "";
 
     // Disable submit button during booking
     let origText = "Book Appointment";
@@ -322,6 +357,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const bookingForm = document.getElementById("bookingForm");
     if (bookingForm) {
         bookingForm.addEventListener("submit", handleBookingSubmit);
+    }
+
+    // Attach real-time validation on Date + Time pickers
+    const apptDateInput = document.getElementById("apptDate");
+    const apptTimeInput = document.getElementById("apptTime");
+    if (apptDateInput) {
+        apptDateInput.addEventListener("change", validateDateTimeFields);
+        apptDateInput.addEventListener("input", validateDateTimeFields);
+    }
+    if (apptTimeInput) {
+        apptTimeInput.addEventListener("change", validateDateTimeFields);
+        apptTimeInput.addEventListener("input", validateDateTimeFields);
     }
 
     const backdrop = document.getElementById("bookModalBackdrop");
