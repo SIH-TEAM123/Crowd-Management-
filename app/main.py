@@ -7,9 +7,11 @@ from app.database import engine, Base
 from app.models.user import User
 from app.models.appointment import Appointment
 from app.models.token import Token
+from app.models.hospital import Hospital
 from app.routes.auth import router as auth_router
 from app.routes.person4 import router as person4_router
 from app.routes.appointments import router as appointments_router
+from app.routes.hospitals import router as hospitals_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -44,6 +46,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(person4_router)
 app.include_router(appointments_router)
+app.include_router(hospitals_router)
 
 
 @app.get("/")
