@@ -12,6 +12,7 @@ from app.routes.auth import router as auth_router
 from app.routes.person4 import router as person4_router
 from app.routes.appointments import router as appointments_router
 from app.routes.hospitals import router as hospitals_router
+from app.seed_hospitals import seed_hospitals
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,6 +22,8 @@ async def lifespan(app: FastAPI):
         await connection.run_sync(
             Base.metadata.create_all
         )
+
+    await seed_hospitals()
 
     yield
 
