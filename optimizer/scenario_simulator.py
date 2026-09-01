@@ -139,6 +139,7 @@ def simulate_scenario(
 
     # 2. Capacity & Utilization Calculation
     effective_service_capacity = effective_counters * service_rate * capacity_multiplier
+    base_service_capacity = active_counters * service_rate
 
     if effective_service_capacity == 0:
         predicted_utilization = 1.0
@@ -150,13 +151,18 @@ def simulate_scenario(
         predicted_queue = baseline_queue
         predicted_wait = baseline_wait
     else:
-        net_flow = arrival_rate - effective_service_capacity
-        predicted_queue = max(0, int(round(baseline_queue + net_flow * horizon)))
-
-        if effective_service_capacity == 0:
-            predicted_wait = baseline_wait
+        # Calculate extra capacity flow added by intervention
+        capacity_delta = effective_service_capacity - base_service_capacity
+        if capacity_delta > 0:
+            additional_serviced = capacity_delta * horizon
+            predicted_queue = max(0, int(round(baseline_queue - additional_serviced)))
+            if baseline_queue > 0:
+                predicted_wait = max(0.0, round(baseline_wait * (predicted_queue / float(baseline_queue)), 2))
+            else:
+                predicted_wait = 0.0
         else:
-            predicted_wait = max(0.0, round(predicted_queue / effective_service_capacity, 2))
+            predicted_queue = baseline_queue
+            predicted_wait = baseline_wait
 
     return ScenarioSimulationResult(
         action=action,

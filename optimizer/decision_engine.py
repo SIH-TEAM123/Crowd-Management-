@@ -561,22 +561,8 @@ def make_decision(
         selected_action,
     )
 
-    # Derive congestion from the actual selected simulation.
-    # This keeps the explanation consistent with the final
-    # simulated impact.
-    utilization = selected_sim.predicted_utilization
-
-    if utilization <= 0.60:
-        predicted_congestion = CongestionLevel.LOW
-
-    elif utilization <= 0.80:
-        predicted_congestion = CongestionLevel.MEDIUM
-
-    elif utilization <= 0.95:
-        predicted_congestion = CongestionLevel.HIGH
-
-    else:
-        predicted_congestion = CongestionLevel.CRITICAL
+    # Use official ML predicted congestion level from Person 3 model
+    ml_congestion = input_data.prediction.predicted_congestion_level
 
     # --------------------------------------------------------
     # Generate explanation for selected action
@@ -584,23 +570,28 @@ def make_decision(
 
     if selected_action == ActionType.NO_ACTION:
 
-        reason = (
-            f"Under projected "
-            f"{predicted_congestion.value} queue congestion "
-            f"(queue: {baseline_queue}, "
-            f"wait: {baseline_wait:.1f}m, "
-            f"dynamic ETA: "
-            f"{eta_res.estimated_wait_minutes:.1f}m), "
-            f"current counter capacity is adequate. "
-            f"NO_ACTION is recommended as operational state "
-            f"remains within normal operating limits."
-        )
+        if ml_congestion in [CongestionLevel.HIGH, CongestionLevel.CRITICAL]:
+            reason = (
+                f"ML forecast indicates {ml_congestion.value} queue congestion "
+                f"(queue: {baseline_queue}, wait: {baseline_wait:.1f}m, "
+                f"dynamic ETA: {eta_res.estimated_wait_minutes:.1f}m). "
+                f"Short-term interventions yield minimal queue reduction relative to "
+                f"deployment cost; NO_ACTION baseline is maintained."
+            )
+        else:
+            reason = (
+                f"Under projected {ml_congestion.value} queue congestion "
+                f"(queue: {baseline_queue}, wait: {baseline_wait:.1f}m, "
+                f"dynamic ETA: {eta_res.estimated_wait_minutes:.1f}m), "
+                f"current counter capacity is adequate. NO_ACTION is recommended "
+                f"as operational state remains within normal operating limits."
+            )
 
     elif selected_action == ActionType.OPEN_COUNTER:
 
         reason = (
             f"Projected "
-            f"{predicted_congestion.value} congestion "
+            f"{ml_congestion.value} congestion "
             f"(queue: {baseline_queue}, "
             f"wait: {baseline_wait:.1f}m, "
             f"dynamic ETA: "
@@ -623,7 +614,7 @@ def make_decision(
 
         reason = (
             f"Under projected "
-            f"{predicted_congestion.value} congestion "
+            f"{ml_congestion.value} congestion "
             f"(queue: {baseline_queue}, "
             f"wait: {baseline_wait:.1f}m, "
             f"dynamic ETA: "
@@ -653,7 +644,7 @@ def make_decision(
             f"time-critical, "
             f"{input_data.priority.vulnerable_users} "
             f"vulnerable) present under projected "
-            f"{predicted_congestion.value} congestion, "
+            f"{ml_congestion.value} congestion, "
             f"PRIORITY_ADJUSTMENT is recommended to protect "
             f"priority queues without additional counter costs."
         )
