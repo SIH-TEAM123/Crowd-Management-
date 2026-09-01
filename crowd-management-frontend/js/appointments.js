@@ -103,33 +103,149 @@ function cancelAppointment(id, service, date, token) {
 }
 
 // ─────────────────────────────────────────────
-// Book New Appointment
+// Modal & Date/Time Picker Logic
 // ─────────────────────────────────────────────
-// Book New Appointment / Token via FastAPI backend
-async function bookNewAppointment() {
-    const service = prompt("Enter service name (e.g. General Consultation, Health Screening):", "General Consultation");
-    if (!service || service.trim() === "") return;
+function openBookingModal() {
+    const backdrop = document.getElementById("bookModalBackdrop");
+    const dateInput = document.getElementById("apptDate");
+    const timeInput = document.getElementById("apptTime");
+    const serviceInput = document.getElementById("apptService");
+    const errorBanner = document.getElementById("modalErrorBanner");
+    const dateError = document.getElementById("dateError");
+    const timeError = document.getElementById("timeError");
 
-    const bookBtn = document.getElementById("btnBookNew");
-    let orig = "";
-    if (bookBtn) {
-        orig = bookBtn.textContent;
-        bookBtn.disabled = true;
-        bookBtn.textContent = "Booking Token...";
+    if (!backdrop || !dateInput || !timeInput) return;
+
+    // Reset errors
+    if (errorBanner) { errorBanner.style.display = "none"; errorBanner.textContent = ""; }
+    if (dateError) dateError.textContent = "";
+    if (timeError) timeError.textContent = "";
+
+    // Set minimum date to today (YYYY-MM-DD)
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    dateInput.min = todayStr;
+    if (!dateInput.value || dateInput.value < todayStr) {
+        dateInput.value = todayStr;
+    }
+
+    // Set default time to current time if empty
+    if (!timeInput.value) {
+        const hh = String(today.getHours()).padStart(2, '0');
+        const mins = String(today.getMinutes()).padStart(2, '0');
+        timeInput.value = `${hh}:${mins}`;
+    }
+
+    if (serviceInput && !serviceInput.value) {
+        serviceInput.value = "General Consultation";
+    }
+
+    backdrop.style.display = "flex";
+}
+
+function closeBookingModal() {
+    const backdrop = document.getElementById("bookModalBackdrop");
+    if (backdrop) {
+        backdrop.style.display = "none";
+    }
+}
+
+async function handleBookingSubmit(e) {
+    e.preventDefault();
+
+    const serviceInput = document.getElementById("apptService");
+    const dateInput = document.getElementById("apptDate");
+    const timeInput = document.getElementById("apptTime");
+    const errorBanner = document.getElementById("modalErrorBanner");
+    const dateError = document.getElementById("dateError");
+    const timeError = document.getElementById("timeError");
+    const submitBtn = document.getElementById("btnSubmitBooking");
+
+    // Clear previous errors
+    if (errorBanner) { errorBanner.style.display = "none"; errorBanner.textContent = ""; }
+    if (dateError) dateError.textContent = "";
+    if (timeError) timeError.textContent = "";
+
+    const serviceVal = serviceInput ? serviceInput.value.trim() : "General Consultation";
+    const dateVal = dateInput ? dateInput.value : "";
+    const timeVal = timeInput ? timeInput.value : "";
+
+    if (!serviceVal) {
+        if (errorBanner) {
+            errorBanner.textContent = "Please enter a service name.";
+            errorBanner.style.display = "flex";
+        }
+        return;
+    }
+
+    if (!dateVal) {
+        if (dateError) dateError.textContent = "Please select a valid date.";
+        return;
+    }
+
+    if (!timeVal) {
+        if (timeError) timeError.textContent = "Please select a valid time.";
+        return;
+    }
+
+    // Validation: prevent selecting past dates or past times on today
+    const now = new Date();
+    const todayYyyy = now.getFullYear();
+    const todayMm = String(now.getMonth() + 1).padStart(2, '0');
+    const todayDd = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${todayYyyy}-${todayMm}-${todayDd}`;
+
+    if (dateVal < todayStr) {
+        if (dateError) dateError.textContent = "Past dates cannot be selected.";
+        return;
+    }
+
+    if (dateVal === todayStr) {
+        const [selHours, selMins] = timeVal.split(':').map(Number);
+        const currentHours = now.getHours();
+        const currentMins = now.getMinutes();
+
+        if (selHours < currentHours || (selHours === currentHours && selMins < currentMins)) {
+            if (timeError) timeError.textContent = "Time cannot be in the past for today.";
+            return;
+        }
+    }
+
+    // Disable submit button during booking
+    let origText = "Book Appointment";
+    if (submitBtn) {
+        origText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Booking...";
     }
 
     const res = await createToken("NORMAL");
-    if (bookBtn) {
-        bookBtn.disabled = false;
-        bookBtn.textContent = orig;
+
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = origText;
     }
 
     if (res.success && res.data) {
         const tokenData = res.data;
         const tokenNum = tokenData.token_number || "A-104";
         const counter = "Counter 1";
-        const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+        // Format Date: YYYY-MM-DD -> MMM DD, YYYY
+        const [y, m, d] = dateVal.split('-').map(Number);
+        const selDateObj = new Date(y, m - 1, d);
+        const formattedDate = selDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        // Format Time: HH:mm -> hh:mm AM/PM
+        const [h, min] = timeVal.split(':').map(Number);
+        const period = h >= 12 ? 'PM' : 'AM';
+        const displayH = h % 12 || 12;
+        const formattedTime = `${String(displayH).padStart(2, '0')}:${String(min).padStart(2, '0')} ${period}`;
+
         const newId = Date.now();
 
         const emptyState = document.querySelector("#upcomingGrid .empty-state");
@@ -142,17 +258,17 @@ async function bookNewAppointment() {
             card.setAttribute("data-id", newId);
             card.innerHTML = `
                 <div class="appt-card-header">
-                    <span class="appt-service-name">${service.trim()}</span>
+                    <span class="appt-service-name">${serviceVal}</span>
                     <span class="card-badge badge-success">Active</span>
                 </div>
                 <div class="appt-meta-grid">
                     <div class="appt-meta-item">
                         <span class="appt-meta-label">Date</span>
-                        <span class="appt-meta-value">${date}</span>
+                        <span class="appt-meta-value">${formattedDate}</span>
                     </div>
                     <div class="appt-meta-item">
                         <span class="appt-meta-label">Time</span>
-                        <span class="appt-meta-value">${time}</span>
+                        <span class="appt-meta-value">${formattedTime}</span>
                     </div>
                     <div class="appt-meta-item">
                         <span class="appt-meta-label">Counter</span>
@@ -165,15 +281,22 @@ async function bookNewAppointment() {
                 </div>
                 <div class="appt-card-actions">
                     <button class="btn-action-ghost" onclick="viewDetails(${newId})">View Details</button>
-                    <button class="btn-action-cancel" onclick="cancelAppointment(${newId}, '${service}', '${date}', '${tokenNum}')">Cancel</button>
+                    <button class="btn-action-cancel" onclick="cancelAppointment(${newId}, '${serviceVal}', '${formattedDate}', '${tokenNum}')">Cancel</button>
                 </div>
             `;
             grid.prepend(card);
             refreshCounts();
         }
-        alert(`Token Booked Successfully!\n\nToken Number: ${tokenNum}\nQueue Position: #${tokenData.queue_position}\nDate: ${date}`);
+
+        closeBookingModal();
+        alert(`Token Booked Successfully!\n\nToken Number: ${tokenNum}\nQueue Position: #${tokenData.queue_position}\nDate: ${formattedDate}\nTime: ${formattedTime}`);
     } else {
-        alert(res.message || "Unable to book token. Check backend service.");
+        if (errorBanner) {
+            errorBanner.textContent = res.message || "Unable to book token. Check backend service.";
+            errorBanner.style.display = "flex";
+        } else {
+            alert(res.message || "Unable to book token. Check backend service.");
+        }
     }
 }
 
@@ -183,8 +306,38 @@ async function bookNewAppointment() {
 document.addEventListener("DOMContentLoaded", () => {
     const bookBtn = document.getElementById("btnBookNew");
     if (bookBtn) {
-        bookBtn.addEventListener("click", bookNewAppointment);
+        bookBtn.addEventListener("click", openBookingModal);
     }
+
+    const closeBtn = document.getElementById("btnCloseModal");
+    if (closeBtn) {
+        closeBtn.addEventListener("click", closeBookingModal);
+    }
+
+    const cancelBtn = document.getElementById("btnCancelModal");
+    if (cancelBtn) {
+        cancelBtn.addEventListener("click", closeBookingModal);
+    }
+
+    const bookingForm = document.getElementById("bookingForm");
+    if (bookingForm) {
+        bookingForm.addEventListener("submit", handleBookingSubmit);
+    }
+
+    const backdrop = document.getElementById("bookModalBackdrop");
+    if (backdrop) {
+        backdrop.addEventListener("click", (e) => {
+            if (e.target === backdrop) {
+                closeBookingModal();
+            }
+        });
+    }
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            closeBookingModal();
+        }
+    });
 
     const profileBadge = document.querySelector(".profile-badge");
     if (profileBadge) {
@@ -212,5 +365,6 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshCounts();
     console.log("appointments.js loaded. Real backend token booking active.");
 });
+
 
 

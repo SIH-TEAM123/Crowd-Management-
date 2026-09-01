@@ -308,7 +308,44 @@
         </main>
     </div><!-- end dashboard-layout -->
 
+    <!-- ====== Book Appointment Modal ====== -->
+    <div class="modal-backdrop" id="bookModalBackdrop" style="display: none;">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <div class="modal-header">
+                <h3 id="modalTitle">Book New Appointment</h3>
+                <button type="button" class="modal-close-btn" id="btnCloseModal" aria-label="Close modal">&times;</button>
+            </div>
+            <form id="bookingForm" class="modal-body">
+                <div class="form-error-banner" id="modalErrorBanner" style="display: none;"></div>
+
+                <div class="input-group">
+                    <label for="apptService">Service Name</label>
+                    <input type="text" id="apptService" placeholder="e.g. General Consultation" value="General Consultation" required>
+                </div>
+                
+                <div class="form-row" style="margin-top: 1rem;">
+                    <div class="input-group">
+                        <label for="apptDate">Select Date</label>
+                        <input type="date" id="apptDate" required>
+                        <span class="field-error" id="dateError"></span>
+                    </div>
+                    <div class="input-group">
+                        <label for="apptTime">Select Time</label>
+                        <input type="time" id="apptTime" required>
+                        <span class="field-error" id="timeError"></span>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="margin-top: 1.25rem;">
+                    <button type="button" class="btn-action-ghost" id="btnCancelModal">Cancel</button>
+                    <button type="submit" class="btn-primary" id="btnSubmitBooking" style="margin-top:0;">Book Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="js/api.js"></script>
     <script src="js/appointments.js"></script>
 </body>
 </html>
+
