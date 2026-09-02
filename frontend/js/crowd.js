@@ -12,7 +12,7 @@ const counters = [
 
 
 // ============================================================
-// GLOBAL SIMULATION STATE
+// SIMULATION STATE
 // ============================================================
 
 window.simulationRunning = false;
@@ -23,11 +23,8 @@ window.simulationRunning = false;
 // ============================================================
 
 function levelClass(level) {
-
     if (level === "High") return "high";
-
     if (level === "Moderate") return "moderate";
-
     return "low";
 }
 
@@ -39,7 +36,6 @@ function levelClass(level) {
 function getRecommendation(level, waitMinutes) {
 
     if (level === "No Crowd") {
-
         return "No crowd right now — walk-ins can be served immediately.";
     }
 
@@ -78,10 +74,7 @@ function renderCrowdStatus(queueStatus) {
         document.getElementById("recommendationText");
 
 
-    // People currently present
-
     if (peopleEl) {
-
         peopleEl.textContent =
             String(
                 queueStatus.people_currently_present ?? 0
@@ -89,10 +82,7 @@ function renderCrowdStatus(queueStatus) {
     }
 
 
-    // Queue size
-
     if (queueEl) {
-
         queueEl.textContent =
             String(
                 queueStatus.queue_size ?? 0
@@ -100,20 +90,14 @@ function renderCrowdStatus(queueStatus) {
     }
 
 
-    // Waiting time
-
     if (waitEl) {
-
         waitEl.innerHTML =
             `${queueStatus.estimated_wait_minutes ?? 0}` +
             `<span class="wait-unit"> min</span>`;
     }
 
 
-    // Main crowd level
-
     if (levelText) {
-
         levelText.textContent =
             level;
 
@@ -121,8 +105,6 @@ function renderCrowdStatus(queueStatus) {
             `crowd-level-badge ${lvl}`;
     }
 
-
-    // Badge
 
     if (levelBadge) {
 
@@ -140,8 +122,6 @@ function renderCrowdStatus(queueStatus) {
             );
     }
 
-
-    // Crowd indicator dots
 
     const dots = {
 
@@ -172,7 +152,6 @@ function renderCrowdStatus(queueStatus) {
     Object.values(dots).forEach(dot => {
 
         if (dot) {
-
             dot.classList.remove("lit");
         }
     });
@@ -181,29 +160,20 @@ function renderCrowdStatus(queueStatus) {
     Object.values(labels).forEach(label => {
 
         if (label) {
-
-            label.classList.remove(
-                "active-label"
-            );
+            label.classList.remove("active-label");
         }
     });
 
 
     if (dots[lvl]) {
-
         dots[lvl].classList.add("lit");
     }
 
 
     if (labels[lvl]) {
-
-        labels[lvl].classList.add(
-            "active-label"
-        );
+        labels[lvl].classList.add("active-label");
     }
 
-
-    // Recommendation
 
     if (recText) {
 
@@ -307,30 +277,18 @@ function renderTrendBars(queueStatus) {
 
 
             return {
-
-                time:
-                    h.label,
-
+                time: h.label,
                 count,
-
                 level,
-
-                current:
-                    isNow
+                current: isNow
             };
         });
-
-
-    const counts =
-        trend.map(
-            d => d.count
-        );
 
 
     const maxCount =
         Math.max(
             1,
-            ...counts
+            ...trend.map(d => d.count)
         );
 
 
@@ -359,12 +317,6 @@ function renderTrendBars(queueStatus) {
             );
 
 
-        const extraClass =
-            d.current
-                ? " current"
-                : "";
-
-
         wrap.innerHTML =
 
             '<span class="trend-bar-val">' +
@@ -373,7 +325,7 @@ function renderTrendBars(queueStatus) {
 
             '<div class="trend-bar ' +
             d.level +
-            extraClass +
+            (d.current ? " current" : "") +
             '" style="height:' +
             heightPct +
             '%;"></div>' +
@@ -416,9 +368,6 @@ function renderCounters(queueStatus) {
         );
 
 
-    // Backend can return active_counters.
-    // Otherwise use all 4 frontend counters.
-
     const activeCounters =
         Math.max(
             1,
@@ -455,10 +404,9 @@ function renderCounters(queueStatus) {
                 active
                     ? base +
                       (
-                        index <
-                        remainder
-                            ? 1
-                            : 0
+                          index < remainder
+                              ? 1
+                              : 0
                       )
                     : 0;
 
@@ -468,34 +416,23 @@ function renderCounters(queueStatus) {
 
             if (!active) {
 
-                status =
-                    "Closed";
+                status = "Closed";
 
-            } else if (
-                assigned === 0
-            ) {
+            } else if (assigned === 0) {
 
-                status =
-                    "Available";
+                status = "Available";
 
-            } else if (
-                assigned >= 6
-            ) {
+            } else if (assigned >= 6) {
 
-                status =
-                    "Overloaded";
+                status = "Overloaded";
 
-            } else if (
-                assigned >= 3
-            ) {
+            } else if (assigned >= 3) {
 
-                status =
-                    "Busy";
+                status = "Busy";
 
             } else {
 
-                status =
-                    "Available";
+                status = "Available";
             }
 
 
@@ -510,9 +447,7 @@ function renderCounters(queueStatus) {
 
 
             const card =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
 
             card.className =
@@ -548,9 +483,7 @@ function renderCounters(queueStatus) {
                 "</div>";
 
 
-            grid.appendChild(
-                card
-            );
+            grid.appendChild(card);
         }
     );
 }
@@ -597,13 +530,9 @@ function updateLastUpdated() {
 
 async function refreshStatus() {
 
-    // NEVER overwrite the simulation while it is running
-    // or after it has completed.
+    // Never overwrite a simulation.
 
-    if (
-        window.simulationRunning
-    ) {
-
+    if (window.simulationRunning) {
         return;
     }
 
@@ -615,7 +544,6 @@ async function refreshStatus() {
 
 
         if (!queueStatus) {
-
             return;
         }
 
@@ -649,14 +577,12 @@ async function refreshStatus() {
 
 
 // ============================================================
-// DYNAMIC WAIT-TIME CALCULATION
+// DYNAMIC WAIT TIME
 // ============================================================
 
 function calculateSimulationWait(
     queueLength,
-    activeCounters,
-    stepIndex,
-    totalSteps
+    activeCounters
 ) {
 
     queueLength =
@@ -674,59 +600,27 @@ function calculateSimulationWait(
 
 
     /*
-     * Approximate service capacity:
+     * Approximate processing capacity.
      *
-     * Each counter can process roughly
-     * 3 people every 5 minutes.
-     *
-     * More people = more waiting.
-     * More counters = less waiting.
-     *
-     * This makes the simulation visually
-     * responsive even when the backend's
-     * prediction is constant/default.
+     * Each active counter processes
+     * approximately 3 people per 5 minutes.
      */
 
-    const peoplePerCounterPer5Min =
+    const peoplePerCounter =
         3;
 
 
-    const capacityPer5Min =
+    const capacity =
         activeCounters *
-        peoplePerCounterPer5Min;
+        peoplePerCounter;
 
 
-    let wait =
+    const wait =
         (
             queueLength /
-            capacityPer5Min
+            capacity
         ) * 5;
 
-
-    /*
-     * Add a small congestion effect
-     * as the simulation approaches its peak.
-     */
-
-    if (
-        totalSteps > 1
-    ) {
-
-        const progress =
-            stepIndex /
-            (totalSteps - 1);
-
-
-        wait +=
-            progress *
-            2;
-    }
-
-
-    /*
-     * Round to a realistic whole-minute
-     * value.
-     */
 
     return Math.max(
         0,
@@ -736,25 +630,19 @@ function calculateSimulationWait(
 
 
 // ============================================================
-// SIMULATION CROWD LEVEL
+// CROWD LEVEL FOR SIMULATION
 // ============================================================
 
 function calculateSimulationLevel(
     queueLength
 ) {
 
-    if (
-        queueLength <= 5
-    ) {
-
+    if (queueLength <= 5) {
         return "Low";
     }
 
 
-    if (
-        queueLength <= 15
-    ) {
-
+    if (queueLength <= 15) {
         return "Moderate";
     }
 
@@ -764,7 +652,7 @@ function calculateSimulationLevel(
 
 
 // ============================================================
-// SIMULATION
+// RUN SIMULATION
 // ============================================================
 
 async function runSimulation(
@@ -772,9 +660,7 @@ async function runSimulation(
     simulationBtn
 ) {
 
-    /*
-     * Lock live polling immediately.
-     */
+    // Lock live updates.
 
     window.simulationRunning =
         true;
@@ -791,7 +677,7 @@ async function runSimulation(
     try {
 
         // --------------------------------------------------------
-        // Backend request
+        // CALL BACKEND
         // --------------------------------------------------------
 
         const response =
@@ -831,8 +717,26 @@ async function runSimulation(
             data.steps;
 
 
+        console.log(
+            "%c========== CROWD SIMULATION START ==========",
+            "font-weight:bold;"
+        );
+
+
+        console.log(
+            "Total simulated users:",
+            numUsers
+        );
+
+
+        console.log(
+            "Total simulation steps:",
+            steps.length
+        );
+
+
         // --------------------------------------------------------
-        // Replay every backend step
+        // REPLAY SIMULATION
         // --------------------------------------------------------
 
         for (
@@ -845,17 +749,38 @@ async function runSimulation(
                 steps[i];
 
 
-            /*
-             * IMPORTANT:
-             *
-             * Backend gives:
-             *
-             * step.queue_length
-             *
-             * NOT:
-             *
-             * step.current_state.queue_length
-             */
+            // ----------------------------------------------------
+            // CONSOLE LOG
+            // ----------------------------------------------------
+
+            console.log(
+                `%c[CROWD SIMULATION] Step ${step.step}`,
+                "font-weight:bold;",
+                {
+                    totalUsers:
+                        numUsers,
+
+                    usersProcessed:
+                        step.users_processed,
+
+                    queueLength:
+                        step.queue_length,
+
+                    activeCounters:
+                        step.active_counters,
+
+                    prediction:
+                        step.prediction,
+
+                    optimization:
+                        step.optimization
+                }
+            );
+
+
+            // ----------------------------------------------------
+            // QUEUE
+            // ----------------------------------------------------
 
             const queueLength =
                 Math.max(
@@ -899,24 +824,36 @@ async function runSimulation(
 
 
             // ----------------------------------------------------
-            // DYNAMIC WAIT TIME
+            // WAIT TIME
             // ----------------------------------------------------
+
+            /*
+             * IMPORTANT:
+             *
+             * Do NOT blindly use the backend wait value.
+             *
+             * The backend can return almost the same prediction
+             * for different simulation inputs.
+             *
+             * We therefore calculate the displayed simulation
+             * wait directly from:
+             *
+             * queue size
+             * +
+             * active counters
+             */
 
             const calculatedWait =
                 calculateSimulationWait(
                     queueLength,
-                    activeCounters,
-                    i,
-                    steps.length
+                    activeCounters
                 );
 
 
             /*
-             * Use backend prediction only if it
-             * is meaningfully different.
-             *
-             * Otherwise the queue-based calculation
-             * drives the simulation.
+             * If backend prediction is larger,
+             * keep the larger value because it may
+             * represent additional model congestion.
              */
 
             const backendWait =
@@ -933,24 +870,13 @@ async function runSimulation(
                 Number.isFinite(
                     backendWait
                 ) &&
-                backendWait > 0
+                backendWait >
+                calculatedWait
             ) {
 
-                /*
-                 * Combine model prediction with
-                 * queue-based simulation.
-                 *
-                 * This prevents a constant backend
-                 * value from making every input look
-                 * identical.
-                 */
-
                 predictedWait =
-                    Math.max(
-                        calculatedWait,
-                        Math.round(
-                            backendWait
-                        )
+                    Math.round(
+                        backendWait
                     );
             }
 
@@ -959,6 +885,12 @@ async function runSimulation(
             // CROWD LEVEL
             // ----------------------------------------------------
 
+            let crowdLevel =
+                calculateSimulationLevel(
+                    queueLength
+                );
+
+
             const backendCongestion =
                 String(
                     prediction.predicted_congestion_level ||
@@ -966,29 +898,16 @@ async function runSimulation(
                 ).toUpperCase();
 
 
-            let crowdLevel =
-                calculateSimulationLevel(
-                    queueLength
-                );
-
-
-            /*
-             * Respect HIGH / CRITICAL from backend.
-             */
-
             if (
-                backendCongestion ===
-                "CRITICAL" ||
-                backendCongestion ===
-                "HIGH"
+                backendCongestion === "HIGH" ||
+                backendCongestion === "CRITICAL"
             ) {
 
                 crowdLevel =
                     "High";
 
             } else if (
-                backendCongestion ===
-                "MEDIUM" &&
+                backendCongestion === "MEDIUM" &&
                 crowdLevel === "Low"
             ) {
 
@@ -1021,7 +940,7 @@ async function runSimulation(
 
 
             // ----------------------------------------------------
-            // UPDATE ALL UI
+            // UPDATE UI
             // ----------------------------------------------------
 
             renderCrowdStatus(
@@ -1040,7 +959,7 @@ async function runSimulation(
 
 
             // ----------------------------------------------------
-            // Progress text
+            // PROGRESS
             // ----------------------------------------------------
 
             const lastUpdated =
@@ -1060,7 +979,7 @@ async function runSimulation(
 
 
             // ----------------------------------------------------
-            // AI recommendation
+            // AI RECOMMENDATION
             // ----------------------------------------------------
 
             const recText =
@@ -1082,9 +1001,7 @@ async function runSimulation(
                         ?.reason;
 
 
-                if (
-                    action
-                ) {
+                if (action) {
 
                     recText.textContent =
                         `${action}: ` +
@@ -1105,13 +1022,8 @@ async function runSimulation(
 
 
             // ----------------------------------------------------
-            // Simulation speed
+            // NEXT STEP
             // ----------------------------------------------------
-
-            /*
-             * 700 ms gives judges a visible replay
-             * without making the simulation too slow.
-             */
 
             await new Promise(
                 resolve =>
@@ -1137,7 +1049,8 @@ async function runSimulation(
             Math.max(
                 0,
                 Number(
-                    finalStep.queue_length ?? numUsers
+                    finalStep.queue_length ??
+                    numUsers
                 )
             );
 
@@ -1146,7 +1059,8 @@ async function runSimulation(
             Math.max(
                 1,
                 Number(
-                    finalStep.active_counters ?? 4
+                    finalStep.active_counters ??
+                    4
                 )
             );
 
@@ -1154,9 +1068,7 @@ async function runSimulation(
         const finalWait =
             calculateSimulationWait(
                 finalQueue,
-                finalActiveCounters,
-                steps.length - 1,
-                steps.length
+                finalActiveCounters
             );
 
 
@@ -1165,12 +1077,6 @@ async function runSimulation(
                 finalQueue
             );
 
-
-        /*
-         * Explicitly render final state again.
-         * This guarantees the UI stays at 100/100
-         * instead of being left at an earlier step.
-         */
 
         const finalStatus = {
 
@@ -1190,6 +1096,8 @@ async function runSimulation(
                 finalActiveCounters
         };
 
+
+        // Render final state again.
 
         renderCrowdStatus(
             finalStatus
@@ -1221,6 +1129,29 @@ async function runSimulation(
         }
 
 
+        console.log(
+            "%c========== CROWD SIMULATION COMPLETE ==========",
+            "font-weight:bold;"
+        );
+
+
+        console.log(
+            {
+                totalUsers:
+                    numUsers,
+
+                finalQueue:
+                    finalQueue,
+
+                finalWaitMinutes:
+                    finalWait,
+
+                activeCounters:
+                    finalActiveCounters
+            }
+        );
+
+
     } catch (error) {
 
         console.error(
@@ -1235,6 +1166,13 @@ async function runSimulation(
         );
 
 
+        // If the simulation failed, allow
+        // normal live refresh again.
+
+        window.simulationRunning =
+            false;
+
+
     } finally {
 
         simulationBtn.disabled =
@@ -1246,19 +1184,10 @@ async function runSimulation(
 
 
         /*
-         * IMPORTANT:
+         * DO NOT reset simulationRunning here.
          *
-         * We deliberately DO NOT set:
-         *
-         * window.simulationRunning = false
-         *
-         * here.
-         *
-         * This keeps the final simulation result
-         * on the screen.
-         *
-         * The Refresh Status button will restore
-         * the real live backend state.
+         * The final simulated value must remain
+         * visible on screen.
          */
     }
 }
@@ -1272,11 +1201,12 @@ document.addEventListener(
     "DOMContentLoaded",
     () => {
 
-        // Common navigation
+        // --------------------------------------------------------
+        // NAVIGATION
+        // --------------------------------------------------------
 
         if (
-            typeof VIZITOR !==
-            "undefined" &&
+            typeof VIZITOR !== "undefined" &&
             VIZITOR.wireCommonNav
         ) {
 
@@ -1284,7 +1214,9 @@ document.addEventListener(
         }
 
 
-        // Initial live status
+        // --------------------------------------------------------
+        // INITIAL STATUS
+        // --------------------------------------------------------
 
         refreshStatus();
 
@@ -1293,12 +1225,12 @@ document.addEventListener(
         // LIVE REFRESH
         // --------------------------------------------------------
 
-        /*
-         * Only refresh when simulation is NOT active.
-         */
-
         setInterval(
             () => {
+
+                /*
+                 * Do not overwrite simulation.
+                 */
 
                 if (
                     !window.simulationRunning
@@ -1329,8 +1261,8 @@ document.addEventListener(
                 async () => {
 
                     /*
-                     * Manual refresh exits simulation mode
-                     * and returns the page to real backend data.
+                     * Manual refresh returns the
+                     * page to real backend data.
                      */
 
                     window.simulationRunning =
@@ -1344,7 +1276,7 @@ document.addEventListener(
 
 
         // --------------------------------------------------------
-        // SIMULATION CONTROLS
+        // SIMULATION BUTTON
         // --------------------------------------------------------
 
         const simulationBtn =
