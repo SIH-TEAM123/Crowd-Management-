@@ -827,6 +827,91 @@ function calculateSimulationLevel(
 
 
 // ============================================================
+// SAVE SIMULATION STATE FOR ALL VIZITOR PAGES
+// ============================================================
+
+function saveSharedSimulationState({
+    queueSize,
+    waitMinutes,
+    crowdLevel,
+    activeCounters,
+    serviceRate,
+    simulationUsers,
+    simulationStep,
+    servedSoFar = 0
+}) {
+
+    if (
+        typeof VIZITOR === "undefined" ||
+        !VIZITOR.setSimulationState
+    ) {
+        return;
+    }
+
+
+    VIZITOR.setSimulationState({
+
+        queue_size:
+            Math.max(
+                0,
+                Number(queueSize) || 0
+            ),
+
+        people_currently_present:
+            Math.max(
+                0,
+                Number(queueSize) || 0
+            ),
+
+        estimated_wait_minutes:
+            Math.max(
+                0,
+                Math.round(
+                    Number(waitMinutes) || 0
+                )
+            ),
+
+        crowd_level:
+            crowdLevel,
+
+        active_counters:
+            Math.max(
+                1,
+                Number(activeCounters) || 1
+            ),
+
+        service_rate:
+            Math.max(
+                0,
+                Number(serviceRate) || 0
+            ),
+
+        simulation_users:
+            Math.max(
+                0,
+                Number(simulationUsers) || 0
+            ),
+
+        simulation_step:
+            Number(simulationStep) || 0,
+
+        served_so_far:
+            Math.max(
+                0,
+                Number(servedSoFar) || 0
+            ),
+
+        /*
+         * Synthetic token used only by the simulation.
+         * Real backend token logic is untouched.
+         */
+        currently_serving_token:
+            "SIM-001"
+    });
+}
+
+
+// ============================================================
 // RUN SIMULATION
 // ============================================================
 
@@ -976,10 +1061,7 @@ async function runSimulation(
 
 
             /*
-             * Store simulation state.
-             *
-             * Service rate is deliberately NOT
-             * tied to the simulation backend.
+             * Store simulation state locally.
              */
 
             window.simulationState.queueLength =
@@ -988,6 +1070,10 @@ async function runSimulation(
             window.simulationState.activeCounters =
                 activeCounters;
 
+
+            // ----------------------------------------------------
+            // Service rate and waiting time
+            // ----------------------------------------------------
 
             const serviceRate =
                 Number(
@@ -1010,6 +1096,41 @@ async function runSimulation(
                 );
 
 
+            // ----------------------------------------------------
+            // Synchronize all VIZITOR pages
+            // ----------------------------------------------------
+
+            saveSharedSimulationState({
+
+                queueSize:
+                    queueLength,
+
+                waitMinutes:
+                    predictedWait ?? 0,
+
+                crowdLevel:
+                    crowdLevel,
+
+                activeCounters:
+                    activeCounters,
+
+                serviceRate:
+                    serviceRate,
+
+                simulationUsers:
+                    numUsers,
+
+                simulationStep:
+                    step.step,
+
+                servedSoFar:
+                    Math.max(
+                        0,
+                        numUsers - queueLength
+                    )
+            });
+
+
             const simulatedStatus = {
 
                 crowd_level:
@@ -1025,7 +1146,10 @@ async function runSimulation(
                     predictedWait ?? 0,
 
                 active_counters:
-                    activeCounters
+                    activeCounters,
+
+                currently_serving_token:
+                    "SIM-001"
             };
 
 
@@ -1113,6 +1237,10 @@ async function runSimulation(
         }
 
 
+        // ========================================================
+        // FINAL SIMULATION STATE
+        // ========================================================
+
         const finalStep =
             steps[
                 steps.length - 1
@@ -1183,8 +1311,46 @@ async function runSimulation(
                 finalWait ?? 0,
 
             active_counters:
-                finalActiveCounters
+                finalActiveCounters,
+
+            currently_serving_token:
+                "SIM-001"
         };
+
+
+        // --------------------------------------------------------
+        // Save final state for all pages
+        // --------------------------------------------------------
+
+        saveSharedSimulationState({
+
+            queueSize:
+                finalQueue,
+
+            waitMinutes:
+                finalWait ?? 0,
+
+            crowdLevel:
+                finalLevel,
+
+            activeCounters:
+                finalActiveCounters,
+
+            serviceRate:
+                serviceRate,
+
+            simulationUsers:
+                numUsers,
+
+            simulationStep:
+                finalStep.step,
+
+            servedSoFar:
+                Math.max(
+                    0,
+                    numUsers - finalQueue
+                )
+        });
 
 
         renderCrowdStatus(
@@ -1230,6 +1396,7 @@ async function runSimulation(
 
 
         console.log({
+
             totalUsers:
                 numUsers,
 
@@ -1243,7 +1410,10 @@ async function runSimulation(
                 serviceRate,
 
             activeCounters:
-                finalActiveCounters
+                finalActiveCounters,
+
+            currentlyServingToken:
+                "SIM-001"
         });
 
 
@@ -1328,12 +1498,21 @@ document.addEventListener(
                 async () => {
 
                     /*
-                     * Manual refresh is independent.
-                     * It returns to live backend data.
+                     * Leave simulation mode and return to
+                     * the real backend queue.
                      */
 
                     window.simulationRunning =
                         false;
+
+
+                    if (
+                        typeof VIZITOR !== "undefined" &&
+                        VIZITOR.clearSimulationState
+                    ) {
+
+                        VIZITOR.clearSimulationState();
+                    }
 
 
                     await refreshStatus();
@@ -1449,6 +1628,73 @@ document.addEventListener(
 
 
                     updateSimulationWaitTime();
+
+
+                    /*
+                     * Keep all shared pages synchronized
+                     * with the new waiting-time calculation.
+                     */
+
+                    const currentQueue =
+                        Math.max(
+                            0,
+                            Number(
+                                window.simulationState.queueLength
+                            ) || 0
+                        );
+
+
+                    const newWait =
+                        calculateWaitFromServiceRate(
+                            currentQueue,
+                            serviceRate
+                        );
+
+
+                    const currentLevel =
+                        calculateSimulationLevel(
+                            currentQueue
+                        );
+
+
+                    const existingSimulation =
+                        (
+                            typeof VIZITOR !== "undefined" &&
+                            VIZITOR.getSimulationState
+                        )
+                            ? VIZITOR.getSimulationState()
+                            : null;
+
+
+                    saveSharedSimulationState({
+
+                        queueSize:
+                            currentQueue,
+
+                        waitMinutes:
+                            newWait ?? 0,
+
+                        crowdLevel:
+                            currentLevel,
+
+                        activeCounters:
+                            window.simulationState.activeCounters,
+
+                        serviceRate:
+                            serviceRate,
+
+                        simulationUsers:
+                            existingSimulation?.simulation_users ??
+                            currentQueue,
+
+                        simulationStep:
+                            existingSimulation?.simulation_step ??
+                            0,
+
+                        servedSoFar:
+                            existingSimulation?.served_so_far ??
+                            0
+                    });
                 }
             );
         }
