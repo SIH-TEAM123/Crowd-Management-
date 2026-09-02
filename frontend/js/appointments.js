@@ -3,6 +3,164 @@
 // ─────────────────────────────────────────────
 // Helper – update the "3" badge counters
 // ─────────────────────────────────────────────
+// ============================================================
+// CREATE APPOINTMENT / TOKEN
+// ============================================================
+
+async function createToken(priorityType = "NORMAL") {
+
+    const token =
+        localStorage.getItem("access_token");
+
+    if (!token) {
+
+        window.location.href = "index.html";
+
+        return {
+            success: false,
+            message: "Please login again."
+        };
+    }
+
+
+    const serviceInput =
+        document.getElementById("apptService");
+
+    const dateInput =
+        document.getElementById("apptDate");
+
+    const timeInput =
+        document.getElementById("apptTime");
+
+
+    const purpose =
+        serviceInput
+            ? serviceInput.value.trim()
+            : "General Consultation";
+
+    const appointmentDate =
+        dateInput
+            ? dateInput.value
+            : "";
+
+    const appointmentTime =
+        timeInput
+            ? timeInput.value
+            : "";
+
+
+    if (!purpose) {
+
+        return {
+            success: false,
+            message: "Please select a service."
+        };
+    }
+
+
+    if (!appointmentDate || !appointmentTime) {
+
+        return {
+            success: false,
+            message: "Please select date and time."
+        };
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "https://vizitor.onrender.com/appointments",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`,
+
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        purpose:
+                            purpose,
+
+                        appointment_date:
+                            appointmentDate,
+
+                        appointment_time:
+                            appointmentTime
+
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "Appointment API response:",
+            data
+        );
+
+
+        if (!response.ok) {
+
+            let message =
+                "Unable to book appointment.";
+
+
+            if (Array.isArray(data.detail)) {
+
+                message =
+                    data.detail
+                        .map(error =>
+                            `${error.loc?.slice(-1)[0] || "Field"}: ${error.msg}`
+                        )
+                        .join("\n");
+
+            } else if (
+                typeof data.detail === "string"
+            ) {
+
+                message =
+                    data.detail;
+            }
+
+
+            return {
+                success: false,
+                message: message
+            };
+        }
+
+
+        return {
+            success: true,
+            data: data
+        };
+
+
+    } catch (error) {
+
+        console.error(
+            "Appointment booking error:",
+            error
+        );
+
+
+        return {
+            success: false,
+            message:
+                "Unable to connect to the appointment server."
+        };
+    }
+}
 function refreshCounts() {
     const upcomingCards = document.querySelectorAll("#upcomingGrid .appt-card");
     const prevRows      = document.querySelectorAll("#prevTableBody tr");
@@ -258,7 +416,24 @@ async function handleBookingSubmit(e) {
         submitBtn.textContent = "Booking...";
     }
 
-    const res = await createToken("NORMAL");
+    let res;
+
+try {
+
+    res = await createToken("NORMAL");
+
+} catch (error) {
+
+    console.error(
+        "Booking submission error:",
+        error
+    );
+
+    res = {
+        success: false,
+        message: "Booking failed. Please try again."
+    };
+}
 
     if (submitBtn) {
         submitBtn.disabled = false;
