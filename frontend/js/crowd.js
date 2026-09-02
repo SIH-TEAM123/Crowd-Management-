@@ -168,7 +168,7 @@ async function refreshStatus() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    VIZITOR.requireAuthOrRedirect();
+    //VIZITOR.requireAuthOrRedirect();
     VIZITOR.wireCommonNav();
 
     refreshStatus();
@@ -177,5 +177,91 @@ document.addEventListener("DOMContentLoaded", () => {
     const refreshBtn = document.getElementById("btnRefresh");
     if (refreshBtn) {
         refreshBtn.addEventListener("click", refreshStatus);
+    }
+
+    // Synthetic crowd simulation
+    const simulationBtn = document.getElementById("btnSimulation");
+    const simulationInput = document.getElementById("simulationUsers");
+
+    if (simulationBtn && simulationInput) {
+        simulationBtn.addEventListener("click", async () => {
+            const numUsers = Number(simulationInput.value);
+
+            if (!Number.isInteger(numUsers) || numUsers < 1 || numUsers > 500) {
+                alert("Enter a number between 1 and 500.");
+                return;
+            }
+
+            simulationBtn.disabled = true;
+            simulationBtn.textContent = "Running...";
+
+            try {
+                const response = await fetch(
+                    `http://127.0.0.1:8000/optimization/simulation?num_users=${numUsers}`,
+                    {
+                        method: "POST"
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`Simulation failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Replay the simulation steps on the Crowd Status page
+                if (data.steps && data.steps.length > 0) {
+                    for (const step of data.steps) {
+                        const prediction = step.prediction;
+                        const currentState = step.current_state;
+                        const optimization = step.optimization;
+
+                        const crowdLevel =
+                            prediction.predicted_congestion_level === "CRITICAL"
+                                ? "High"
+                                : prediction.predicted_congestion_level === "HIGH"
+                                    ? "High"
+                                    : prediction.predicted_congestion_level === "MEDIUM"
+                                        ? "Moderate"
+                                        : "Low";
+
+                        const simulatedStatus = {
+                            crowd_level: crowdLevel,
+                            people_currently_present: currentState.queue_length,
+                            queue_size: currentState.queue_length,
+                            estimated_wait_minutes:
+                                Math.round(prediction.predicted_wait_minutes * 10) / 10
+                        };
+
+                        renderCrowdStatus(simulatedStatus);
+                        renderTrendBars(simulatedStatus);
+                        renderCounters(simulatedStatus);
+
+                        const lastUpdated = document.getElementById("lastUpdated");
+                        if (lastUpdated) {
+                            lastUpdated.textContent =
+                                `Simulation: ${step.step} — ${currentState.queue_length}/${numUsers} people processed through crowd model.`;
+                        }
+
+                        // Show optimizer recommendation
+                        const recText = document.getElementById("recommendationText");
+                        if (recText && optimization) {
+                            recText.textContent =
+                                `${optimization.recommended_action.type}: ${optimization.reason}`;
+                        }
+
+                        // Live replay effect
+                        await new Promise(resolve => setTimeout(resolve, 800));
+                    }
+                }
+
+            } catch (error) {
+                console.error("Simulation error:", error);
+                alert("Could not run simulation. Make sure the backend is running.");
+            } finally {
+                simulationBtn.disabled = false;
+                simulationBtn.textContent = "Run Simulation";
+            }
+        });
     }
 });

@@ -124,6 +124,19 @@
                         <h2>Current Crowd Status</h2>
                         <p id="lastUpdated">See how busy the facility is right now, including wait time and queue size.</p>
                     </div>
+<div class="simulation-control">
+    <input
+        type="number"
+        id="simulationUsers"
+        min="1"
+        max="500"
+        value="50"
+        placeholder="People"
+    >
+    <button class="btn-report" id="btnSimulation" type="button">
+        Run Simulation
+    </button>
+</div>
                     <div class="welcome-actions">
                         <button class="btn-report" id="btnRefresh" type="button">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

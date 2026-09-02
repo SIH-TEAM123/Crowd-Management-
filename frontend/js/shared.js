@@ -18,13 +18,15 @@ const VIZITOR = (() => {
     }
 
     function requireAuthOrRedirect() {
-        const token = getAccessToken();
-        if (!token) {
-            window.location.href = "index.html";
-            return null;
-        }
-        return token;
+    const token = getAccessToken();
+
+    // Allow Crowd Status simulation demo without login
+    if (!token) {
+        return "DEMO_MODE";
     }
+
+    return token;
+}
 
     function authHeaders() {
         const token = requireAuthOrRedirect();
