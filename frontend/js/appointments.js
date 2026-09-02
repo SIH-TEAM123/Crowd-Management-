@@ -1,475 +1,417 @@
-// Real appointment integration with FastAPI
+// Appointments page logic for Crowd Management
 
-function getAuthHeaders() {
-    const token = localStorage.getItem("access_token");
+// ─────────────────────────────────────────────
+// Helper – update the "3" badge counters
+// ─────────────────────────────────────────────
+function refreshCounts() {
+    const upcomingCards = document.querySelectorAll("#upcomingGrid .appt-card");
+    const prevRows      = document.querySelectorAll("#prevTableBody tr");
+    const upcomingCount = document.getElementById("upcomingCount");
+    const prevCount     = document.getElementById("prevCount");
 
-    if (!token) {
-        window.location.href = "index.html";
-        return null;
-    }
-
-    return {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-    };
+    if (upcomingCount) upcomingCount.textContent = upcomingCards.length;
+    if (prevCount)     prevCount.textContent     = prevRows.length;
 }
 
+// ─────────────────────────────────────────────
+// View Details – shows a read-only alert summary
+// ─────────────────────────────────────────────
+function viewDetails(id) {
+    const card = document.querySelector(`.appt-card[data-id="${id}"]`);
+    if (!card) return;
 
-async function loadAppointments() {
-    const headers = getAuthHeaders();
-    if (!headers) return;
+    const service  = card.querySelector(".appt-service-name")?.textContent || "—";
+    const values   = card.querySelectorAll(".appt-meta-value");
+    const date     = values[0]?.textContent || "—";
+    const time     = values[1]?.textContent || "—";
+    const counter  = values[2]?.textContent || "—";
+    const token    = values[3]?.textContent || "—";
+    const status   = card.querySelector(".card-badge")?.textContent || "—";
 
-    try {
-        const response = await fetch(
-            `${API_BASE_URL}/appointments`,
-            {
-                method: "GET",
-                headers: headers
-            }
-        );
-
-        const data = await response.json();
-
-       if (!response.ok) {
-    console.error("Booking failed:", data);
-
-    const errorMessage =
-        typeof data.detail === "object"
-            ? JSON.stringify(data.detail, null, 2)
-            : (data.detail || "Unable to book appointment.");
-
-    alert("Booking failed:\n\n" + errorMessage);
-    return;
+    alert(
+        `📋 Appointment Details\n` +
+        `──────────────────────\n` +
+        `Service  : ${service}\n` +
+        `Date     : ${date}\n` +
+        `Time     : ${time}\n` +
+        `Counter  : ${counter}\n` +
+        `Token    : ${token}\n` +
+        `Status   : ${status}\n` +
+        `──────────────────────\n` +
+        `(Full details will be available once connected to the backend.)`
+    );
 }
 
-        renderAppointments(data);
-
-    } catch (error) {
-        console.error("Appointment loading error:", error);
-        alert("Unable to connect to the server.");
-    }
-}
-function formatDate(dateString) {
-    if (!dateString) return "Not available";
-
-    const date = new Date(`${dateString}T00:00:00`);
-
-    return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric"
-    });
-}
-
-
-function formatTime(timeString) {
-    if (!timeString) return "Not available";
-
-    const cleanTime = timeString.split(".")[0];
-
-    const [hours, minutes] = cleanTime.split(":");
-
-    const date = new Date();
-    date.setHours(Number(hours));
-    date.setMinutes(Number(minutes));
-    date.setSeconds(0);
-
-    return date.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true
-    });
-}
-
-function renderAppointments(appointments) {
-    const grid = document.getElementById("upcomingGrid");
-    const count = document.getElementById("upcomingCount");
-
-    if (!grid) return;
-
-    grid.innerHTML = "";
-
-    const upcoming = appointments.filter(appointment =>
-    appointment.status !== "COMPLETED" &&
-    appointment.status !== "CANCELLED"
-);
-
-const previous = appointments.filter(appointment =>
-    appointment.status === "COMPLETED"
-);
-
-    if (count) {
-        count.textContent = upcoming.length;
-    }
-
-    if (upcoming.length === 0) {
-        grid.innerHTML = `
-            <div class="empty-state" style="grid-column:1/-1;">
-                <p>No upcoming appointments. Book one using the button above!</p>
-            </div>
-        `;
-        return;
-    }
-
-    upcoming.forEach(appointment => {
-        const card = document.createElement("div");
-
-        card.className = "appt-card";
-        card.dataset.id = appointment.appointment_id;
-
-        const date = formatDate(appointment.appointment_date);
-const time = formatTime(appointment.appointment_time);
-
-        card.innerHTML = `
-            <div class="appt-card-header">
-                <span class="appt-service-name">
-                    ${escapeHtml(appointment.purpose)}
-                </span>
-
-                <span class="card-badge badge-warning">
-                    ${escapeHtml(appointment.status)}
-                </span>
-            </div>
-
-            <div class="appt-meta-grid">
-
-                <div class="appt-meta-item">
-                    <span class="appt-meta-label">Date</span>
-                    <span class="appt-meta-value">
-                        ${date}
-                    </span>
-                </div>
-
-                <div class="appt-meta-item">
-                    <span class="appt-meta-label">Time</span>
-                    <span class="appt-meta-value">
-                        ${time}
-                    </span>
-                </div>
-
-                <div class="appt-meta-item">
-                    <span class="appt-meta-label">Counter</span>
-                    <span class="appt-meta-value">
-                        Not assigned
-                    </span>
-                </div>
-
-                <div class="appt-meta-item">
-                    <span class="appt-meta-label">Token</span>
-                    <span class="appt-meta-value token">
-                        ${escapeHtml(appointment.token_display || appointment.token_id)}
-                    </span>
-                </div>
-
-            </div>
-
-            <div class="appt-card-actions">
-
-                <button
-                    class="btn-action-ghost"
-                    onclick="viewDetails(${appointment.appointment_id})">
-                    View Details
-                </button>
-
-                <button
-                    class="btn-action-cancel"
-                    onclick="cancelAppointment(${appointment.appointment_id})">
-                    Cancel
-                </button>
-
-            </div>
-        `;
-
-        grid.appendChild(card);
-    });
-
-// Render previous (completed) appointments
-const prevCount = document.getElementById("prevCount");
-const prevTableBody = document.getElementById("prevTableBody");
-
-prevCount.textContent = previous.length;
-
-prevTableBody.innerHTML = "";
-
-previous.forEach(appointment => {
-    const row = document.createElement("tr");
-
-    row.innerHTML = `
-        <td>${escapeHtml(appointment.purpose)}</td>
-        <td>${formatDate(appointment.appointment_date)}</td>
-        <td>${escapeHtml(appointment.token_number || appointment.token || "-")}</td>
-        <td>${escapeHtml(appointment.status)}</td>
-    `;
-
-    prevTableBody.appendChild(row);
-});
-}
-
-
-async function viewDetails(id) {
-    const headers = getAuthHeaders();
-    if (!headers) return;
-
-    try {
-        const response = await fetch(
-            `${API_BASE_URL}/appointments/${id}`,
-            {
-                method: "GET",
-                headers: headers
-            }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            alert(data.detail || "Unable to load appointment.");
-            return;
-        }
-
-        alert(
-            `Appointment Details\n\n` +
-            `Service: ${data.purpose}\n` +
-            `Date: ${data.appointment_date}\n` +
-            `Time: ${data.appointment_time}\n` +
-            `Token: ${data.token_id}\n` +
-            `Status: ${data.status}`
-        );
-
-    } catch (error) {
-        console.error("View appointment error:", error);
-        alert("Unable to connect to the server.");
-    }
-}
-
-
-async function cancelAppointment(id) {
+// ─────────────────────────────────────────────
+// Cancel Appointment
+// ─────────────────────────────────────────────
+function cancelAppointment(id, service, date, token) {
     const confirmed = confirm(
-        "Are you sure you want to cancel this appointment?"
+        `Are you sure you want to cancel this appointment?\n\n` +
+        `Service : ${service}\n` +
+        `Date    : ${date}\n` +
+        `Token   : ${token}`
     );
 
     if (!confirmed) return;
 
-    const headers = getAuthHeaders();
-    if (!headers) return;
+    // Remove the upcoming card
+    const card = document.querySelector(`.appt-card[data-id="${id}"]`);
+    if (card) card.remove();
 
-    try {
-        const response = await fetch(
-            `${API_BASE_URL}/appointments/${id}`,
-            {
-                method: "DELETE",
-                headers: headers
-            }
-        );
+    // Add a new row to Previous Appointments table
+    const tbody = document.getElementById("prevTableBody");
+    if (tbody) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>
+                <div class="table-icon-row">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="18" rx="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <span>${service}</span>
+                </div>
+            </td>
+            <td>${date}</td>
+            <td style="color:#7c3aed;font-weight:600;">${token}</td>
+            <td><span class="card-badge badge-danger">Cancelled</span></td>
+        `;
+        tbody.prepend(row); // put it at the top
+    }
 
-        const data = await response.json();
+    // Show empty state if no cards remain
+    const grid = document.getElementById("upcomingGrid");
+    if (grid && grid.querySelectorAll(".appt-card").length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <p>No upcoming appointments. Book one using the button above!</p>
+            </div>
+        `;
+    }
 
-        if (!response.ok) {
-            alert(data.detail || "Unable to cancel appointment.");
-            return;
+    refreshCounts();
+    alert(`Appointment for "${service}" has been cancelled.`);
+}
+
+// ─────────────────────────────────────────────
+// Modal & Date/Time Picker Logic
+// ─────────────────────────────────────────────
+function validateDateTimeFields() {
+    const dateInput = document.getElementById("apptDate");
+    const timeInput = document.getElementById("apptTime");
+    const dateError = document.getElementById("dateError");
+    const timeError = document.getElementById("timeError");
+
+    let isValid = true;
+
+    if (!dateInput || !timeInput) return false;
+
+    // Reset single field errors
+    if (dateError) dateError.textContent = "";
+    if (timeError) timeError.textContent = "";
+    dateInput.classList.remove("invalid");
+    timeInput.classList.remove("invalid");
+
+    const dateVal = dateInput.value;
+    const timeVal = timeInput.value;
+
+    const now = new Date();
+    const todayYyyy = now.getFullYear();
+    const todayMm = String(now.getMonth() + 1).padStart(2, '0');
+    const todayDd = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${todayYyyy}-${todayMm}-${todayDd}`;
+
+    if (!dateVal) {
+        if (dateError) dateError.textContent = "Please select a valid date.";
+        dateInput.classList.add("invalid");
+        isValid = false;
+    } else if (dateVal < todayStr) {
+        if (dateError) dateError.textContent = "Past dates cannot be selected.";
+        dateInput.classList.add("invalid");
+        isValid = false;
+    }
+
+    if (!timeVal) {
+        if (timeError) timeError.textContent = "Please select a valid time.";
+        timeInput.classList.add("invalid");
+        isValid = false;
+    } else if (dateVal === todayStr && timeVal) {
+        const [selHours, selMins] = timeVal.split(':').map(Number);
+        const currentHours = now.getHours();
+        const currentMins = now.getMinutes();
+
+        if (selHours < currentHours || (selHours === currentHours && selMins < currentMins)) {
+            if (timeError) timeError.textContent = "Time cannot be in the past for today.";
+            timeInput.classList.add("invalid");
+            isValid = false;
+        }
+    }
+
+    return isValid;
+}
+
+function openBookingModal() {
+    const backdrop = document.getElementById("bookModalBackdrop");
+    const dateInput = document.getElementById("apptDate");
+    const timeInput = document.getElementById("apptTime");
+    const serviceInput = document.getElementById("apptService");
+    const errorBanner = document.getElementById("modalErrorBanner");
+    const dateError = document.getElementById("dateError");
+    const timeError = document.getElementById("timeError");
+
+    if (!backdrop || !dateInput || !timeInput) return;
+
+    // Reset errors
+    if (errorBanner) { errorBanner.style.display = "none"; errorBanner.textContent = ""; }
+    if (dateError) dateError.textContent = "";
+    if (timeError) timeError.textContent = "";
+    dateInput.classList.remove("invalid");
+    timeInput.classList.remove("invalid");
+
+    // Set minimum date to today (YYYY-MM-DD)
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    // Set maximum date limit (90 days in advance)
+    const maxDate = new Date();
+    maxDate.setDate(today.getDate() + 90);
+    const maxYyyy = maxDate.getFullYear();
+    const maxMm = String(maxDate.getMonth() + 1).padStart(2, '0');
+    const maxDd = String(maxDate.getDate()).padStart(2, '0');
+    const maxStr = `${maxYyyy}-${maxMm}-${maxDd}`;
+
+    dateInput.min = todayStr;
+    dateInput.max = maxStr;
+
+    if (!dateInput.value || dateInput.value < todayStr) {
+        dateInput.value = todayStr;
+    }
+
+    // Set default time to current time if empty
+    if (!timeInput.value) {
+        const hh = String(today.getHours()).padStart(2, '0');
+        const mins = String(today.getMinutes()).padStart(2, '0');
+        timeInput.value = `${hh}:${mins}`;
+    }
+
+    if (serviceInput && !serviceInput.value) {
+        serviceInput.value = "General Consultation";
+    }
+
+    backdrop.style.display = "flex";
+}
+
+function closeBookingModal() {
+    const backdrop = document.getElementById("bookModalBackdrop");
+    if (backdrop) {
+        backdrop.style.display = "none";
+    }
+}
+
+async function handleBookingSubmit(e) {
+    e.preventDefault();
+
+    const serviceInput = document.getElementById("apptService");
+    const dateInput = document.getElementById("apptDate");
+    const timeInput = document.getElementById("apptTime");
+    const errorBanner = document.getElementById("modalErrorBanner");
+    const submitBtn = document.getElementById("btnSubmitBooking");
+
+    // Clear banner
+    if (errorBanner) { errorBanner.style.display = "none"; errorBanner.textContent = ""; }
+
+    const serviceVal = serviceInput ? serviceInput.value.trim() : "General Consultation";
+
+    if (!serviceVal) {
+        if (errorBanner) {
+            errorBanner.textContent = "Please enter a service name.";
+            errorBanner.style.display = "flex";
+        }
+        return;
+    }
+
+    // Run Date + Time validation
+    if (!validateDateTimeFields()) {
+        return;
+    }
+
+    const dateVal = dateInput ? dateInput.value : "";
+    const timeVal = timeInput ? timeInput.value : "";
+
+    // Disable submit button during booking
+    let origText = "Book Appointment";
+    if (submitBtn) {
+        origText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Booking...";
+    }
+
+    const res = await createToken("NORMAL");
+
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = origText;
+    }
+
+    if (res.success && res.data) {
+        const tokenData = res.data;
+        const tokenNum = tokenData.token_number || "A-104";
+        const counter = "Counter 1";
+
+        // Format Date: YYYY-MM-DD -> MMM DD, YYYY
+        const [y, m, d] = dateVal.split('-').map(Number);
+        const selDateObj = new Date(y, m - 1, d);
+        const formattedDate = selDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        // Format Time: HH:mm -> hh:mm AM/PM
+        const [h, min] = timeVal.split(':').map(Number);
+        const period = h >= 12 ? 'PM' : 'AM';
+        const displayH = h % 12 || 12;
+        const formattedTime = `${String(displayH).padStart(2, '0')}:${String(min).padStart(2, '0')} ${period}`;
+
+        const newId = Date.now();
+
+        const emptyState = document.querySelector("#upcomingGrid .empty-state");
+        if (emptyState) emptyState.remove();
+
+        const grid = document.getElementById("upcomingGrid");
+        if (grid) {
+            const card = document.createElement("div");
+            card.className = "appt-card confirmed";
+            card.setAttribute("data-id", newId);
+            card.innerHTML = `
+                <div class="appt-card-header">
+                    <span class="appt-service-name">${serviceVal}</span>
+                    <span class="card-badge badge-success">Active</span>
+                </div>
+                <div class="appt-meta-grid">
+                    <div class="appt-meta-item">
+                        <span class="appt-meta-label">Date</span>
+                        <span class="appt-meta-value">${formattedDate}</span>
+                    </div>
+                    <div class="appt-meta-item">
+                        <span class="appt-meta-label">Time</span>
+                        <span class="appt-meta-value">${formattedTime}</span>
+                    </div>
+                    <div class="appt-meta-item">
+                        <span class="appt-meta-label">Counter</span>
+                        <span class="appt-meta-value">${counter}</span>
+                    </div>
+                    <div class="appt-meta-item">
+                        <span class="appt-meta-label">Token</span>
+                        <span class="appt-meta-value token">${tokenNum}</span>
+                    </div>
+                </div>
+                <div class="appt-card-actions">
+                    <button class="btn-action-ghost" onclick="viewDetails(${newId})">View Details</button>
+                    <button class="btn-action-cancel" onclick="cancelAppointment(${newId}, '${serviceVal}', '${formattedDate}', '${tokenNum}')">Cancel</button>
+                </div>
+            `;
+            grid.prepend(card);
+            refreshCounts();
         }
 
-        alert("Appointment cancelled successfully.");
-
-        await loadAppointments();
-
-    } catch (error) {
-        console.error("Cancel appointment error:", error);
-        alert("Unable to connect to the server.");
-    }
-}
-
-
-async function bookNewAppointment() {
-
-    const service = prompt(
-        "Enter service name (e.g. Blood Test, Passport Renewal):"
-    );
-
-    if (!service || !service.trim()) {
-        alert("Please enter a valid service name.");
-        return;
-    }
-
-
-    const date = prompt(
-        "Enter appointment date (YYYY-MM-DD):\nExample: 2026-08-25"
-    );
-
-    if (!date || !date.trim()) {
-        alert("Please enter an appointment date.");
-        return;
-    }
-
-    // Validate YYYY-MM-DD
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-
-    if (!dateRegex.test(date.trim())) {
-        alert(
-            "Invalid date format.\n\n" +
-            "Please use: YYYY-MM-DD\n" +
-            "Example: 2026-08-25"
-        );
-        return;
-    }
-
-    // Check if it is a real calendar date
-    const parsedDate = new Date(`${date.trim()}T00:00:00`);
-
-    if (isNaN(parsedDate.getTime())) {
-        alert("Please enter a valid calendar date.");
-        return;
-    }
-
-
-    const time = prompt(
-        "Enter appointment time (HH:MM or HH:MM:SS):\nExample: 10:30"
-    );
-
-    if (!time || !time.trim()) {
-        alert("Please enter an appointment time.");
-        return;
-    }
-
-    const cleanTime = time.trim();
-
-    // Validate HH:MM or HH:MM:SS
-    const timeRegex =
-        /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
-
-    if (!timeRegex.test(cleanTime)) {
-        alert(
-            "Invalid time format.\n\n" +
-            "Please use HH:MM or HH:MM:SS\n" +
-            "Examples: 10:30 or 10:30:00"
-        );
-        return;
-    }
-
-
-    const headers = getAuthHeaders();
-
-    if (!headers) return;
-
-
-    try {
-
-        const response = await fetch(
-            `${API_BASE_URL}/appointments`,
-            {
-                method: "POST",
-                headers: headers,
-                body: JSON.stringify({
-                    purpose: service.trim(),
-                    appointment_date: date.trim(),
-                    appointment_time: cleanTime
-                })
-            }
-        );
-
-        const data = await response.json();
-
-
-        if (!response.ok) {
-
-            let errorMessage =
-                "Unable to book appointment.";
-
-            // FastAPI validation errors
-            if (Array.isArray(data.detail)) {
-
-                errorMessage = data.detail
-                    .map(error =>
-                        `${error.loc?.slice(-1)[0] || "Field"}: ${error.msg}`
-                    )
-                    .join("\n");
-
-            } else if (
-                typeof data.detail === "string"
-            ) {
-
-                errorMessage = data.detail;
-
-            }
-
-            alert(errorMessage);
-            return;
+        closeBookingModal();
+        alert(`Token Booked Successfully!\n\nToken Number: ${tokenNum}\nQueue Position: #${tokenData.queue_position}\nDate: ${formattedDate}\nTime: ${formattedTime}`);
+    } else {
+        if (errorBanner) {
+            errorBanner.textContent = res.message || "Unable to book token. Check backend service.";
+            errorBanner.style.display = "flex";
+        } else {
+            alert(res.message || "Unable to book token. Check backend service.");
         }
-
-
-        alert(
-            `Appointment booked successfully!\n\n` +
-            `Token: ${data.token_display || data.token_id}\n` +
-            `Date: ${formatDate(data.appointment_date)}\n` +
-            `Time: ${formatTime(data.appointment_time)}`
-        );
-
-
-        await loadAppointments();
-
-    } catch (error) {
-
-        console.error(
-            "Booking error:",
-            error
-        );
-
-        alert(
-            "Unable to connect to the server."
-        );
     }
 }
-function escapeHtml(value) {
-    const div = document.createElement("div");
-    div.textContent = value ?? "";
-    return div.innerHTML;
-}
 
-
+// ─────────────────────────────────────────────
+// On page ready
+// ─────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
-
     const bookBtn = document.getElementById("btnBookNew");
-
     if (bookBtn) {
-        bookBtn.addEventListener(
-            "click",
-            bookNewAppointment
-        );
+        bookBtn.addEventListener("click", openBookingModal);
     }
 
-    const profileBadge =
-        document.querySelector(".profile-badge");
+    const closeBtn = document.getElementById("btnCloseModal");
+    if (closeBtn) {
+        closeBtn.addEventListener("click", closeBookingModal);
+    }
 
+    const cancelBtn = document.getElementById("btnCancelModal");
+    if (cancelBtn) {
+        cancelBtn.addEventListener("click", closeBookingModal);
+    }
+
+    const bookingForm = document.getElementById("bookingForm");
+    if (bookingForm) {
+        bookingForm.addEventListener("submit", handleBookingSubmit);
+    }
+
+    // Attach real-time validation on Date + Time pickers
+    const apptDateInput = document.getElementById("apptDate");
+    const apptTimeInput = document.getElementById("apptTime");
+    if (apptDateInput) {
+        apptDateInput.addEventListener("change", validateDateTimeFields);
+        apptDateInput.addEventListener("input", validateDateTimeFields);
+    }
+    if (apptTimeInput) {
+        apptTimeInput.addEventListener("change", validateDateTimeFields);
+        apptTimeInput.addEventListener("input", validateDateTimeFields);
+    }
+
+    const backdrop = document.getElementById("bookModalBackdrop");
+    if (backdrop) {
+        backdrop.addEventListener("click", (e) => {
+            if (e.target === backdrop) {
+                closeBookingModal();
+            }
+        });
+    }
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            closeBookingModal();
+        }
+    });
+
+    const profileBadge = document.querySelector(".profile-badge");
     if (profileBadge) {
         profileBadge.style.cursor = "pointer";
-
         profileBadge.addEventListener("click", () => {
             window.location.href = "profile.html";
         });
     }
 
-    const notifBtn =
-        document.querySelector(
-            '.icon-btn[title="View alerts"], .icon-btn[title="Notifications"]'
-        );
-
+    const notifBtn = document.querySelector('.icon-btn[title="View alerts"], .icon-btn[title="Notifications"]');
     if (notifBtn) {
         notifBtn.addEventListener("click", () => {
             window.location.href = "notifications.html";
         });
     }
 
-    const logoutLinks =
-        document.querySelectorAll(
-            '.sidebar-footer a, #btnLogout'
-        );
-
+    const logoutLinks = document.querySelectorAll('.sidebar-footer a, #btnLogout');
     logoutLinks.forEach(link => {
-        link.addEventListener("click", () => {
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("isAuthenticated");
-            localStorage.removeItem("userEmail");
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            logoutUser();
         });
     });
 
-    loadAppointments();
+    refreshCounts();
+    console.log("appointments.js loaded. Real backend token booking active.");
 });
+
+
+

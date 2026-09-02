@@ -1,5 +1,5 @@
 /* 
-  VIZITOR Login Page Stylesheet
+  Symmetry Login Page Stylesheet
   Curated palette, modern typography, premium aesthetics.
 */
 
@@ -255,6 +255,126 @@ body {
 
 .form-footer a:hover {
     color: #6d28d9;
+}
+
+/* Validation & Feedback Banners */
+.field-error {
+    font-size: 0.775rem;
+    color: #ef4444;
+    font-weight: 500;
+    margin-top: 2px;
+    display: block;
+    min-height: 16px;
+}
+
+.input-group input.is-invalid {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
+}
+
+.form-error-banner {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-success-banner {
+    background-color: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* OTP Inputs Container & Digit Controls */
+.otp-input-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 1.25rem 0;
+}
+
+.otp-digit {
+    width: 46px;
+    height: 50px;
+    text-align: center;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    background-color: #ffffff;
+    transition: all 0.2s ease-in-out;
+}
+
+.otp-digit:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
+}
+
+.resend-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 1.25rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: #7c3aed;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 0.875rem;
+    padding: 0;
+    transition: color 0.15s ease;
+}
+
+.btn-link:hover:not(:disabled) {
+    color: #6d28d9;
+}
+
+.btn-link:disabled {
+    color: #9ca3af;
+    cursor: not-allowed;
+    text-decoration: none;
+}
+
+.demo-mode-badge {
+    background-color: #fffbebf5;
+    border: 1px dashed #f59e0b;
+    color: #b45309;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.775rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
 
 /* Responsive Rules */
@@ -2189,5 +2309,668 @@ body {
         flex-direction: column;
     }
 }
+
+/* ====== Modal Backdrop & Dialog Styles ====== */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.modal-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 480px;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    border: 1px solid #e2e8f0;
+    animation: modalSlideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.modal-header h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #64748b;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 2px 8px;
+    line-height: 1;
+    transition: all 0.15s ease;
+}
+
+.modal-close-btn:hover {
+    color: #0f172a;
+    background: #f1f5f9;
+}
+
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+/* Date and Time Picker Input Customizations */
+.input-group input[type="date"],
+.input-group input[type="time"] {
+    appearance: none;
+    -webkit-appearance: none;
+    color: #0f172a;
+    font-size: 0.95rem;
+    font-weight: 500;
+    background-color: #ffffff;
+    cursor: pointer;
+}
+
+.input-group input[type="date"]::-webkit-calendar-picker-indicator,
+.input-group input[type="time"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(0.3);
+    transition: filter 0.15s ease;
+}
+
+.input-group input[type="date"]::-webkit-calendar-picker-indicator:hover,
+.input-group input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    filter: invert(0.1);
+}
+
+/* Date & Time Validation Feedback Styling */
+.field-error {
+    display: block;
+    color: #dc2626;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-top: 4px;
+    min-height: 1.1rem;
+    line-height: 1.2;
+}
+
+.input-group input.invalid {
+    border-color: #ef4444 !important;
+    background-color: #fff5f5;
+}
+
+.input-group input.invalid:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}
+
+.form-error-banner {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    font-size: 0.825rem;
+    font-weight: 500;
+    padding: 0.65rem 0.85rem;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+@media (max-width: 480px) {
+    .modal-card {
+        padding: 1.25rem;
+        margin: 0.5rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem !important;
+    }
+
+    .modal-footer {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+
+    .modal-footer button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ==========================================
+   Crowd Forecast Page Styles
+   ========================================== */
+
+/* Overview 5-Card Stats Grid */
+.forecast-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.forecast-stat-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.forecast-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.08);
+}
+
+.forecast-stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.forecast-stat-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.forecast-stat-icon {
+    width: 20px;
+    height: 20px;
+    color: #7c3aed;
+    opacity: 0.85;
+}
+
+.forecast-stat-value {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+    margin-top: 0.2rem;
+}
+
+.forecast-stat-value.empty-val {
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.forecast-stat-sub {
+    font-size: 0.775rem;
+    color: #94a3b8;
+    margin-top: 0.15rem;
+}
+
+/* Duration Selector Bar */
+.duration-selector-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.duration-selector-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.duration-selector-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.duration-selector-desc {
+    font-size: 0.825rem;
+    color: #64748b;
+}
+
+.duration-pills {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 10px;
+}
+
+.duration-pill {
+    background: transparent;
+    border: none;
+    padding: 0.45rem 0.9rem;
+    border-radius: 8px;
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.duration-pill:hover {
+    color: #0f172a;
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.duration-pill.active {
+    background: #ffffff;
+    color: #7c3aed;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Clean Empty State Graphic Component */
+.forecast-empty-state-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3.5rem 2rem;
+    text-align: center;
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    margin: 1rem 0;
+}
+
+.empty-state-icon-wrap {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    color: #7c3aed;
+}
+
+.empty-state-icon-wrap svg {
+    width: 32px;
+    height: 32px;
+}
+
+.empty-state-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.4rem;
+}
+
+.empty-state-text {
+    font-size: 0.9rem;
+    color: #64748b;
+    max-width: 480px;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.empty-state-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.35rem 0.75rem;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    font-size: 0.775rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.empty-state-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #94a3b8;
+}
+
+/* Counter Forecast Table */
+.counter-forecast-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+
+.counter-forecast-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.counter-forecast-table th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.counter-forecast-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    vertical-align: middle;
+}
+
+.counter-forecast-table tr:last-child td {
+    border-bottom: none;
+}
+
+.counter-forecast-table .td-counter {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.counter-forecast-table .td-service {
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+.counter-forecast-table .td-muted {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* Peak & Best Time Cards */
+.peak-times-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.peak-info-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.peak-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    color: #7c3aed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.peak-card-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.peak-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.peak-card-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.peak-card-value {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.peak-card-value.empty-val {
+    color: #94a3b8;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.peak-card-desc {
+    font-size: 0.825rem;
+    color: #64748b;
+    line-height: 1.4;
+    margin-top: 0.15rem;
+}
+
+/* Highlighted AI Recommendation Panel */
+.ai-recommendation-panel {
+    background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
+    border: 1px solid #e9d5ff;
+    border-left: 5px solid #7c3aed;
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.06);
+}
+
+.ai-recommendation-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.ai-recommendation-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #5b21b6;
+}
+
+.ai-recommendation-title svg {
+    width: 22px;
+    height: 22px;
+    color: #7c3aed;
+}
+
+.ai-rec-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+
+.ai-rec-box {
+    background: #ffffff;
+    border: 1px solid #f3e8ff;
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.ai-rec-box-label {
+    font-size: 0.775rem;
+    font-weight: 700;
+    color: #7c3aed;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ai-rec-box-value {
+    font-size: 0.925rem;
+    color: #334155;
+    line-height: 1.45;
+}
+
+.ai-rec-box-value.empty-val {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* Prediction Explanation Section */
+.prediction-explanation-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 1.25rem;
+}
+
+.confidence-score-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 0.5rem;
+}
+
+.confidence-score-val {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #94a3b8;
+    line-height: 1;
+}
+
+.confidence-score-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.explanation-factors-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.factor-group-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.35rem;
+}
+
+.factor-tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.factor-tag {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Responsive Rules for Forecast Page */
+@media (max-width: 1024px) {
+    .forecast-overview-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .ai-rec-grid {
+        grid-template-columns: 1fr;
+    }
+    .prediction-explanation-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .forecast-overview-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .peak-times-grid {
+        grid-template-columns: 1fr;
+    }
+    .duration-selector-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .duration-pills {
+        width: 100%;
+        overflow-x: auto;
+        justify-content: flex-start;
+    }
+    .duration-pill {
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .forecast-overview-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
 
 
