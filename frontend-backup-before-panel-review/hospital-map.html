@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>VIZITOR - Hospital Location</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 40px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 30px;
+            font-size: 18px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 24px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .status {
+            padding: 12px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            color: #475569;
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 7px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .info {
+            margin-top: 24px;
+        }
+
+        .info-block {
+            margin-bottom: 18px;
+        }
+
+        .label {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f172a;
+            line-height: 1.4;
+        }
+
+        .distance {
+            color: #7c3aed;
+            font-size: 20px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 12px;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #7c3aed;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover:not(:disabled) {
+            background: #6d28d9;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #hospitalMap {
+            width: 100%;
+            height: 550px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #e2e8f0;
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #64748b;
+            background: #e2e8f0;
+        }
+
+        .map-placeholder strong {
+            display: block;
+            font-size: 20px;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 800px) {
+
+            .container {
+                padding: 20px;
+            }
+
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            #hospitalMap {
+                height: 400px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <div class="container">
+
+        <h1>Hospital Location</h1>
+
+        <div class="subtitle">
+            Find a nearby hospital and view its location.
+        </div>
+
+
+        <div class="layout">
+
+
+            <!-- =====================================================
+                 HOSPITAL INFORMATION
+            ====================================================== -->
+
+            <div class="panel">
+
+                <h2>Select Hospital</h2>
+
+
+                <div
+                    class="status"
+                    id="locationStatus">
+
+                    Initializing location...
+
+                </div>
+
+
+                <label for="hospitalSelect">
+                    Available Hospitals
+                </label>
+
+
+                <select id="hospitalSelect">
+
+                    <option value="">
+                        Loading hospitals...
+                    </option>
+
+                </select>
+
+
+                <div class="info">
+
+
+                    <div class="info-block">
+
+                        <div class="label">
+                            Hospital
+                        </div>
+
+                        <div
+                            class="value"
+                            id="hospitalName">
+
+                            --
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-block">
+
+                        <div class="label">
+                            Address
+                        </div>
+
+                        <div
+                            class="value"
+                            id="hospitalAddress">
+
+                            --
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-block">
+
+                        <div class="label">
+                            Distance from you
+                        </div>
+
+                        <div
+                            class="value distance"
+                            id="hospitalDistance">
+
+                            --
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                <button
+                    id="directionsBtn"
+                    type="button"
+                    disabled>
+
+                    Get Directions
+
+                </button>
+
+            </div>
+
+
+            <!-- =====================================================
+                 GOOGLE MAP
+            ====================================================== -->
+
+            <div class="panel">
+
+                <div id="hospitalMap">
+
+                    <div class="map-placeholder">
+
+                        <div>
+
+                            <strong>
+                                Google Maps
+                            </strong>
+
+                            Loading map...
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // =========================================================
+        // CONFIGURATION
+        // =========================================================
+
+        const API_BASE_URL =
+            "https://vizitor.onrender.com";
+
+
+        // =========================================================
+        // GLOBAL VARIABLES
+        // =========================================================
+
+        let userLatitude = null;
+        let userLongitude = null;
+
+        let hospitals = [];
+
+        let map = null;
+
+        let userMarker = null;
+        let hospitalMarker = null;
+
+
+        // =========================================================
+        // DOM ELEMENTS
+        // =========================================================
+
+        const hospitalSelect =
+            document.getElementById(
+                "hospitalSelect"
+            );
+
+        const hospitalName =
+            document.getElementById(
+                "hospitalName"
+            );
+
+        const hospitalAddress =
+            document.getElementById(
+                "hospitalAddress"
+            );
+
+        const hospitalDistance =
+            document.getElementById(
+                "hospitalDistance"
+            );
+
+        const locationStatus =
+            document.getElementById(
+                "locationStatus"
+            );
+
+        const directionsBtn =
+            document.getElementById(
+                "directionsBtn"
+            );
+
+
+        // =========================================================
+        // DEMO LOCATION
+        // =========================================================
+
+        function getUserLocation() {
+
+            /*
+             * Temporary demo location.
+             *
+             * Puri, Odisha
+             */
+
+            userLatitude = 19.8135;
+            userLongitude = 85.8312;
+
+
+            locationStatus.textContent =
+                "Demo location: Puri, Odisha";
+
+
+            loadHospitals();
+
+        }
+
+
+        // =========================================================
+        // LOAD HOSPITALS
+        // =========================================================
+
+        async function loadHospitals() {
+
+            try {
+
+                locationStatus.textContent =
+                    "Loading nearby hospitals...";
+
+
+                const url =
+                    `${API_BASE_URL}/hospitals/nearby` +
+                    `?latitude=${userLatitude}` +
+                    `&longitude=${userLongitude}`;
+
+
+                console.log(
+                    "Hospital API:",
+                    url
+                );
+
+
+                const response =
+                    await fetch(url);
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `API returned ${response.status}`
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                console.log(
+                    "Hospital data:",
+                    data
+                );
+
+
+                hospitals =
+                    data.hospitals || [];
+
+
+                hospitalSelect.innerHTML =
+                    "";
+
+
+                if (hospitals.length === 0) {
+
+                    hospitalSelect.innerHTML =
+                        `<option value="">
+                            No hospitals found
+                        </option>`;
+
+
+                    locationStatus.textContent =
+                        "No nearby hospitals found.";
+
+
+                    return;
+
+                }
+
+
+                // -------------------------------------------------
+                // PLACEHOLDER
+                // -------------------------------------------------
+
+                const defaultOption =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                defaultOption.value =
+                    "";
+
+
+                defaultOption.textContent =
+                    "Select a hospital";
+
+
+                defaultOption.selected =
+                    true;
+
+
+                hospitalSelect.appendChild(
+                    defaultOption
+                );
+
+
+                // -------------------------------------------------
+                // ADD HOSPITALS
+                // -------------------------------------------------
+
+                hospitals.forEach(
+                    hospital => {
+
+                        const option =
+                            document.createElement(
+                                "option"
+                            );
+
+
+                        option.value =
+                            hospital.hospital_id;
+
+
+                        option.textContent =
+                            `${hospital.name} — ${hospital.distance_km} km`;
+
+
+                        hospitalSelect.appendChild(
+                            option
+                        );
+
+                    }
+                );
+
+
+                // -------------------------------------------------
+                // INITIAL STATE
+                // -------------------------------------------------
+
+                hospitalSelect.value = "";
+
+                hospitalName.textContent = "--";
+                hospitalAddress.textContent = "--";
+                hospitalDistance.textContent = "--";
+
+                directionsBtn.disabled = true;
+
+
+                locationStatus.textContent =
+                    `Found ${hospitals.length} hospitals near you.`;
+
+
+                console.log(
+                    "Hospital list loaded successfully."
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Hospital loading error:",
+                    error
+                );
+
+
+                locationStatus.textContent =
+                    "Unable to connect to local FastAPI.";
+
+
+                hospitalSelect.innerHTML =
+                    `<option value="">
+                        API connection failed
+                    </option>`;
+
+            }
+
+        }
+
+
+        // =========================================================
+        // SHOW SELECTED HOSPITAL
+        // =========================================================
+
+        function showHospital(
+            hospital
+        ) {
+
+            hospitalName.textContent =
+                hospital.name;
+
+
+            hospitalAddress.textContent =
+                hospital.address;
+
+
+            hospitalDistance.textContent =
+                `${hospital.distance_km} km`;
+
+
+            directionsBtn.disabled =
+                false;
+
+
+            updateMap(
+                hospital
+            );
+
+        }
+
+
+        // =========================================================
+        // HOSPITAL DROPDOWN
+        // =========================================================
+
+        hospitalSelect.addEventListener(
+            "change",
+            function () {
+
+                const selectedHospital =
+                    hospitals.find(
+                        hospital =>
+                            hospital.hospital_id ===
+                            hospitalSelect.value
+                    );
+
+
+                if (!selectedHospital) {
+
+                    hospitalName.textContent =
+                        "--";
+
+                    hospitalAddress.textContent =
+                        "--";
+
+                    hospitalDistance.textContent =
+                        "--";
+
+                    directionsBtn.disabled =
+                        true;
+
+                    if (hospitalMarker) {
+
+                        hospitalMarker.setVisible(
+                            false
+                        );
+
+                    }
+
+                    return;
+
+                }
+
+
+                showHospital(
+                    selectedHospital
+                );
+
+            }
+        );
+
+
+        // =========================================================
+        // GET DIRECTIONS
+        // =========================================================
+
+        directionsBtn.addEventListener(
+            "click",
+            function () {
+
+                const selectedHospital =
+                    hospitals.find(
+                        hospital =>
+                            hospital.hospital_id ===
+                            hospitalSelect.value
+                    );
+
+
+                if (!selectedHospital) {
+
+                    alert(
+                        "Please select a hospital."
+                    );
+
+                    return;
+
+                }
+
+
+                /*
+                 * Opens REAL Google Maps navigation.
+                 *
+                 * No Routes API is required here.
+                 */
+
+                const googleMapsURL =
+                    `https://www.google.com/maps/dir/?api=1` +
+                    `&origin=${userLatitude},${userLongitude}` +
+                    `&destination=${selectedHospital.latitude},${selectedHospital.longitude}`;
+
+
+                window.open(
+                    googleMapsURL,
+                    "_blank"
+                );
+
+            }
+        );
+
+
+        // =========================================================
+        // UPDATE MAP
+        // =========================================================
+
+        function updateMap(
+            hospital
+        ) {
+
+            if (!map) {
+
+                return;
+
+            }
+
+
+            const hospitalPosition = {
+
+                lat:
+                    Number(
+                        hospital.latitude
+                    ),
+
+                lng:
+                    Number(
+                        hospital.longitude
+                    )
+
+            };
+
+
+            hospitalMarker.setPosition(
+                hospitalPosition
+            );
+
+
+            hospitalMarker.setVisible(
+                true
+            );
+
+
+            /*
+             * Center map between the user
+             * and selected hospital.
+             */
+
+            const bounds =
+                new google.maps.LatLngBounds();
+
+
+            bounds.extend({
+
+                lat:
+                    Number(
+                        userLatitude
+                    ),
+
+                lng:
+                    Number(
+                        userLongitude
+                    )
+
+            });
+
+
+            bounds.extend(
+                hospitalPosition
+            );
+
+
+            map.fitBounds(
+                bounds
+            );
+
+        }
+
+
+        // =========================================================
+        // GOOGLE MAP INITIALIZATION
+        // =========================================================
+
+        window.initMap = function () {
+
+            console.log(
+                "Google Maps initialized."
+            );
+
+
+            map =
+                new google.maps.Map(
+                    document.getElementById(
+                        "hospitalMap"
+                    ),
+                    {
+
+                        center: {
+
+                            lat:
+                                19.8135,
+
+                            lng:
+                                85.8312
+
+                        },
+
+                        zoom:
+                            13,
+
+                        mapTypeControl:
+                            true,
+
+                        streetViewControl:
+                            true,
+
+                        fullscreenControl:
+                            true
+
+                    }
+                );
+
+
+            // -----------------------------------------------------
+            // USER MARKER
+            // -----------------------------------------------------
+
+            userMarker =
+                new google.maps.Marker({
+
+                    map:
+                        map,
+
+                    position: {
+
+                        lat:
+                            userLatitude,
+
+                        lng:
+                            userLongitude
+
+                    },
+
+                    title:
+                        "Your Location"
+
+                });
+
+
+            // -----------------------------------------------------
+            // HOSPITAL MARKER
+            // -----------------------------------------------------
+
+            hospitalMarker =
+                new google.maps.Marker({
+
+                    map:
+                        map,
+
+                    position: {
+
+                        lat:
+                            userLatitude,
+
+                        lng:
+                            userLongitude
+
+                    },
+
+                    title:
+                        "Selected Hospital",
+
+                    visible:
+                        false
+
+                });
+
+        };
+
+
+        // =========================================================
+        // START APPLICATION
+        // =========================================================
+
+        getUserLocation();
+
+    </script>
+
+
+    <!-- =========================================================
+         GOOGLE MAPS JAVASCRIPT API
+         
+         Replace YOUR_GOOGLE_MAPS_API_KEY with your own key.
+    ========================================================== -->
+
+    <script
+        async
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC607wKpIOjVXRR_Rw61v-_y4tvVKrobRo&loading=async&callback=initMap">
+    </script>
+
+
+</body>
+
+</html>

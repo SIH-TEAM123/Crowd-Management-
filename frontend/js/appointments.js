@@ -1,7 +1,88 @@
 // ============================================================
 // VIZITOR - APPOINTMENTS PAGE
-// Complete fixed version
+// Backend-synced version
 // ============================================================
+
+const APPOINTMENTS_API_URL =
+    "https://vizitor.onrender.com/appointments";
+
+
+// ============================================================
+// DATE / TIME HELPERS
+// ============================================================
+
+function getTodayDateString() {
+    const now = new Date();
+
+    return `${now.getFullYear()}-${String(
+        now.getMonth() + 1
+    ).padStart(2, "0")}-${String(
+        now.getDate()
+    ).padStart(2, "0")}`;
+}
+
+
+function formatAppointmentDate(value) {
+    if (!value) return "—";
+
+    const parts = String(value)
+        .slice(0, 10)
+        .split("-")
+        .map(Number);
+
+    if (parts.length !== 3 || parts.some(Number.isNaN)) {
+        return String(value);
+    }
+
+    const [year, month, day] = parts;
+
+    return new Date(
+        year,
+        month - 1,
+        day
+    ).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+    });
+}
+
+
+function formatAppointmentTime(value) {
+    if (!value) return "—";
+
+    const parts = String(value)
+        .slice(0, 5)
+        .split(":")
+        .map(Number);
+
+    if (parts.length < 2 || parts.some(Number.isNaN)) {
+        return String(value);
+    }
+
+    const [hours, minutes] = parts;
+
+    const period = hours >= 12 ? "PM" : "AM";
+    const displayHours = hours % 12 || 12;
+
+    return `${String(displayHours).padStart(2, "0")}:${String(
+        minutes
+    ).padStart(2, "0")} ${period}`;
+}
+
+
+// ============================================================
+// ESCAPE HTML
+// ============================================================
+
+function escapeHTML(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
 
 
 // ============================================================
@@ -21,21 +102,24 @@ async function createToken(priorityType = "NORMAL") {
         };
     }
 
-    const serviceInput = document.getElementById("apptService");
-    const dateInput = document.getElementById("apptDate");
-    const timeInput = document.getElementById("apptTime");
+    const serviceInput =
+        document.getElementById("apptService");
 
-    const purpose = serviceInput
-        ? serviceInput.value.trim()
-        : "General Consultation";
+    const dateInput =
+        document.getElementById("apptDate");
 
-    const appointmentDate = dateInput
-        ? dateInput.value
-        : "";
+    const timeInput =
+        document.getElementById("apptTime");
 
-    const appointmentTime = timeInput
-        ? timeInput.value
-        : "";
+    const purpose =
+        serviceInput?.value.trim() ||
+        "General Consultation";
+
+    const appointmentDate =
+        dateInput?.value || "";
+
+    const appointmentTime =
+        timeInput?.value || "";
 
     if (!purpose) {
         return {
@@ -54,7 +138,7 @@ async function createToken(priorityType = "NORMAL") {
     try {
 
         const response = await fetch(
-            "https://vizitor.onrender.com/appointments",
+            APPOINTMENTS_API_URL,
             {
                 method: "POST",
 
@@ -71,13 +155,38 @@ async function createToken(priorityType = "NORMAL") {
             }
         );
 
-        const data = await response.json();
+        let data = {};
 
-        console.log("Appointment API response:", data);
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+
+        console.log(
+            "Appointment API response:",
+            data
+        );
+
+        if (response.status === 401) {
+
+            localStorage.removeItem(
+                "access_token"
+            );
+
+            window.location.href =
+                "index.html";
+
+            return {
+                success: false,
+                message: "Session expired. Please login again."
+            };
+        }
 
         if (!response.ok) {
 
-            let message = "Unable to book appointment.";
+            let message =
+                "Unable to book appointment.";
 
             if (Array.isArray(data.detail)) {
 
@@ -87,7 +196,9 @@ async function createToken(priorityType = "NORMAL") {
                     )
                     .join("\n");
 
-            } else if (typeof data.detail === "string") {
+            } else if (
+                typeof data.detail === "string"
+            ) {
 
                 message = data.detail;
             }
@@ -105,13 +216,645 @@ async function createToken(priorityType = "NORMAL") {
 
     } catch (error) {
 
-        console.error("Appointment booking error:", error);
+        console.error(
+            "Appointment booking error:",
+            error
+        );
 
         return {
             success: false,
             message:
                 "Unable to connect to the appointment server."
         };
+    }
+}
+
+
+// ============================================================
+// LOAD REAL APPOINTMENTS FROM BACKEND
+// ============================================================
+
+async function loadAppointmentsFromServer() {
+
+    const token =
+        localStorage.getItem("access_token");
+
+    if (!token) {
+
+        window.location.href =
+            "index.html";
+
+        return;
+    }
+
+    const grid =
+        document.getElementById(
+            "upcomingGrid"
+        );
+
+    const tbody =
+        document.getElementById(
+            "prevTableBody"
+        );
+
+    try {
+
+        const response =
+            await fetch(
+                APPOINTMENTS_API_URL,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`,
+                        "Content-Type":
+                            "application/json"
+                    }
+                }
+            );
+
+        let data = {};
+
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+
+        if (response.status === 401) {
+
+            localStorage.removeItem(
+                "access_token"
+            );
+
+            window.location.href =
+                "index.html";
+
+            return;
+        }
+
+        if (!response.ok) {
+
+            console.error(
+                "Unable to load appointments:",
+                data
+            );
+
+            return;
+        }
+
+
+        // Backend may return either:
+        // [] or { appointments: [] }
+
+        const appointments =
+            Array.isArray(data)
+                ? data
+                : Array.isArray(data.appointments)
+                    ? data.appointments
+                    : Array.isArray(data.data)
+                        ? data.data
+                        : [];
+
+
+        // Clear old frontend content
+
+        if (grid) {
+            grid.innerHTML = "";
+        }
+
+        if (tbody) {
+            tbody.innerHTML = "";
+        }
+
+
+        const today =
+            getTodayDateString();
+
+        let upcomingCount = 0;
+        let previousCount = 0;
+
+
+        appointments.forEach(
+            appointment => {
+
+                const appointmentId =
+                    appointment.appointment_id ??
+                    appointment.id;
+
+                const service =
+                    appointment.purpose ||
+                    appointment.service ||
+                    "General Consultation";
+
+                const appointmentDate =
+                    String(
+                        appointment.appointment_date ||
+                        ""
+                    ).slice(0, 10);
+
+                const appointmentTime =
+                    String(
+                        appointment.appointment_time ||
+                        ""
+                    ).slice(0, 5);
+
+                const status =
+                    String(
+                        appointment.status ||
+                        "CONFIRMED"
+                    ).toUpperCase();
+
+                const tokenNumber =
+                    appointment.token_number ||
+                    appointment.token ||
+                    "—";
+
+                const counter =
+                    appointment.counter ||
+                    appointment.counter_name ||
+                    "Counter 1";
+
+                const formattedDate =
+                    formatAppointmentDate(
+                        appointmentDate
+                    );
+
+                const formattedTime =
+                    formatAppointmentTime(
+                        appointmentTime
+                    );
+
+
+                // CANCELLED appointments always
+                // go to Previous.
+
+                const isCancelled =
+                    status === "CANCELLED";
+
+
+                // Any date before today is previous.
+
+                const isPast =
+                    appointmentDate &&
+                    appointmentDate < today;
+
+
+                // Upcoming means:
+                // - not cancelled
+                // - date is today or future
+
+                const isUpcoming =
+                    !isCancelled &&
+                    !isPast;
+
+
+                if (isUpcoming && grid) {
+
+                    upcomingCount++;
+
+                    renderUpcomingAppointment(
+                        grid,
+                        {
+                            id: appointmentId,
+                            service,
+                            date: formattedDate,
+                            time: formattedTime,
+                            counter,
+                            token: tokenNumber,
+                            status
+                        }
+                    );
+
+                } else if (tbody) {
+
+                    previousCount++;
+
+                    renderPreviousAppointment(
+                        tbody,
+                        {
+                            service,
+                            date: formattedDate,
+                            token: tokenNumber,
+                            status:
+                                isCancelled
+                                    ? "Cancelled"
+                                    : "Completed"
+                        }
+                    );
+                }
+            }
+        );
+
+
+        // Empty upcoming state
+
+        if (
+            grid &&
+            upcomingCount === 0
+        ) {
+
+            grid.innerHTML = `
+
+                <div
+                    class="empty-state"
+                    style="grid-column:1/-1;">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5">
+
+                        <rect
+                            x="3"
+                            y="4"
+                            width="18"
+                            height="18"
+                            rx="2"/>
+
+                        <line
+                            x1="16"
+                            y1="2"
+                            x2="16"
+                            y2="6"/>
+
+                        <line
+                            x1="8"
+                            y1="2"
+                            x2="8"
+                            y2="6"/>
+
+                        <line
+                            x1="3"
+                            y1="10"
+                            x2="21"
+                            y2="10"/>
+
+                    </svg>
+
+                    <p>
+                        No upcoming appointments.
+                        Book one using the button above!
+                    </p>
+
+                </div>
+            `;
+        }
+
+
+        // Empty previous state
+
+        if (
+            tbody &&
+            previousCount === 0
+        ) {
+
+            tbody.innerHTML = `
+
+                <tr class="empty-history-row">
+
+                    <td
+                        colspan="4"
+                        style="
+                            text-align:center;
+                            padding:25px;
+                            color:#64748b;
+                        ">
+
+                        No previous appointments.
+
+                    </td>
+
+                </tr>
+            `;
+        }
+
+
+        refreshCounts();
+
+        console.log(
+            "Appointments synced:",
+            appointments.length
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Appointment loading error:",
+            error
+        );
+    }
+}
+
+
+// ============================================================
+// RENDER UPCOMING APPOINTMENT
+// ============================================================
+
+function renderUpcomingAppointment(
+    grid,
+    appointment
+) {
+
+    const card =
+        document.createElement("div");
+
+    card.className =
+        "appt-card confirmed";
+
+    card.setAttribute(
+        "data-id",
+        appointment.id
+    );
+
+    card.innerHTML = `
+
+        <div class="appt-card-header">
+
+            <span class="appt-service-name">
+
+                ${escapeHTML(
+                    appointment.service
+                )}
+
+            </span>
+
+            <span
+                class="card-badge badge-success">
+
+                Active
+
+            </span>
+
+        </div>
+
+
+        <div class="appt-meta-grid">
+
+            <div class="appt-meta-item">
+
+                <span class="appt-meta-label">
+                    Date
+                </span>
+
+                <span class="appt-meta-value">
+                    ${escapeHTML(
+                        appointment.date
+                    )}
+                </span>
+
+            </div>
+
+
+            <div class="appt-meta-item">
+
+                <span class="appt-meta-label">
+                    Time
+                </span>
+
+                <span class="appt-meta-value">
+                    ${escapeHTML(
+                        appointment.time
+                    )}
+                </span>
+
+            </div>
+
+
+            <div class="appt-meta-item">
+
+                <span class="appt-meta-label">
+                    Counter
+                </span>
+
+                <span class="appt-meta-value">
+                    ${escapeHTML(
+                        appointment.counter
+                    )}
+                </span>
+
+            </div>
+
+
+            <div class="appt-meta-item">
+
+                <span class="appt-meta-label">
+                    Token
+                </span>
+
+                <span class="appt-meta-value token">
+                    ${escapeHTML(
+                        appointment.token
+                    )}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="appt-card-actions">
+
+            <button
+                class="btn-action-ghost"
+                data-action="details">
+
+                View Details
+
+            </button>
+
+
+            <button
+                class="btn-action-cancel"
+                data-action="cancel">
+
+                Cancel
+
+            </button>
+
+        </div>
+    `;
+
+
+    card
+        .querySelector(
+            '[data-action="details"]'
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                viewDetails(
+                    appointment.id
+                );
+            }
+        );
+
+
+    card
+        .querySelector(
+            '[data-action="cancel"]'
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                showCancelConfirm(
+                    appointment.id,
+                    appointment.service,
+                    appointment.date,
+                    appointment.token
+                );
+            }
+        );
+
+
+    grid.appendChild(card);
+}
+
+
+// ============================================================
+// RENDER PREVIOUS APPOINTMENT
+// ============================================================
+
+function renderPreviousAppointment(
+    tbody,
+    appointment
+) {
+
+    const row =
+        document.createElement("tr");
+
+    row.innerHTML = `
+
+        <td>
+
+            <div class="table-icon-row">
+
+                <svg
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24">
+
+                    <rect
+                        x="3"
+                        y="4"
+                        width="18"
+                        height="18"
+                        rx="2"/>
+
+                    <line
+                        x1="16"
+                        y1="2"
+                        x2="16"
+                        y2="6"/>
+
+                    <line
+                        x1="8"
+                        y1="2"
+                        x2="8"
+                        y2="6"/>
+
+                    <line
+                        x1="3"
+                        y1="10"
+                        x2="21"
+                        y2="10"/>
+
+                </svg>
+
+                <span>
+                    ${escapeHTML(
+                        appointment.service
+                    )}
+                </span>
+
+            </div>
+
+        </td>
+
+
+        <td>
+            ${escapeHTML(
+                appointment.date
+            )}
+        </td>
+
+
+        <td
+            style="
+                color:#7c3aed;
+                font-weight:600;
+            ">
+
+            ${escapeHTML(
+                appointment.token
+            )}
+
+        </td>
+
+
+        <td>
+
+            <span
+                class="card-badge ${
+                    appointment.status === "Cancelled"
+                        ? "badge-danger"
+                        : "badge-success"
+                }">
+
+                ${escapeHTML(
+                    appointment.status
+                )}
+
+            </span>
+
+        </td>
+    `;
+
+    tbody.appendChild(row);
+}
+
+
+// ============================================================
+// UPDATE COUNTERS
+// ============================================================
+
+function refreshCounts() {
+
+    const upcomingCards =
+        document.querySelectorAll(
+            "#upcomingGrid .appt-card"
+        );
+
+    const prevRows =
+        document.querySelectorAll(
+            "#prevTableBody tr:not(.empty-history-row)"
+        );
+
+    const upcomingCount =
+        document.getElementById(
+            "upcomingCount"
+        );
+
+    const prevCount =
+        document.getElementById(
+            "prevCount"
+        );
+
+    if (upcomingCount) {
+
+        upcomingCount.textContent =
+            upcomingCards.length;
+    }
+
+    if (prevCount) {
+
+        prevCount.textContent =
+            prevRows.length;
     }
 }
 
@@ -130,7 +873,8 @@ function injectAppointmentModalStyles() {
         return;
     }
 
-    const style = document.createElement("style");
+    const style =
+        document.createElement("style");
 
     style.id =
         "vizitorAppointmentModalStyles";
@@ -140,7 +884,7 @@ function injectAppointmentModalStyles() {
         .vizitor-ui-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.48);
+            background: rgba(15,23,42,.48);
             backdrop-filter: blur(5px);
             display: flex;
             align-items: center;
@@ -150,288 +894,234 @@ function injectAppointmentModalStyles() {
         }
 
         .vizitor-ui-card {
-            width: min(460px, 100%);
-            background: #ffffff;
+            width: min(460px,100%);
+            background: #fff;
             border-radius: 18px;
             padding: 30px;
             position: relative;
-            box-shadow:
-                0 25px 70px rgba(15, 23, 42, 0.24);
-            animation:
-                vizitorModalIn 0.22s ease-out;
+            box-shadow: 0 25px 70px rgba(15,23,42,.24);
+            animation: vizitorModalIn .22s ease-out;
         }
 
         @keyframes vizitorModalIn {
             from {
-                opacity: 0;
-                transform: translateY(12px) scale(0.97);
+                opacity:0;
+                transform:translateY(12px) scale(.97);
             }
 
             to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
+                opacity:1;
+                transform:translateY(0) scale(1);
             }
         }
 
         .vizitor-ui-close {
-            position: absolute;
-            top: 12px;
-            right: 16px;
-            border: none;
-            background: transparent;
-            color: #64748b;
-            font-size: 28px;
-            line-height: 1;
-            cursor: pointer;
+            position:absolute;
+            top:12px;
+            right:16px;
+            border:none;
+            background:transparent;
+            color:#64748b;
+            font-size:28px;
+            line-height:1;
+            cursor:pointer;
         }
 
         .vizitor-ui-icon {
-            width: 62px;
-            height: 62px;
-            border-radius: 50%;
-            margin: 0 auto 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            font-weight: 700;
+            width:62px;
+            height:62px;
+            border-radius:50%;
+            margin:0 auto 16px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:30px;
+            font-weight:700;
         }
 
         .vizitor-ui-icon.success {
-            background: #ecfdf5;
-            border: 1px solid #a7f3d0;
-            color: #059669;
+            background:#ecfdf5;
+            border:1px solid #a7f3d0;
+            color:#059669;
         }
 
         .vizitor-ui-icon.cancel {
-            background: #fff7ed;
-            border: 1px solid #fed7aa;
-            color: #ea580c;
+            background:#fff7ed;
+            border:1px solid #fed7aa;
+            color:#ea580c;
         }
 
         .vizitor-ui-card h2 {
-            margin: 0;
-            text-align: center;
-            color: #172033;
-            font-size: 23px;
+            margin:0;
+            text-align:center;
+            color:#172033;
+            font-size:23px;
         }
 
         .vizitor-ui-subtitle {
-            text-align: center;
-            color: #64748b;
-            font-size: 14px;
-            margin: 8px 0 22px;
+            text-align:center;
+            color:#64748b;
+            font-size:14px;
+            margin:8px 0 22px;
         }
 
         .vizitor-token-box {
-            text-align: center;
-            background: #faf7ff;
-            border: 1px solid #e9d5ff;
-            border-radius: 14px;
-            padding: 17px;
-            margin-bottom: 16px;
+            text-align:center;
+            background:#faf7ff;
+            border:1px solid #e9d5ff;
+            border-radius:14px;
+            padding:17px;
+            margin-bottom:16px;
         }
 
         .vizitor-token-label {
-            display: block;
-            color: #7c3aed;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
+            display:block;
+            color:#7c3aed;
+            font-size:11px;
+            font-weight:700;
+            letter-spacing:1px;
+            margin-bottom:5px;
         }
 
         .vizitor-token-number {
-            color: #6d28d9;
-            font-size: 30px;
-            font-weight: 700;
+            color:#6d28d9;
+            font-size:30px;
+            font-weight:700;
         }
 
         .vizitor-details-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 17px;
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:10px;
+            margin-bottom:17px;
         }
 
         .vizitor-detail-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 11px;
+            background:#f8fafc;
+            border:1px solid #e2e8f0;
+            border-radius:10px;
+            padding:11px;
         }
 
         .vizitor-detail-box span {
-            display: block;
-            color: #64748b;
-            font-size: 11px;
-            margin-bottom: 4px;
+            display:block;
+            color:#64748b;
+            font-size:11px;
+            margin-bottom:4px;
         }
 
         .vizitor-detail-box strong {
-            display: block;
-            color: #172033;
-            font-size: 14px;
-            word-break: break-word;
+            display:block;
+            color:#172033;
+            font-size:14px;
+            word-break:break-word;
         }
 
         .vizitor-status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 10px;
-            border-radius: 9px;
-            background: #ecfdf5;
-            color: #047857;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 17px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+            padding:10px;
+            border-radius:9px;
+            background:#ecfdf5;
+            color:#047857;
+            font-size:13px;
+            font-weight:600;
+            margin-bottom:17px;
         }
 
         .vizitor-status.cancelled {
-            background: #fff7ed;
-            color: #c2410c;
+            background:#fff7ed;
+            color:#c2410c;
         }
 
         .vizitor-status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #10b981;
+            width:8px;
+            height:8px;
+            border-radius:50%;
+            background:#10b981;
         }
 
-        .vizitor-status.cancelled .vizitor-status-dot {
-            background: #f97316;
+        .vizitor-status.cancelled
+        .vizitor-status-dot {
+            background:#f97316;
         }
 
         .vizitor-primary-btn {
-            width: 100%;
-            border: none;
-            border-radius: 9px;
-            padding: 12px;
-            background: #7c3aed;
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
+            width:100%;
+            border:none;
+            border-radius:9px;
+            padding:12px;
+            background:#7c3aed;
+            color:#fff;
+            font-size:14px;
+            font-weight:600;
+            cursor:pointer;
         }
 
         .vizitor-primary-btn:hover {
-            background: #6d28d9;
+            background:#6d28d9;
         }
 
         .vizitor-danger-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 9px;
-            background: #ef4444;
-            color: #ffffff;
-            font-weight: 600;
-            cursor: pointer;
+            flex:1;
+            padding:12px;
+            border:none;
+            border-radius:9px;
+            background:#ef4444;
+            color:#fff;
+            font-weight:600;
+            cursor:pointer;
         }
 
         .vizitor-secondary-btn {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 9px;
-            background: #ffffff;
-            color: #334155;
-            font-weight: 600;
-            cursor: pointer;
+            flex:1;
+            padding:12px;
+            border:1px solid #e2e8f0;
+            border-radius:9px;
+            background:#fff;
+            color:#334155;
+            font-weight:600;
+            cursor:pointer;
         }
 
         .vizitor-info-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 15px;
-            padding: 11px 0;
-            border-bottom: 1px solid #eef2f7;
+            display:flex;
+            justify-content:space-between;
+            gap:15px;
+            padding:11px 0;
+            border-bottom:1px solid #eef2f7;
         }
 
         .vizitor-info-row:last-child {
-            border-bottom: none;
+            border-bottom:none;
         }
 
         .vizitor-info-row span {
-            color: #64748b;
-            font-size: 13px;
+            color:#64748b;
+            font-size:13px;
         }
 
         .vizitor-info-row strong {
-            color: #172033;
-            font-size: 13px;
-            text-align: right;
+            color:#172033;
+            font-size:13px;
+            text-align:right;
         }
 
-        @media (max-width: 520px) {
+        @media(max-width:520px) {
 
             .vizitor-ui-card {
-                padding: 24px;
+                padding:24px;
             }
 
             .vizitor-details-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns:1fr;
             }
         }
     `;
 
     document.head.appendChild(style);
-}
-
-
-// ============================================================
-// ESCAPE HTML
-// ============================================================
-
-function escapeHTML(value) {
-
-    return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-
-// ============================================================
-// UPDATE COUNTERS
-// ============================================================
-
-function refreshCounts() {
-
-    const upcomingCards =
-        document.querySelectorAll(
-            "#upcomingGrid .appt-card"
-        );
-
-    const prevRows =
-        document.querySelectorAll(
-            "#prevTableBody tr"
-        );
-
-    const upcomingCount =
-        document.getElementById(
-            "upcomingCount"
-        );
-
-    const prevCount =
-        document.getElementById(
-            "prevCount"
-        );
-
-    if (upcomingCount) {
-        upcomingCount.textContent =
-            upcomingCards.length;
-    }
-
-    if (prevCount) {
-        prevCount.textContent =
-            prevRows.length;
-    }
 }
 
 
@@ -477,12 +1167,14 @@ function viewDetails(id) {
             ".card-badge"
         )?.textContent || "—";
 
+
     const old =
         document.getElementById(
             "vizitorDetailsModal"
         );
 
     if (old) old.remove();
+
 
     const modal =
         document.createElement("div");
@@ -552,7 +1244,9 @@ function viewDetails(id) {
             <button
                 class="vizitor-primary-btn"
                 id="closeDetailsDone">
+
                 Done
+
             </button>
 
         </div>
@@ -560,17 +1254,21 @@ function viewDetails(id) {
 
     document.body.appendChild(modal);
 
-    const close = () => {
-        modal.remove();
-    };
+    const close = () => modal.remove();
 
     document
         .getElementById("closeDetailsModal")
-        ?.addEventListener("click", close);
+        ?.addEventListener(
+            "click",
+            close
+        );
 
     document
         .getElementById("closeDetailsDone")
-        ?.addEventListener("click", close);
+        ?.addEventListener(
+            "click",
+            close
+        );
 }
 
 
@@ -688,18 +1386,21 @@ function showBookingSuccess({
 
     document.body.appendChild(modal);
 
-    const close = () => {
-        modal.remove();
-        refreshCounts();
-    };
+    const close = () => modal.remove();
 
     document
         .getElementById("closeBookingSuccess")
-        ?.addEventListener("click", close);
+        ?.addEventListener(
+            "click",
+            close
+        );
 
     document
         .getElementById("bookingSuccessDone")
-        ?.addEventListener("click", close);
+        ?.addEventListener(
+            "click",
+            close
+        );
 }
 
 
@@ -707,7 +1408,10 @@ function showBookingSuccess({
 // CANCEL SUCCESS
 // ============================================================
 
-function showCancelSuccess(service, token) {
+function showCancelSuccess(
+    service,
+    token
+) {
 
     injectAppointmentModalStyles();
 
@@ -792,23 +1496,26 @@ function showCancelSuccess(service, token) {
 
     document.body.appendChild(modal);
 
-    const close = () => {
-        modal.remove();
-        refreshCounts();
-    };
+    const close = () => modal.remove();
 
     document
         .getElementById("closeCancelSuccess")
-        ?.addEventListener("click", close);
+        ?.addEventListener(
+            "click",
+            close
+        );
 
     document
         .getElementById("cancelSuccessDone")
-        ?.addEventListener("click", close);
+        ?.addEventListener(
+            "click",
+            close
+        );
 }
 
 
 // ============================================================
-// CANCEL CONFIRMATION MODAL
+// CANCEL CONFIRMATION
 // ============================================================
 
 function showCancelConfirm(
@@ -861,43 +1568,35 @@ function showCancelConfirm(
             <div class="vizitor-details-grid">
 
                 <div class="vizitor-detail-box">
-
                     <span>Service</span>
 
                     <strong>
                         ${escapeHTML(service)}
                     </strong>
-
                 </div>
 
                 <div class="vizitor-detail-box">
-
                     <span>Date</span>
 
                     <strong>
                         ${escapeHTML(date)}
                     </strong>
-
                 </div>
 
                 <div class="vizitor-detail-box">
-
                     <span>Token</span>
 
                     <strong>
                         ${escapeHTML(token)}
                     </strong>
-
                 </div>
 
                 <div class="vizitor-detail-box">
-
                     <span>Status</span>
 
                     <strong>
                         Active
                     </strong>
-
                 </div>
 
             </div>
@@ -931,6 +1630,7 @@ function showCancelConfirm(
 
     document.body.appendChild(modal);
 
+
     const closeModal = () => {
 
         const element =
@@ -943,12 +1643,14 @@ function showCancelConfirm(
         }
     };
 
+
     document
         .getElementById("closeCancelConfirm")
         ?.addEventListener(
             "click",
             closeModal
         );
+
 
     document
         .getElementById("cancelConfirmNo")
@@ -957,15 +1659,16 @@ function showCancelConfirm(
             closeModal
         );
 
+
     document
         .getElementById("cancelConfirmYes")
         ?.addEventListener(
             "click",
-            () => {
+            async () => {
 
                 closeModal();
 
-                performCancellation(
+                await performCancellation(
                     id,
                     service,
                     date,
@@ -977,186 +1680,132 @@ function showCancelConfirm(
 
 
 // ============================================================
-// PERFORM CANCELLATION
+// ACTUAL BACKEND CANCELLATION
 // ============================================================
 
-function performCancellation(
+async function performCancellation(
     id,
     service,
     date,
     token
 ) {
 
-    // Remove appointment card
-
-    const card =
-        document.querySelector(
-            `.appt-card[data-id="${id}"]`
+    const accessToken =
+        localStorage.getItem(
+            "access_token"
         );
 
-    if (card) {
-        card.remove();
+    if (!accessToken) {
+
+        window.location.href =
+            "index.html";
+
+        return;
     }
 
-
-    // Add cancelled appointment
-    // to previous appointments
-
-    const tbody =
-        document.getElementById(
-            "prevTableBody"
-        );
-
-    if (tbody) {
-
-        const row =
-            document.createElement("tr");
-
-        row.innerHTML = `
-
-            <td>
-
-                <div class="table-icon-row">
-
-                    <svg
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        viewBox="0 0 24 24">
-
-                        <rect
-                            x="3"
-                            y="4"
-                            width="18"
-                            height="18"
-                            rx="2"/>
-
-                        <line
-                            x1="16"
-                            y1="2"
-                            x2="16"
-                            y2="6"/>
-
-                        <line
-                            x1="8"
-                            y1="2"
-                            x2="8"
-                            y2="6"/>
-
-                        <line
-                            x1="3"
-                            y1="10"
-                            x2="21"
-                            y2="10"/>
-
-                    </svg>
-
-                    <span>
-                        ${escapeHTML(service)}
-                    </span>
-
-                </div>
-
-            </td>
-
-            <td>
-                ${escapeHTML(date)}
-            </td>
-
-            <td
-                style="
-                    color:#7c3aed;
-                    font-weight:600;
-                ">
-
-                ${escapeHTML(token)}
-
-            </td>
-
-            <td>
-
-                <span
-                    class="card-badge badge-danger">
-
-                    Cancelled
-
-                </span>
-
-            </td>
-        `;
-
-        tbody.prepend(row);
-    }
-
-
-    // Empty upcoming state
-
-    const grid =
-        document.getElementById(
-            "upcomingGrid"
-        );
 
     if (
-        grid &&
-        grid.querySelectorAll(
-            ".appt-card"
-        ).length === 0
+        id === undefined ||
+        id === null ||
+        id === ""
     ) {
 
-        grid.innerHTML = `
+        showErrorModal(
+            "Appointment ID is missing. Please refresh the page and try again."
+        );
 
-            <div
-                class="empty-state"
-                style="grid-column:1/-1;">
-
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5">
-
-                    <rect
-                        x="3"
-                        y="4"
-                        width="18"
-                        height="18"
-                        rx="2"/>
-
-                    <line
-                        x1="16"
-                        y1="2"
-                        x2="16"
-                        y2="6"/>
-
-                    <line
-                        x1="8"
-                        y1="2"
-                        x2="8"
-                        y2="6"/>
-
-                    <line
-                        x1="3"
-                        y1="10"
-                        x2="21"
-                        y2="10"/>
-
-                </svg>
-
-                <p>
-                    No upcoming appointments.
-                    Book one using the button above!
-                </p>
-
-            </div>
-        `;
+        return;
     }
 
-    refreshCounts();
 
-    showCancelSuccess(
-        service,
-        token
-    );
+    try {
+
+        console.log(
+            "Cancelling appointment:",
+            id
+        );
+
+
+        const response =
+            await fetch(
+                `${APPOINTMENTS_API_URL}/${encodeURIComponent(id)}`,
+                {
+                    method: "DELETE",
+
+                    headers: {
+                        "Authorization":
+                            `Bearer ${accessToken}`
+                    }
+                }
+            );
+
+
+        let data = {};
+
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+
+
+        console.log(
+            "Cancellation API response:",
+            data
+        );
+
+
+        if (response.status === 401) {
+
+            localStorage.removeItem(
+                "access_token"
+            );
+
+            window.location.href =
+                "index.html";
+
+            return;
+        }
+
+
+        if (!response.ok) {
+
+            const message =
+                typeof data.detail === "string"
+                    ? data.detail
+                    : "Unable to cancel appointment.";
+
+            showErrorModal(message);
+
+            return;
+        }
+
+
+        // IMPORTANT:
+        // Reload from backend.
+        // This makes the database the source
+        // of truth and prevents the appointment
+        // from returning after page refresh.
+
+        await loadAppointmentsFromServer();
+
+
+        showCancelSuccess(
+            service,
+            token
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Cancellation error:",
+            error
+        );
+
+        showErrorModal(
+            "Unable to connect to the appointment server."
+        );
+    }
 }
 
 
@@ -1212,6 +1861,7 @@ function validateDateTimeFields() {
         return false;
     }
 
+
     if (dateError) {
         dateError.textContent = "";
     }
@@ -1220,8 +1870,15 @@ function validateDateTimeFields() {
         timeError.textContent = "";
     }
 
-    dateInput.classList.remove("invalid");
-    timeInput.classList.remove("invalid");
+
+    dateInput.classList.remove(
+        "invalid"
+    );
+
+    timeInput.classList.remove(
+        "invalid"
+    );
+
 
     const dateVal =
         dateInput.value;
@@ -1232,21 +1889,8 @@ function validateDateTimeFields() {
     const now =
         new Date();
 
-    const todayYyyy =
-        now.getFullYear();
-
-    const todayMm =
-        String(
-            now.getMonth() + 1
-        ).padStart(2, "0");
-
-    const todayDd =
-        String(
-            now.getDate()
-        ).padStart(2, "0");
-
     const todayStr =
-        `${todayYyyy}-${todayMm}-${todayDd}`;
+        getTodayDateString();
 
 
     if (!dateVal) {
@@ -1256,7 +1900,9 @@ function validateDateTimeFields() {
                 "Please select a valid date.";
         }
 
-        dateInput.classList.add("invalid");
+        dateInput.classList.add(
+            "invalid"
+        );
 
         isValid = false;
 
@@ -1269,7 +1915,9 @@ function validateDateTimeFields() {
                 "Past dates cannot be selected.";
         }
 
-        dateInput.classList.add("invalid");
+        dateInput.classList.add(
+            "invalid"
+        );
 
         isValid = false;
     }
@@ -1282,7 +1930,9 @@ function validateDateTimeFields() {
                 "Please select a valid time.";
         }
 
-        timeInput.classList.add("invalid");
+        timeInput.classList.add(
+            "invalid"
+        );
 
         isValid = false;
 
@@ -1291,8 +1941,8 @@ function validateDateTimeFields() {
     ) {
 
         const [
-            selHours,
-            selMins
+            selectedHours,
+            selectedMinutes
         ] =
             timeVal
                 .split(":")
@@ -1301,27 +1951,32 @@ function validateDateTimeFields() {
         const currentHours =
             now.getHours();
 
-        const currentMins =
+        const currentMinutes =
             now.getMinutes();
 
+
         if (
-            selHours < currentHours ||
+            selectedHours < currentHours ||
             (
-                selHours === currentHours &&
-                selMins < currentMins
+                selectedHours === currentHours &&
+                selectedMinutes < currentMinutes
             )
         ) {
 
             if (timeError) {
+
                 timeError.textContent =
                     "Time cannot be in the past for today.";
             }
 
-            timeInput.classList.add("invalid");
+            timeInput.classList.add(
+                "invalid"
+            );
 
             isValid = false;
         }
     }
+
 
     return isValid;
 }
@@ -1368,6 +2023,7 @@ function openBookingModal() {
             "timeError"
         );
 
+
     if (
         !backdrop ||
         !dateInput ||
@@ -1376,10 +2032,16 @@ function openBookingModal() {
         return;
     }
 
+
     if (errorBanner) {
-        errorBanner.style.display = "none";
-        errorBanner.textContent = "";
+
+        errorBanner.style.display =
+            "none";
+
+        errorBanner.textContent =
+            "";
     }
+
 
     if (dateError) {
         dateError.textContent = "";
@@ -1389,27 +2051,22 @@ function openBookingModal() {
         timeError.textContent = "";
     }
 
-    dateInput.classList.remove("invalid");
-    timeInput.classList.remove("invalid");
+
+    dateInput.classList.remove(
+        "invalid"
+    );
+
+    timeInput.classList.remove(
+        "invalid"
+    );
+
 
     const today =
         new Date();
 
-    const yyyy =
-        today.getFullYear();
-
-    const mm =
-        String(
-            today.getMonth() + 1
-        ).padStart(2, "0");
-
-    const dd =
-        String(
-            today.getDate()
-        ).padStart(2, "0");
-
     const todayStr =
-        `${yyyy}-${mm}-${dd}`;
+        getTodayDateString();
+
 
     const maxDate =
         new Date();
@@ -1418,27 +2075,21 @@ function openBookingModal() {
         today.getDate() + 90
     );
 
-    const maxYyyy =
-        maxDate.getFullYear();
-
-    const maxMm =
-        String(
-            maxDate.getMonth() + 1
-        ).padStart(2, "0");
-
-    const maxDd =
-        String(
-            maxDate.getDate()
-        ).padStart(2, "0");
 
     const maxStr =
-        `${maxYyyy}-${maxMm}-${maxDd}`;
+        `${maxDate.getFullYear()}-${String(
+            maxDate.getMonth() + 1
+        ).padStart(2, "0")}-${String(
+            maxDate.getDate()
+        ).padStart(2, "0")}`;
+
 
     dateInput.min =
         todayStr;
 
     dateInput.max =
         maxStr;
+
 
     if (
         !dateInput.value ||
@@ -1449,21 +2100,17 @@ function openBookingModal() {
             todayStr;
     }
 
+
     if (!timeInput.value) {
 
-        const hh =
-            String(
-                today.getHours()
-            ).padStart(2, "0");
-
-        const mins =
-            String(
-                today.getMinutes()
-            ).padStart(2, "0");
-
         timeInput.value =
-            `${hh}:${mins}`;
+            `${String(
+                today.getHours()
+            ).padStart(2, "0")}:${String(
+                today.getMinutes()
+            ).padStart(2, "0")}`;
     }
+
 
     if (
         serviceInput &&
@@ -1473,6 +2120,7 @@ function openBookingModal() {
         serviceInput.value =
             "General Consultation";
     }
+
 
     backdrop.style.display =
         "flex";
@@ -1491,6 +2139,7 @@ function closeBookingModal() {
         );
 
     if (backdrop) {
+
         backdrop.style.display =
             "none";
     }
@@ -1504,6 +2153,7 @@ function closeBookingModal() {
 async function handleBookingSubmit(e) {
 
     e.preventDefault();
+
 
     const serviceInput =
         document.getElementById(
@@ -1530,6 +2180,7 @@ async function handleBookingSubmit(e) {
             "btnSubmitBooking"
         );
 
+
     if (errorBanner) {
 
         errorBanner.style.display =
@@ -1539,10 +2190,11 @@ async function handleBookingSubmit(e) {
             "";
     }
 
+
     const serviceVal =
-        serviceInput
-            ? serviceInput.value.trim()
-            : "General Consultation";
+        serviceInput?.value.trim() ||
+        "General Consultation";
+
 
     if (!serviceVal) {
 
@@ -1558,26 +2210,26 @@ async function handleBookingSubmit(e) {
         return;
     }
 
+
     if (!validateDateTimeFields()) {
         return;
     }
 
+
     const dateVal =
-        dateInput
-            ? dateInput.value
-            : "";
+        dateInput?.value || "";
 
     const timeVal =
-        timeInput
-            ? timeInput.value
-            : "";
+        timeInput?.value || "";
 
-    let origText =
+
+    let originalText =
         "Book Appointment";
+
 
     if (submitBtn) {
 
-        origText =
+        originalText =
             submitBtn.textContent;
 
         submitBtn.disabled =
@@ -1587,11 +2239,13 @@ async function handleBookingSubmit(e) {
             "Booking...";
     }
 
-    let res;
+
+    let result;
+
 
     try {
 
-        res =
+        result =
             await createToken(
                 "NORMAL"
             );
@@ -1603,16 +2257,13 @@ async function handleBookingSubmit(e) {
             error
         );
 
-        res = {
-
+        result = {
             success: false,
-
             message:
                 "Booking failed. Please try again."
         };
     }
 
-    // Always restore button
 
     if (submitBtn) {
 
@@ -1620,300 +2271,20 @@ async function handleBookingSubmit(e) {
             false;
 
         submitBtn.textContent =
-            origText;
+            originalText;
     }
 
 
-    // SUCCESS
-
     if (
-        res.success &&
-        res.data
+        !result.success ||
+        !result.data
     ) {
-
-        const tokenData =
-            res.data;
-
-        const tokenNum =
-            tokenData.token_number ||
-            "Confirmed";
-
-        const queuePosition =
-            tokenData.queue_position ??
-            "Confirmed";
-
-        const counter =
-            tokenData.counter ||
-            "Counter 1";
-
-
-        // FORMAT DATE
-
-        const [
-            y,
-            m,
-            d
-        ] =
-            dateVal
-                .split("-")
-                .map(Number);
-
-        const selDateObj =
-            new Date(
-                y,
-                m - 1,
-                d
-            );
-
-        const formattedDate =
-            selDateObj.toLocaleDateString(
-                "en-US",
-                {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric"
-                }
-            );
-
-
-        // FORMAT TIME
-
-        const [
-            h,
-            min
-        ] =
-            timeVal
-                .split(":")
-                .map(Number);
-
-        const period =
-            h >= 12
-                ? "PM"
-                : "AM";
-
-        const displayH =
-            h % 12 || 12;
-
-        const formattedTime =
-            `${String(displayH).padStart(2, "0")}:` +
-            `${String(min).padStart(2, "0")} ${period}`;
-
-
-        const newId =
-            Date.now();
-
-
-        // REMOVE EMPTY STATE
-
-        const emptyState =
-            document.querySelector(
-                "#upcomingGrid .empty-state"
-            );
-
-        if (emptyState) {
-            emptyState.remove();
-        }
-
-
-        // CREATE CARD
-
-        const grid =
-            document.getElementById(
-                "upcomingGrid"
-            );
-
-        if (grid) {
-
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-            card.className =
-                "appt-card confirmed";
-
-            card.setAttribute(
-                "data-id",
-                newId
-            );
-
-            card.innerHTML = `
-
-                <div class="appt-card-header">
-
-                    <span class="appt-service-name">
-
-                        ${escapeHTML(serviceVal)}
-
-                    </span>
-
-                    <span
-                        class="card-badge badge-success">
-
-                        Active
-
-                    </span>
-
-                </div>
-
-
-                <div class="appt-meta-grid">
-
-                    <div class="appt-meta-item">
-
-                        <span class="appt-meta-label">
-                            Date
-                        </span>
-
-                        <span class="appt-meta-value">
-                            ${escapeHTML(formattedDate)}
-                        </span>
-
-                    </div>
-
-
-                    <div class="appt-meta-item">
-
-                        <span class="appt-meta-label">
-                            Time
-                        </span>
-
-                        <span class="appt-meta-value">
-                            ${escapeHTML(formattedTime)}
-                        </span>
-
-                    </div>
-
-
-                    <div class="appt-meta-item">
-
-                        <span class="appt-meta-label">
-                            Counter
-                        </span>
-
-                        <span class="appt-meta-value">
-                            ${escapeHTML(counter)}
-                        </span>
-
-                    </div>
-
-
-                    <div class="appt-meta-item">
-
-                        <span class="appt-meta-label">
-                            Token
-                        </span>
-
-                        <span class="appt-meta-value token">
-                            ${escapeHTML(tokenNum)}
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <div class="appt-card-actions">
-
-                    <button
-                        class="btn-action-ghost"
-                        data-action="details">
-
-                        View Details
-
-                    </button>
-
-
-                    <button
-                        class="btn-action-cancel"
-                        data-action="cancel">
-
-                        Cancel
-
-                    </button>
-
-                </div>
-            `;
-
-
-            // VIEW DETAILS
-
-            card
-                .querySelector(
-                    '[data-action="details"]'
-                )
-                ?.addEventListener(
-                    "click",
-                    () => {
-
-                        viewDetails(
-                            newId
-                        );
-                    }
-                );
-
-
-            // CANCEL
-
-            card
-                .querySelector(
-                    '[data-action="cancel"]'
-                )
-                ?.addEventListener(
-                    "click",
-                    () => {
-
-                        showCancelConfirm(
-                            newId,
-                            serviceVal,
-                            formattedDate,
-                            tokenNum
-                        );
-                    }
-                );
-
-
-            grid.prepend(card);
-
-            refreshCounts();
-        }
-
-
-        // CLOSE BOOKING FORM
-
-        closeBookingModal();
-
-
-        // SUCCESS MODAL
-
-        showBookingSuccess({
-
-            token:
-                tokenNum,
-
-            queuePosition:
-                queuePosition,
-
-            date:
-                formattedDate,
-
-            time:
-                formattedTime,
-
-            service:
-                serviceVal
-        });
-
-
-    } else {
-
-        // ERROR
 
         if (errorBanner) {
 
             errorBanner.textContent =
-                res.message ||
-                "Unable to book token. Check backend service.";
+                result.message ||
+                "Unable to book appointment.";
 
             errorBanner.style.display =
                 "flex";
@@ -1921,21 +2292,101 @@ async function handleBookingSubmit(e) {
         } else {
 
             showErrorModal(
-                res.message ||
-                "Unable to book token. Check backend service."
+                result.message ||
+                "Unable to book appointment."
             );
         }
+
+        return;
     }
+
+
+    const tokenData =
+        result.data;
+
+
+    const tokenNumber =
+        tokenData.token_number ||
+        tokenData.token ||
+        "Confirmed";
+
+
+    const queuePosition =
+        tokenData.queue_position ??
+        "Confirmed";
+
+
+    // The backend response should contain
+    // the real appointment ID.
+
+    const appointmentId =
+        tokenData.appointment_id ??
+        tokenData.id;
+
+
+    console.log(
+        "Created appointment ID:",
+        appointmentId
+    );
+
+
+    const formattedDate =
+        formatAppointmentDate(
+            tokenData.appointment_date ||
+            dateVal
+        );
+
+
+    const formattedTime =
+        formatAppointmentTime(
+            tokenData.appointment_time ||
+            timeVal
+        );
+
+
+    const service =
+        tokenData.purpose ||
+        serviceVal;
+
+
+    closeBookingModal();
+
+
+    // IMPORTANT:
+    // Do not manually create a fake card.
+    // Reload the actual database records.
+
+    await loadAppointmentsFromServer();
+
+
+    showBookingSuccess({
+
+        token:
+            tokenNumber,
+
+        queuePosition:
+            queuePosition,
+
+        date:
+            formattedDate,
+
+        time:
+            formattedTime,
+
+        service:
+            service
+    });
 }
 
 
 // ============================================================
-// ERROR UI
+// ERROR MODAL
 // ============================================================
 
 function showErrorModal(message) {
 
     injectAppointmentModalStyles();
+
 
     const old =
         document.getElementById(
@@ -1943,6 +2394,7 @@ function showErrorModal(message) {
         );
 
     if (old) old.remove();
+
 
     const modal =
         document.createElement("div");
@@ -1953,6 +2405,7 @@ function showErrorModal(message) {
     modal.className =
         "vizitor-ui-overlay";
 
+
     modal.innerHTML = `
 
         <div class="vizitor-ui-card">
@@ -1960,18 +2413,30 @@ function showErrorModal(message) {
             <button
                 class="vizitor-ui-close"
                 id="closeErrorModal">
+
                 ×
+
             </button>
 
+
             <div class="vizitor-ui-icon cancel">
+
                 !
+
             </div>
 
-            <h2>Booking Unsuccessful</h2>
+
+            <h2>
+                Booking Unsuccessful
+            </h2>
+
 
             <p class="vizitor-ui-subtitle">
+
                 ${escapeHTML(message)}
+
             </p>
+
 
             <button
                 class="vizitor-primary-btn"
@@ -1984,21 +2449,30 @@ function showErrorModal(message) {
         </div>
     `;
 
-    document.body.appendChild(modal);
 
-    const close = () => {
-        modal.remove();
-    };
+    document.body.appendChild(
+        modal
+    );
+
+
+    const close =
+        () => modal.remove();
+
 
     document
-        .getElementById("closeErrorModal")
+        .getElementById(
+            "closeErrorModal"
+        )
         ?.addEventListener(
             "click",
             close
         );
 
+
     document
-        .getElementById("errorDone")
+        .getElementById(
+            "errorDone"
+        )
         ?.addEventListener(
             "click",
             close
@@ -2017,7 +2491,9 @@ document.addEventListener(
         injectAppointmentModalStyles();
 
 
+        // ====================================================
         // BOOK BUTTON
+        // ====================================================
 
         const bookBtn =
             document.getElementById(
@@ -2033,7 +2509,9 @@ document.addEventListener(
         }
 
 
+        // ====================================================
         // CLOSE BUTTON
+        // ====================================================
 
         const closeBtn =
             document.getElementById(
@@ -2049,7 +2527,9 @@ document.addEventListener(
         }
 
 
+        // ====================================================
         // CANCEL BOOKING MODAL
+        // ====================================================
 
         const cancelBtn =
             document.getElementById(
@@ -2065,7 +2545,9 @@ document.addEventListener(
         }
 
 
+        // ====================================================
         // BOOKING FORM
+        // ====================================================
 
         const bookingForm =
             document.getElementById(
@@ -2081,7 +2563,9 @@ document.addEventListener(
         }
 
 
+        // ====================================================
         // DATE VALIDATION
+        // ====================================================
 
         const apptDateInput =
             document.getElementById(
@@ -2093,7 +2577,12 @@ document.addEventListener(
                 "apptTime"
             );
 
+
         if (apptDateInput) {
+
+            apptDateInput.min =
+                getTodayDateString();
+
 
             apptDateInput.addEventListener(
                 "change",
@@ -2105,6 +2594,7 @@ document.addEventListener(
                 validateDateTimeFields
             );
         }
+
 
         if (apptTimeInput) {
 
@@ -2120,7 +2610,9 @@ document.addEventListener(
         }
 
 
+        // ====================================================
         // BOOKING BACKDROP
+        // ====================================================
 
         const backdrop =
             document.getElementById(
@@ -2131,7 +2623,7 @@ document.addEventListener(
 
             backdrop.addEventListener(
                 "click",
-                (e) => {
+                e => {
 
                     if (
                         e.target === backdrop
@@ -2144,15 +2636,18 @@ document.addEventListener(
         }
 
 
+        // ====================================================
         // ESCAPE KEY
+        // ====================================================
 
         document.addEventListener(
             "keydown",
-            (e) => {
+            e => {
 
                 if (e.key === "Escape") {
 
                     closeBookingModal();
+
 
                     [
                         "bookingSuccessModal",
@@ -2178,7 +2673,9 @@ document.addEventListener(
         );
 
 
+        // ====================================================
         // PROFILE
+        // ====================================================
 
         const profileBadge =
             document.querySelector(
@@ -2201,7 +2698,9 @@ document.addEventListener(
         }
 
 
+        // ====================================================
         // NOTIFICATIONS
+        // ====================================================
 
         const notifBtn =
             document.querySelector(
@@ -2221,7 +2720,9 @@ document.addEventListener(
         }
 
 
+        // ====================================================
         // LOGOUT
+        // ====================================================
 
         const logoutLinks =
             document.querySelectorAll(
@@ -2233,9 +2734,10 @@ document.addEventListener(
 
                 link.addEventListener(
                     "click",
-                    (e) => {
+                    e => {
 
                         e.preventDefault();
+
 
                         if (
                             typeof logoutUser ===
@@ -2259,12 +2761,16 @@ document.addEventListener(
         );
 
 
-        refreshCounts();
+        // ====================================================
+        // INITIAL BACKEND SYNC
+        // ====================================================
+
+        loadAppointmentsFromServer();
 
 
         console.log(
             "appointments.js loaded successfully. " +
-            "VIZITOR appointment UI active."
+            "Backend-synced appointment system active."
         );
     }
 );

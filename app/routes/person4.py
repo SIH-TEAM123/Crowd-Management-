@@ -1,3 +1,4 @@
+from simulation.crowd_simulation import run_simulation
 from datetime import datetime
 
 from fastapi import APIRouter, Depends
@@ -129,3 +130,22 @@ async def get_crowd_forecast():
         ],
         **prediction_data,
     }
+
+@router.post("/simulation")
+async def run_crowd_simulation(
+    num_users: int = 50,
+):
+    """
+    Run synthetic crowd simulation through the real
+    Person 3 ML + Person 4 optimizer + fairness pipeline.
+    """
+
+    if num_users < 1 or num_users > 500:
+        return {
+            "error": "Number of users must be between 1 and 500"
+        }
+
+    return run_simulation(
+        num_users=num_users,
+        facility_id="SIM-H001",
+    )

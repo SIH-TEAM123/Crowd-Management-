@@ -1,0 +1,87 @@
+/* ============================================================
+   REPORTS PAGE - DASHBOARD STYLE ENHANCEMENTS
+   ============================================================ */
+
+/* Make report icon containers visible and colorful */
+
+.report-icon-purple {
+    background: #ede9fe;
+    color: #7c3aed;
+}
+
+.report-icon-green {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.report-icon-red {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.report-icon-amber {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.report-icon-blue {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+
+/* Icon container */
+
+.report-icon {
+    width: 46px;
+    height: 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.report-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+
+/* Performance cards */
+
+.report-performance-grid {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+
+/* Crowd level colors */
+
+.crowd-low {
+    color: #16a34a;
+}
+
+.crowd-moderate {
+    color: #d97706;
+}
+
+.crowd-high {
+    color: #dc2626;
+}
+
+.crowd-none {
+    color: #64748b;
+}
+
+
+/* Responsive */
+
+@media (max-width: 900px) {
+
+    .report-performance-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
