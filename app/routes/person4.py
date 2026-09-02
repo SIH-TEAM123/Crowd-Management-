@@ -71,3 +71,61 @@ async def run_optimization(
     result = optimize(input_data)
 
     return result
+
+
+@router.get("/forecast")
+async def get_crowd_forecast():
+    """
+    Read-only endpoint for the Analytics dashboard.
+    Uses current Person 2 operational data and Person 3 ML prediction.
+    """
+
+    current_state_data = build_current_operational_state()
+
+    queue_length = current_state_data["queue_length"]
+    daily_caller = current_state_data["daily_caller"]
+    time_since_previous_call = current_state_data[
+        "time_since_previous_call"
+    ]
+
+    now = datetime.now()
+
+    prediction_data = get_person3_prediction(
+        current_queue_length=queue_length,
+        queue_ahead=queue_length,
+        daily_caller=daily_caller,
+        hour=now.hour,
+        minute=now.minute,
+        day_of_week=now.weekday(),
+        recent_arrivals=(
+            current_state_data["arrival_rate_per_min"] * 10
+        ),
+        recent_services=(
+            current_state_data["service_rate_per_counter_per_min"]
+            * 10
+            * current_state_data["active_counters"]
+        ),
+        avg_service_time=(
+            1 / current_state_data[
+                "service_rate_per_counter_per_min"
+            ] * 60
+            if current_state_data[
+                "service_rate_per_counter_per_min"
+            ] > 0
+            else 0
+        ),
+        time_since_previous_call=time_since_previous_call,
+    )
+
+    return {
+        "current_queue_length": queue_length,
+        "daily_caller": daily_caller,
+        "active_counters": current_state_data["active_counters"],
+        "arrival_rate_per_min": current_state_data[
+            "arrival_rate_per_min"
+        ],
+        "service_rate_per_counter_per_min": current_state_data[
+            "service_rate_per_counter_per_min"
+        ],
+        **prediction_data,
+    }

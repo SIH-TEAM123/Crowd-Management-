@@ -2,11 +2,10 @@ from app.services.person4.interfaces.person4_queue_interface import get_queue_da
 
 
 # ---------------------------------------------------------
-# Temporary configuration
+# Configuration
 # ---------------------------------------------------------
-# Person 2's dataset does not contain active counter count.
-# This value is temporary and can later be replaced by
-# actual operational data.
+# Person 2's dataset does not currently contain active
+# counter count, so this remains a temporary configuration.
 DEFAULT_ACTIVE_COUNTERS = 4
 
 # Person 2 confirmed that recent_arrivals and recent_services
@@ -30,7 +29,7 @@ def build_current_operational_state():
     daily_caller = float(queue_data["daily_caller"])
     time_since_previous_call = float(
         queue_data["time_since_previous_call"]
-)
+    )
 
     # ---------------------------------------------
     # Calculate arrival rate
