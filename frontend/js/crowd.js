@@ -17,6 +17,12 @@ const counters = [
 
 window.simulationRunning = false;
 
+window.simulationState = {
+    queueLength: 0,
+    activeCounters: 4,
+    serviceRate: 10
+};
+
 
 // ============================================================
 // CROWD LEVEL
@@ -40,6 +46,134 @@ function getRecommendation(level, waitMinutes) {
     }
 
     return `${level} crowd. Your current estimated waiting time is ${waitMinutes} minutes.`;
+}
+
+
+// ============================================================
+// SERVICE RATE WAIT CALCULATION
+// ============================================================
+
+function calculateWaitFromServiceRate(queueLength, serviceRate) {
+
+    queueLength = Math.max(
+        0,
+        Number(queueLength) || 0
+    );
+
+    serviceRate = Number(serviceRate);
+
+    /*
+     * Service rate = patients served per hour.
+     *
+     * Waiting time = queue / service rate × 60
+     */
+
+    if (!Number.isFinite(serviceRate) || serviceRate <= 0) {
+        return null;
+    }
+
+    return Math.max(
+        0,
+        Math.round(
+            (queueLength / serviceRate) * 60
+        )
+    );
+}
+
+
+// ============================================================
+// UPDATE SERVICE RATE WAIT TIME
+// ============================================================
+
+function updateSimulationWaitTime() {
+
+    const serviceRateInput =
+        document.getElementById("serviceRate");
+
+    if (!serviceRateInput) return;
+
+    const serviceRate =
+        Number(serviceRateInput.value);
+
+    const queueLength =
+        Math.max(
+            0,
+            Number(
+                window.simulationState.queueLength
+            ) || 0
+        );
+
+    const wait =
+        calculateWaitFromServiceRate(
+            queueLength,
+            serviceRate
+        );
+
+    const waitEl =
+        document.getElementById("waitTime");
+
+    const recText =
+        document.getElementById(
+            "recommendationText"
+        );
+
+    if (wait === null) {
+
+        if (waitEl) {
+            waitEl.innerHTML =
+                `Service unavailable`;
+        }
+
+        if (recText) {
+            recText.textContent =
+                "Service rate is unavailable. Waiting time cannot be estimated until service resumes.";
+        }
+
+        return;
+    }
+
+
+    if (waitEl) {
+
+        waitEl.innerHTML =
+            `${wait}` +
+            `<span class="wait-unit"> min</span>`;
+    }
+
+
+    const level =
+        calculateSimulationLevel(
+            queueLength
+        );
+
+
+    if (recText) {
+
+        recText.textContent =
+            getRecommendation(
+                level,
+                wait
+            );
+    }
+
+
+    const lastUpdated =
+        document.getElementById(
+            "lastUpdated"
+        );
+
+
+    if (
+        lastUpdated &&
+        window.simulationRunning
+    ) {
+
+        lastUpdated.textContent =
+            `Simulation active — ` +
+            `${queueLength} people • ` +
+            `Service rate: ${serviceRate} patients/hour • ` +
+            `Estimated wait: ${wait} min`;
+    }
 }
 
 
@@ -71,7 +205,9 @@ function renderCrowdStatus(queueStatus) {
         document.getElementById("waitTime");
 
     const recText =
-        document.getElementById("recommendationText");
+        document.getElementById(
+            "recommendationText"
+        );
 
 
     if (peopleEl) {
@@ -91,13 +227,35 @@ function renderCrowdStatus(queueStatus) {
 
 
     if (waitEl) {
-        waitEl.innerHTML =
-            `${queueStatus.estimated_wait_minutes ?? 0}` +
-            `<span class="wait-unit"> min</span>`;
+
+        const simulationWait =
+            window.simulationRunning
+                ? calculateWaitFromServiceRate(
+                    queueStatus.queue_size ?? 0,
+                    document.getElementById(
+                        "serviceRate"
+                    )?.value
+                )
+                : null;
+
+
+        if (simulationWait !== null) {
+
+            waitEl.innerHTML =
+                `${simulationWait}` +
+                `<span class="wait-unit"> min</span>`;
+
+        } else {
+
+            waitEl.innerHTML =
+                `${queueStatus.estimated_wait_minutes ?? 0}` +
+                `<span class="wait-unit"> min</span>`;
+        }
     }
 
 
     if (levelText) {
+
         levelText.textContent =
             level;
 
@@ -160,7 +318,9 @@ function renderCrowdStatus(queueStatus) {
     Object.values(labels).forEach(label => {
 
         if (label) {
-            label.classList.remove("active-label");
+            label.classList.remove(
+                "active-label"
+            );
         }
     });
 
@@ -171,16 +331,31 @@ function renderCrowdStatus(queueStatus) {
 
 
     if (labels[lvl]) {
-        labels[lvl].classList.add("active-label");
+        labels[lvl].classList.add(
+            "active-label"
+        );
     }
 
 
     if (recText) {
 
+        const wait =
+            window.simulationRunning
+                ? calculateWaitFromServiceRate(
+                    queueStatus.queue_size ?? 0,
+                    document.getElementById(
+                        "serviceRate"
+                    )?.value
+                )
+                : Number(
+                    queueStatus.estimated_wait_minutes ?? 0
+                );
+
+
         recText.textContent =
             getRecommendation(
                 level,
-                queueStatus.estimated_wait_minutes ?? 0
+                wait ?? 0
             );
     }
 }
@@ -193,7 +368,9 @@ function renderCrowdStatus(queueStatus) {
 function renderTrendBars(queueStatus) {
 
     const container =
-        document.getElementById("trendBars");
+        document.getElementById(
+            "trendBars"
+        );
 
     if (!container) return;
 
@@ -530,7 +707,12 @@ function updateLastUpdated() {
 
 async function refreshStatus() {
 
-    // Never overwrite a simulation.
+    /*
+     * Refresh is intentionally independent.
+     *
+     * If simulation is active, do not overwrite
+     * the simulation screen automatically.
+     */
 
     if (window.simulationRunning) {
         return;
@@ -577,7 +759,7 @@ async function refreshStatus() {
 
 
 // ============================================================
-// DYNAMIC WAIT TIME
+// SIMULATION WAIT TIME
 // ============================================================
 
 function calculateSimulationWait(
@@ -598,13 +780,6 @@ function calculateSimulationWait(
             Number(activeCounters) || 1
         );
 
-
-    /*
-     * Approximate processing capacity.
-     *
-     * Each active counter processes
-     * approximately 3 people per 5 minutes.
-     */
 
     const peoplePerCounter =
         3;
@@ -660,8 +835,6 @@ async function runSimulation(
     simulationBtn
 ) {
 
-    // Lock live updates.
-
     window.simulationRunning =
         true;
 
@@ -675,10 +848,6 @@ async function runSimulation(
 
 
     try {
-
-        // --------------------------------------------------------
-        // CALL BACKEND
-        // --------------------------------------------------------
 
         const response =
             await fetch(
@@ -735,10 +904,6 @@ async function runSimulation(
         );
 
 
-        // --------------------------------------------------------
-        // REPLAY SIMULATION
-        // --------------------------------------------------------
-
         for (
             let i = 0;
             i < steps.length;
@@ -748,10 +913,6 @@ async function runSimulation(
             const step =
                 steps[i];
 
-
-            // ----------------------------------------------------
-            // CONSOLE LOG
-            // ----------------------------------------------------
 
             console.log(
                 `%c[CROWD SIMULATION] Step ${step.step}`,
@@ -778,10 +939,6 @@ async function runSimulation(
             );
 
 
-            // ----------------------------------------------------
-            // QUEUE
-            // ----------------------------------------------------
-
             const queueLength =
                 Math.max(
                     0,
@@ -803,11 +960,6 @@ async function runSimulation(
             }
 
 
-            const prediction =
-                step.prediction ||
-                {};
-
-
             const optimization =
                 step.optimization ||
                 {};
@@ -823,102 +975,40 @@ async function runSimulation(
                 );
 
 
-            // ----------------------------------------------------
-            // WAIT TIME
-            // ----------------------------------------------------
-
             /*
-             * IMPORTANT:
+             * Store simulation state.
              *
-             * Do NOT blindly use the backend wait value.
-             *
-             * The backend can return almost the same prediction
-             * for different simulation inputs.
-             *
-             * We therefore calculate the displayed simulation
-             * wait directly from:
-             *
-             * queue size
-             * +
-             * active counters
+             * Service rate is deliberately NOT
+             * tied to the simulation backend.
              */
 
-            const calculatedWait =
-                calculateSimulationWait(
-                    queueLength,
-                    activeCounters
-                );
+            window.simulationState.queueLength =
+                queueLength;
+
+            window.simulationState.activeCounters =
+                activeCounters;
 
 
-            /*
-             * If backend prediction is larger,
-             * keep the larger value because it may
-             * represent additional model congestion.
-             */
-
-            const backendWait =
+            const serviceRate =
                 Number(
-                    prediction.predicted_wait_minutes
+                    document.getElementById(
+                        "serviceRate"
+                    )?.value
                 );
 
 
-            let predictedWait =
-                calculatedWait;
+            const predictedWait =
+                calculateWaitFromServiceRate(
+                    queueLength,
+                    serviceRate
+                );
 
 
-            if (
-                Number.isFinite(
-                    backendWait
-                ) &&
-                backendWait >
-                calculatedWait
-            ) {
-
-                predictedWait =
-                    Math.round(
-                        backendWait
-                    );
-            }
-
-
-            // ----------------------------------------------------
-            // CROWD LEVEL
-            // ----------------------------------------------------
-
-            let crowdLevel =
+            const crowdLevel =
                 calculateSimulationLevel(
                     queueLength
                 );
 
-
-            const backendCongestion =
-                String(
-                    prediction.predicted_congestion_level ||
-                    ""
-                ).toUpperCase();
-
-
-            if (
-                backendCongestion === "HIGH" ||
-                backendCongestion === "CRITICAL"
-            ) {
-
-                crowdLevel =
-                    "High";
-
-            } else if (
-                backendCongestion === "MEDIUM" &&
-                crowdLevel === "Low"
-            ) {
-
-                crowdLevel =
-                    "Moderate";
-            }
-
-
-            // ----------------------------------------------------
-            // SIMULATED STATUS
-            // ----------------------------------------------------
 
             const simulatedStatus = {
 
@@ -932,16 +1022,12 @@ async function runSimulation(
                     queueLength,
 
                 estimated_wait_minutes:
-                    predictedWait,
+                    predictedWait ?? 0,
 
                 active_counters:
                     activeCounters
             };
 
-
-            // ----------------------------------------------------
-            // UPDATE UI
-            // ----------------------------------------------------
 
             renderCrowdStatus(
                 simulatedStatus
@@ -958,10 +1044,6 @@ async function runSimulation(
             );
 
 
-            // ----------------------------------------------------
-            // PROGRESS
-            // ----------------------------------------------------
-
             const lastUpdated =
                 document.getElementById(
                     "lastUpdated"
@@ -974,13 +1056,13 @@ async function runSimulation(
                     `Simulation: Step ${step.step} — ` +
                     `${queueLength}/${numUsers} people ` +
                     `in crowd model • ` +
-                    `Estimated wait: ${predictedWait} min`;
+                    (
+                        predictedWait === null
+                            ? "Service unavailable"
+                            : `Estimated wait: ${predictedWait} min`
+                    );
             }
 
-
-            // ----------------------------------------------------
-            // AI RECOMMENDATION
-            // ----------------------------------------------------
 
             const recText =
                 document.getElementById(
@@ -1015,15 +1097,11 @@ async function runSimulation(
                     recText.textContent =
                         getRecommendation(
                             crowdLevel,
-                            predictedWait
+                            predictedWait ?? 0
                         );
                 }
             }
 
-
-            // ----------------------------------------------------
-            // NEXT STEP
-            // ----------------------------------------------------
 
             await new Promise(
                 resolve =>
@@ -1034,10 +1112,6 @@ async function runSimulation(
             );
         }
 
-
-        // ========================================================
-        // FINAL STATE
-        // ========================================================
 
         const finalStep =
             steps[
@@ -1065,10 +1139,26 @@ async function runSimulation(
             );
 
 
+        window.simulationState.queueLength =
+            finalQueue;
+
+
+        window.simulationState.activeCounters =
+            finalActiveCounters;
+
+
+        const serviceRate =
+            Number(
+                document.getElementById(
+                    "serviceRate"
+                )?.value
+            );
+
+
         const finalWait =
-            calculateSimulationWait(
+            calculateWaitFromServiceRate(
                 finalQueue,
-                finalActiveCounters
+                serviceRate
             );
 
 
@@ -1090,14 +1180,12 @@ async function runSimulation(
                 finalQueue,
 
             estimated_wait_minutes:
-                finalWait,
+                finalWait ?? 0,
 
             active_counters:
                 finalActiveCounters
         };
 
-
-        // Render final state again.
 
         renderCrowdStatus(
             finalStatus
@@ -1124,8 +1212,14 @@ async function runSimulation(
 
             lastUpdated.textContent =
                 `Simulation Complete — ` +
-                `${finalQueue}/${numUsers} people processed • ` +
-                `Estimated wait: ${finalWait} min`;
+                `${finalQueue}/${numUsers} people ` +
+                `in crowd model • ` +
+                (
+                    finalWait === null
+                        ? "Service unavailable"
+                        : `Service rate: ${serviceRate} patients/hour • ` +
+                          `Estimated wait: ${finalWait} min`
+                );
         }
 
 
@@ -1135,21 +1229,22 @@ async function runSimulation(
         );
 
 
-        console.log(
-            {
-                totalUsers:
-                    numUsers,
+        console.log({
+            totalUsers:
+                numUsers,
 
-                finalQueue:
-                    finalQueue,
+            finalQueue:
+                finalQueue,
 
-                finalWaitMinutes:
-                    finalWait,
+            finalWaitMinutes:
+                finalWait,
 
-                activeCounters:
-                    finalActiveCounters
-            }
-        );
+            serviceRate:
+                serviceRate,
+
+            activeCounters:
+                finalActiveCounters
+        });
 
 
     } catch (error) {
@@ -1166,9 +1261,6 @@ async function runSimulation(
         );
 
 
-        // If the simulation failed, allow
-        // normal live refresh again.
-
         window.simulationRunning =
             false;
 
@@ -1178,17 +1270,8 @@ async function runSimulation(
         simulationBtn.disabled =
             false;
 
-
         simulationBtn.textContent =
             "Run Simulation";
-
-
-        /*
-         * DO NOT reset simulationRunning here.
-         *
-         * The final simulated value must remain
-         * visible on screen.
-         */
     }
 }
 
@@ -1201,10 +1284,6 @@ document.addEventListener(
     "DOMContentLoaded",
     () => {
 
-        // --------------------------------------------------------
-        // NAVIGATION
-        // --------------------------------------------------------
-
         if (
             typeof VIZITOR !== "undefined" &&
             VIZITOR.wireCommonNav
@@ -1214,23 +1293,11 @@ document.addEventListener(
         }
 
 
-        // --------------------------------------------------------
-        // INITIAL STATUS
-        // --------------------------------------------------------
-
         refreshStatus();
 
 
-        // --------------------------------------------------------
-        // LIVE REFRESH
-        // --------------------------------------------------------
-
         setInterval(
             () => {
-
-                /*
-                 * Do not overwrite simulation.
-                 */
 
                 if (
                     !window.simulationRunning
@@ -1261,8 +1328,8 @@ document.addEventListener(
                 async () => {
 
                     /*
-                     * Manual refresh returns the
-                     * page to real backend data.
+                     * Manual refresh is independent.
+                     * It returns to live backend data.
                      */
 
                     window.simulationRunning =
@@ -1334,6 +1401,54 @@ document.addEventListener(
                         numUsers,
                         simulationBtn
                     );
+                }
+            );
+        }
+
+
+        // --------------------------------------------------------
+        // SERVICE RATE — COMPLETELY INDEPENDENT
+        // --------------------------------------------------------
+
+        const serviceRateInput =
+            document.getElementById(
+                "serviceRate"
+            );
+
+
+        if (serviceRateInput) {
+
+            serviceRateInput.addEventListener(
+                "input",
+                () => {
+
+                    /*
+                     * This ONLY changes the waiting-time
+                     * calculation.
+                     *
+                     * It does not run another simulation.
+                     * It does not add people.
+                     * It does not call Refresh Status.
+                     */
+
+                    if (
+                        !window.simulationRunning
+                    ) {
+                        return;
+                    }
+
+
+                    const serviceRate =
+                        Number(
+                            serviceRateInput.value
+                        );
+
+
+                    window.simulationState.serviceRate =
+                        serviceRate;
+
+
+                    updateSimulationWaitTime();
                 }
             );
         }
