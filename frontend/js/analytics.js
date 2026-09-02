@@ -4,10 +4,9 @@
 // Uses:
 //   • Live queue/crowd data
 //   • Real Person 3 AI forecast
+//   • Shared Crowd Simulation state when simulation is active
 //
-// UI is kept compatible with the existing VIZITOR Analytics page.
-// No fabricated historical trend data.
-// No fabricated counter status.
+// Existing Analytics functionality is preserved.
 // ============================================================
 
 
@@ -16,9 +15,14 @@
 // -------------------------------------------------------
 
 function analyticsLevelClass(level) {
-    const normalized = String(level || "").toUpperCase();
 
-    if (normalized === "CRITICAL" || normalized === "HIGH") {
+    const normalized =
+        String(level || "").toUpperCase();
+
+    if (
+        normalized === "CRITICAL" ||
+        normalized === "HIGH"
+    ) {
         return "high";
     }
 
@@ -34,19 +38,31 @@ function analyticsLevelClass(level) {
 
 
 function setText(id, value) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = value;
+
+    const el =
+        document.getElementById(id);
+
+    if (el) {
+        el.textContent = value;
+    }
 }
 
 
 function setHtml(id, html) {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = html;
+
+    const el =
+        document.getElementById(id);
+
+    if (el) {
+        el.innerHTML = html;
+    }
 }
 
 
 function formatMinutes(value) {
-    const minutes = Number(value);
+
+    const minutes =
+        Number(value);
 
     if (!Number.isFinite(minutes)) {
         return "--";
@@ -72,30 +88,45 @@ function getAnalyticsRecommendation(
     queueStatus,
     forecast
 ) {
+
     const currentLevel =
-        String(queueStatus.crowd_level || "")
-            .toUpperCase();
+        String(
+            queueStatus.crowd_level || ""
+        ).toUpperCase();
+
 
     const predictedLevel =
-        String(forecast.predicted_congestion_level || "")
-            .toUpperCase();
+        String(
+            forecast.predicted_congestion_level || ""
+        ).toUpperCase();
+
 
     const predictedQueue =
-        Number(forecast.predicted_queue_length ?? 0);
+        Number(
+            forecast.predicted_queue_length ?? 0
+        );
+
 
     const predictedWait =
-        Number(forecast.predicted_wait_minutes ?? 0);
+        Number(
+            forecast.predicted_wait_minutes ?? 0
+        );
+
 
     const horizon =
-        Number(forecast.forecast_horizon_minutes ?? 10);
+        Number(
+            forecast.forecast_horizon_minutes ?? 10
+        );
 
 
     if (predictedLevel === "CRITICAL") {
+
         return `Critical crowd conditions are forecast for the next ${horizon} minutes. The predicted queue is ${predictedQueue} people. Consider increasing service capacity and managing visitor flow.`;
     }
 
 
     if (predictedLevel === "HIGH") {
+
         return `High crowd conditions are forecast for the next ${horizon} minutes. The predicted queue is ${predictedQueue} people with an estimated wait of ${formatMinutes(predictedWait)}. Consider taking crowd-control measures.`;
     }
 
@@ -104,6 +135,7 @@ function getAnalyticsRecommendation(
         predictedLevel === "MEDIUM" ||
         predictedLevel === "MODERATE"
     ) {
+
         return `Moderate crowd conditions are forecast for the next ${horizon} minutes. The predicted queue is ${predictedQueue} people with an estimated wait of ${formatMinutes(predictedWait)}. Continue monitoring visitor flow.`;
     }
 
@@ -112,6 +144,7 @@ function getAnalyticsRecommendation(
         currentLevel === "LOW" ||
         currentLevel === "NO CROWD"
     ) {
+
         return `Current crowd levels are low and the AI forecast also indicates low congestion for the next ${horizon} minutes. Normal operations can continue.`;
     }
 
@@ -121,56 +154,127 @@ function getAnalyticsRecommendation(
 
 
 // -------------------------------------------------------
-// Section 1 — Existing Overview KPI cards
+// Section 1 — Overview KPI cards
 // -------------------------------------------------------
 
-function renderKPICards(queueStatus) {
+function renderKPICards(
+    queueStatus,
+    appointments = []
+) {
 
-    setText(
-        "analyticsCrowdLevel",
-        queueStatus.crowd_level || "--"
-    );
-
-
-    setText(
-        "analyticsPeopleCount",
-        String(
-            queueStatus.people_currently_present ?? 0
-        )
-    );
-
-
-    setText(
-        "analyticsQueueSize",
-        String(
-            queueStatus.queue_size ?? 0
-        )
-    );
+    const queue =
+        Number(
+            queueStatus?.queue_size ?? 0
+        );
 
 
     const wait =
         Number(
-            queueStatus.estimated_wait_minutes ?? 0
+            queueStatus?.estimated_wait_minutes ?? 0
         );
 
 
+    const level =
+        queueStatus?.crowd_level || "--";
+
+
+    // Current Queue
+    setText(
+        "analyticsQueueCount",
+        String(queue)
+    );
+
+
+    // Today's Appointments
+    let todayAppointments = 0;
+
+    const today =
+        new Date()
+            .toISOString()
+            .split("T")[0];
+
+
+    if (Array.isArray(appointments)) {
+
+        todayAppointments =
+            appointments.filter(
+                appointment => {
+
+                    if (!appointment) {
+                        return false;
+                    }
+
+
+                    const status =
+                        String(
+                            appointment.status || ""
+                        ).toLowerCase();
+
+
+                    if (
+                        status === "cancelled" ||
+                        status === "canceled"
+                    ) {
+                        return false;
+                    }
+
+
+                    const appointmentDate =
+                        appointment.appointment_date ||
+                        appointment.date ||
+                        appointment.appointment_datetime ||
+                        appointment.datetime ||
+                        "";
+
+
+                    if (!appointmentDate) {
+                        return false;
+                    }
+
+
+                    return String(
+                        appointmentDate
+                    ).startsWith(today);
+                }
+            ).length;
+    }
+
+
+    setText(
+        "analyticsTodayAppointments",
+        String(todayAppointments)
+    );
+
+
+    // Estimated Waiting Time
     setText(
         "analyticsWaitTime",
         formatMinutes(wait)
+    );
+
+
+    // Crowd Level
+    setText(
+        "analyticsCrowdLevel",
+        level
     );
 }
 
 
 // -------------------------------------------------------
-// Section 2 — Existing Crowd Level display
+// Section 2 — Crowd Level display
 // -------------------------------------------------------
 
-function renderCrowdLevelDisplay(queueStatus) {
+function renderCrowdLevelDisplay(
+    queueStatus
+) {
+
+    const level =
+        queueStatus?.crowd_level || "--";
+
 
     const lvl =
-        analyticsLevelClass(
-            queueStatus.crowd_level
-        );
+        analyticsLevelClass(level);
 
 
     const badge =
@@ -182,7 +286,7 @@ function renderCrowdLevelDisplay(queueStatus) {
     if (badge) {
 
         badge.textContent =
-            queueStatus.crowd_level || "--";
+            level;
 
         badge.className =
             "card-badge " +
@@ -205,7 +309,7 @@ function renderCrowdLevelDisplay(queueStatus) {
     if (badgeText) {
 
         badgeText.textContent =
-            queueStatus.crowd_level || "--";
+            level;
 
         badgeText.className =
             `crowd-level-badge ${lvl}`;
@@ -215,7 +319,7 @@ function renderCrowdLevelDisplay(queueStatus) {
     setText(
         "analyticsPeopleCountLarge",
         String(
-            queueStatus.people_currently_present ?? 0
+            queueStatus?.people_currently_present ?? 0
         )
     );
 
@@ -259,27 +363,37 @@ function renderCrowdLevelDisplay(queueStatus) {
 
 
     Object.values(dots).forEach(
-        d =>
-            d &&
-            d.classList.remove("lit")
+        d => {
+
+            if (d) {
+                d.classList.remove("lit");
+            }
+        }
     );
 
 
     Object.values(labels).forEach(
-        l =>
-            l &&
-            l.classList.remove(
-                "active-label"
-            )
+        l => {
+
+            if (l) {
+                l.classList.remove(
+                    "active-label"
+                );
+            }
+        }
     );
 
 
     if (dots[lvl]) {
-        dots[lvl].classList.add("lit");
+
+        dots[lvl].classList.add(
+            "lit"
+        );
     }
 
 
     if (labels[lvl]) {
+
         labels[lvl].classList.add(
             "active-label"
         );
@@ -288,14 +402,78 @@ function renderCrowdLevelDisplay(queueStatus) {
 
 
 // -------------------------------------------------------
-// Section 3 — Existing Waiting Information
+// Section 3 — Crowd Overview
 // -------------------------------------------------------
 
-function renderWaitingInfo(queueStatus) {
+function renderCrowdOverview(
+    queueStatus
+) {
+
+    const queue =
+        Number(
+            queueStatus?.queue_size ?? 0
+        );
+
+
+    const people =
+        Number(
+            queueStatus?.people_currently_present ?? 0
+        );
+
 
     const wait =
         Number(
-            queueStatus.estimated_wait_minutes ?? 0
+            queueStatus?.estimated_wait_minutes ?? 0
+        );
+
+
+    const level =
+        queueStatus?.crowd_level ||
+        "Unknown";
+
+
+    setText(
+        "analyticsCrowdStatus",
+        `${level} Crowd`
+    );
+
+
+    setText(
+        "analyticsCrowdDescription",
+        `${people} people currently present, ${queue} people in the queue, with an estimated waiting time of ${formatMinutes(wait)}.`
+    );
+
+
+    setText(
+        "analyticsPeopleCount",
+        String(people)
+    );
+
+
+    setText(
+        "analyticsQueueSize",
+        String(queue)
+    );
+}
+
+
+// -------------------------------------------------------
+// Section 4 — Waiting Information
+// -------------------------------------------------------
+
+function renderWaitingInfo(
+    queueStatus
+) {
+
+    const wait =
+        Number(
+            queueStatus?.estimated_wait_minutes ?? 0
+        );
+
+
+    const queue =
+        Number(
+            queueStatus?.queue_size ?? 0
         );
 
 
@@ -307,18 +485,18 @@ function renderWaitingInfo(queueStatus) {
 
     setText(
         "analyticsQueueSizeLarge",
-        String(
-            queueStatus.queue_size ?? 0
-        )
+        String(queue)
     );
 }
 
 
 // -------------------------------------------------------
-// Section 4 — Replace fake trend with REAL AI forecast
+// Section 5 — AI forecast
 // -------------------------------------------------------
 
-function renderAIInExistingTrendSection(forecast) {
+function renderAIInExistingTrendSection(
+    forecast
+) {
 
     const container =
         document.getElementById(
@@ -333,62 +511,62 @@ function renderAIInExistingTrendSection(forecast) {
 
     const predictedQueue =
         Number(
-            forecast.predicted_queue_length ?? 0
+            forecast?.predicted_queue_length ?? 0
         );
 
 
     const currentQueue =
         Number(
-            forecast.current_queue_length ?? 0
+            forecast?.current_queue_length ?? 0
         );
 
 
     const arrivalRate =
         Number(
-            forecast.predicted_arrival_rate_per_min
-            ?? forecast.arrival_rate_per_min
-            ?? 0
+            forecast?.predicted_arrival_rate_per_min
+            ??
+            forecast?.arrival_rate_per_min
+            ??
+            0
         );
 
 
     const predictedWait =
         Number(
-            forecast.predicted_wait_minutes ?? 0
+            forecast?.predicted_wait_minutes ?? 0
         );
 
 
     const congestion =
-        forecast.predicted_congestion_level
+        forecast?.predicted_congestion_level
         || "--";
 
 
     const horizon =
-        forecast.forecast_horizon_minutes
+        forecast?.forecast_horizon_minutes
         ?? 10;
 
 
     const confidence =
         Number(
-            forecast.prediction_confidence
+            forecast?.prediction_confidence
         );
 
 
-    let confidenceText = "--";
+    let confidenceText =
+        "--";
 
 
-    if (Number.isFinite(confidence)) {
+    if (
+        Number.isFinite(confidence)
+    ) {
 
         confidenceText =
-            `${(confidence * 100).toFixed(2)}%`;
+            `${(
+                confidence * 100
+            ).toFixed(2)}%`;
     }
 
-
-    /*
-     * We deliberately do NOT create fake historical bars.
-     *
-     * Instead, use the existing trend container to present
-     * the real forecast in a compact VIZITOR-compatible panel.
-     */
 
     container.innerHTML = `
 
@@ -511,17 +689,10 @@ function renderAIInExistingTrendSection(forecast) {
 
 
 // -------------------------------------------------------
-// Section 5 — Counter section
+// Section 6 — Counter section
 // -------------------------------------------------------
 
 function renderCounters() {
-
-    /*
-     * Counter-by-counter Busy/Available status is NOT
-     * available from the current backend.
-     *
-     * Therefore we do not fabricate individual statuses.
-     */
 
     const grid =
         document.getElementById(
@@ -586,7 +757,7 @@ function renderCounters() {
 
 
 // -------------------------------------------------------
-// Section 6 — Recommendation
+// Section 7 — Recommendation
 // -------------------------------------------------------
 
 function renderRecommendation(
@@ -654,22 +825,37 @@ function updateLastUpdated() {
 function showLoadError() {
 
     setText(
+        "analyticsQueueCount",
+        "—"
+    );
+
+
+    setText(
+        "analyticsTodayAppointments",
+        "—"
+    );
+
+
+    setText(
+        "analyticsWaitTime",
+        "—"
+    );
+
+
+    setText(
         "analyticsCrowdLevel",
         "—"
     );
+
 
     setText(
         "analyticsPeopleCount",
         "—"
     );
 
-    setText(
-        "analyticsQueueSize",
-        "—"
-    );
 
     setText(
-        "analyticsWaitTime",
+        "analyticsQueueSize",
         "—"
     );
 
@@ -689,6 +875,18 @@ function showLoadError() {
     setText(
         "analyticsQueueSizeLarge",
         "—"
+    );
+
+
+    setText(
+        "analyticsCrowdStatus",
+        "Unavailable"
+    );
+
+
+    setText(
+        "analyticsCrowdDescription",
+        "Unable to load live crowd information."
     );
 
 
@@ -768,10 +966,23 @@ async function refreshAnalytics() {
 
     try {
 
+        // IMPORTANT:
+        // Queue + appointments belong to the shared VIZITOR
+        // object created by shared.js.
+        //
+        // Forecast belongs to window.VIZITOR created by api.js.
+        //
+        // Do NOT replace these with each other.
+
         const results =
             await Promise.all([
+
                 VIZITOR.getQueueStatus(),
-                VIZITOR.getCrowdForecast()
+
+                window.VIZITOR.getCrowdForecast(),
+
+                VIZITOR.getAppointments()
+
             ]);
 
 
@@ -783,7 +994,16 @@ async function refreshAnalytics() {
             results[1];
 
 
-        if (!queueStatus || !forecast) {
+        const appointments =
+            Array.isArray(results[2])
+                ? results[2]
+                : [];
+
+
+        if (
+            !queueStatus ||
+            !forecast
+        ) {
 
             showLoadError();
 
@@ -791,40 +1011,51 @@ async function refreshAnalytics() {
         }
 
 
-        // Existing VIZITOR UI
+        // Existing KPI cards
         renderKPICards(
-            queueStatus
+            queueStatus,
+            appointments
         );
 
 
+        // Crowd level
         renderCrowdLevelDisplay(
             queueStatus
         );
 
 
+        // Crowd Overview
+        renderCrowdOverview(
+            queueStatus
+        );
+
+
+        // Waiting information
         renderWaitingInfo(
             queueStatus
         );
 
 
-        // Real AI forecast inside existing UI
+        // AI forecast
         renderAIInExistingTrendSection(
             forecast
         );
 
 
-        // Do not invent individual counter status
+        // Counter information
         renderCounters();
 
 
-        // Forecast-based recommendation
+        // AI recommendation
         renderRecommendation(
             queueStatus,
             forecast
         );
 
 
+        // Timestamp
         updateLastUpdated();
+
 
     } catch (error) {
 
@@ -847,6 +1078,7 @@ document.addEventListener(
     "DOMContentLoaded",
     () => {
 
+        // These belong to shared.js
         VIZITOR.requireAuthOrRedirect();
 
         VIZITOR.wireCommonNav();
@@ -855,6 +1087,7 @@ document.addEventListener(
         refreshAnalytics();
 
 
+        // Keep Analytics live
         setInterval(
             refreshAnalytics,
             20000
