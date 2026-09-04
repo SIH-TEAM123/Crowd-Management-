@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Availability & Inventory - Healthcare Network</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+
+        <!-- ====== Sidebar ====== -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" fill="rgba(124,58,237,0.15)" stroke="#7c3aed" stroke-width="2"/>
+                    <circle cx="12" cy="12" r="3" fill="#7c3aed"/>
+                </svg>
+                <span class="logo-text">Symmetry</span>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="appointments.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <span>Appointments</span>
+                </a>
+
+                <a href="queue.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="6" width="20" height="12" rx="2"/>
+                        <line x1="6" y1="12" x2="18" y2="12"/>
+                    </svg>
+                    <span>Queue / Token</span>
+                </a>
+
+                <a href="specialists.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>Specialists</span>
+                </a>
+
+                <a href="diagnostics.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    <span>Diagnostics</span>
+                </a>
+
+                <a href="medicines.html" class="menu-item active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10.5 20.5L3.5 13.5a4.95 4.95 0 1 1 7-7l7 7a4.95 4.95 0 1 1-7 7z"/>
+                        <line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/>
+                    </svg>
+                    <span>Medicines</span>
+                </a>
+
+                <a href="facilities.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    <span>Facility Discovery</span>
+                </a>
+
+                <a href="referrals.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+                    </svg>
+                    <span>Referral Tracking</span>
+                </a>
+
+                <a href="crowd.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>Crowd Status</span>
+                </a>
+
+                <a href="crowd-forecast.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                        <polyline points="17 6 23 6 23 12"/>
+                    </svg>
+                    <span>Crowd Forecast</span>
+                </a>
+
+                <a href="profile.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span>Profile</span>
+                </a>
+
+                <a href="notifications.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span>Notifications</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- ====== Main Content Area ====== -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 class="page-title">Medicine Availability & Inventory</h1>
+                    <p class="page-subtitle">Real-time pharmaceutical catalog, proximity-based stock discovery, and facility inventory management</p>
+                </div>
+                <div class="header-right">
+                    <button id="btn-global-refresh" class="btn-secondary" title="Refresh Live Data">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                            <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                        <span>Refresh</span>
+                    </button>
+                    <div class="user-profile-badge">
+                        <div class="user-avatar" id="user-initials">AD</div>
+                        <div class="user-info-text">
+                            <span class="user-name">Healthcare Operator</span>
+                            <span class="user-role">System Admin</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Metrics / Stats Bar -->
+            <section class="queue-hero-stats">
+                <div class="hero-stat-card">
+                    <div class="hero-stat-icon-wrapper" style="background: rgba(124, 58, 237, 0.1); color: #7c3aed;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+                            <path d="M10.5 20.5L3.5 13.5a4.95 4.95 0 1 1 7-7l7 7a4.95 4.95 0 1 1-7 7z"/>
+                            <line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/>
+                        </svg>
+                    </div>
+                    <div class="hero-stat-details">
+                        <span class="hero-stat-val" id="stat-total-medicines">0</span>
+                        <span class="hero-stat-lbl">Catalog Medicines</span>
+                    </div>
+                </div>
+
+                <div class="hero-stat-card">
+                    <div class="hero-stat-icon-wrapper" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                    </div>
+                    <div class="hero-stat-details">
+                        <span class="hero-stat-val" id="stat-total-facilities">0</span>
+                        <span class="hero-stat-lbl">Connected Facilities</span>
+                    </div>
+                </div>
+
+                <div class="hero-stat-card">
+                    <div class="hero-stat-icon-wrapper" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </div>
+                    <div class="hero-stat-details">
+                        <span class="hero-stat-val" id="stat-in-stock-rate">--%</span>
+                        <span class="hero-stat-lbl">Network In-Stock Rate</span>
+                    </div>
+                </div>
+
+                <div class="hero-stat-card">
+                    <div class="hero-stat-icon-wrapper" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+                            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                    </div>
+                    <div class="hero-stat-details">
+                        <span class="hero-stat-val" id="stat-low-stock-count">0</span>
+                        <span class="hero-stat-lbl">Low / Out-of-Stock Items</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Navigation Tabs -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="catalog" id="tab-btn-catalog">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                    <span>Medicine Directory & Nearby Availability</span>
+                </button>
+
+                <button class="tab-btn" data-tab="facility-inventory" id="tab-btn-facility-inventory">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                        <line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                    <span>Facility Inventory Explorer</span>
+                </button>
+
+                <button class="tab-btn" data-tab="stock-mgmt" id="tab-btn-stock-mgmt">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                        <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                    </svg>
+                    <span>Stock Management (Staff)</span>
+                </button>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- TAB 1: Medicine Directory & Nearby Stock Discovery -->
+            <!-- ========================================================================= -->
+            <section class="tab-content active" id="tab-catalog">
+                <!-- Proximity Bar -->
+                <div class="proximity-bar">
+                    <div class="proximity-inputs">
+                        <button id="btn-use-geolocation" class="btn-secondary" style="font-size: 0.825rem; padding: 0.45rem 0.85rem;" title="Detect current GPS coordinates">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <span id="geo-btn-label">Use My Location</span>
+                        </button>
+
+                        <input type="number" id="input-origin-lat" step="any" class="location-coord-input" placeholder="Lat (e.g. 19.076)" title="Latitude">
+                        <input type="number" id="input-origin-lon" step="any" class="location-coord-input" placeholder="Lon (e.g. 72.877)" title="Longitude">
+
+                        <select id="select-max-distance" class="location-coord-input" style="width: 140px;" title="Maximum Proximity Radius">
+                            <option value="">Any Distance</option>
+                            <option value="5">Within 5 km</option>
+                            <option value="10">Within 10 km</option>
+                            <option value="25" selected>Within 25 km</option>
+                            <option value="50">Within 50 km</option>
+                        </select>
+
+                        <input type="number" id="input-min-quantity" min="1" value="1" class="location-coord-input" style="width: 100px;" placeholder="Min Qty" title="Minimum Quantity Required">
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button id="btn-clear-location" class="btn-outline" style="font-size: 0.775rem; padding: 0.4rem 0.75rem;">Clear Location</button>
+                        <span id="location-status-badge" style="font-size: 0.75rem; color: #64748b;">Proximity inactive</span>
+                    </div>
+                </div>
+
+                <!-- Search & Filters Toolbar -->
+                <div class="filter-card">
+                    <div class="filter-row">
+                        <div class="filter-group search-group" style="flex: 2;">
+                            <label for="filter-medicine-search">Search Directory</label>
+                            <div class="search-input-wrapper">
+                                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                </svg>
+                                <input type="text" id="filter-medicine-search" placeholder="Search by brand name, generic molecule (e.g. Paracetamol, Amoxicillin)...">
+                            </div>
+                        </div>
+
+                        <div class="filter-group" style="flex: 1;">
+                            <label for="filter-dosage-form">Dosage Form</label>
+                            <select id="filter-dosage-form">
+                                <option value="">All Forms</option>
+                                <option value="Tablet">Tablet</option>
+                                <option value="Capsule">Capsule</option>
+                                <option value="Syrup">Syrup</option>
+                                <option value="Injection">Injection</option>
+                                <option value="Inhaler">Inhaler</option>
+                                <option value="Drops">Drops</option>
+                                <option value="Ointment">Ointment</option>
+                                <option value="Solution">Solution</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group" style="flex: 1;">
+                            <label for="filter-manufacturer">Manufacturer</label>
+                            <select id="filter-manufacturer">
+                                <option value="">All Manufacturers</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-actions-group">
+                            <button id="btn-reset-medicine-filters" class="btn-outline" title="Reset all filters">Reset</button>
+                            <div class="view-mode-toggle">
+                                <button id="btn-view-grid" class="view-btn active" title="Grid View">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                                        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                                    </svg>
+                                </button>
+                                <button id="btn-view-table" class="view-btn" title="Table View">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                                        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+                                        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="medicines-loading" class="loading-state" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Retrieving medicine catalog and network availability...</p>
+                </div>
+
+                <!-- Grid / Table Render Containers -->
+                <div id="medicines-grid-container" class="medicine-grid"></div>
+
+                <div id="medicines-table-container" class="inventory-table-container" style="display: none; margin-top: 1.25rem;">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Medicine Name</th>
+                                <th>Generic Active Compound</th>
+                                <th>Form & Strength</th>
+                                <th>Manufacturer</th>
+                                <th>Network Availability</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="medicines-table-body"></tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State -->
+                <div id="medicines-empty" class="empty-state" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+                        <path d="M10.5 20.5L3.5 13.5a4.95 4.95 0 1 1 7-7l7 7a4.95 4.95 0 1 1-7 7z"/>
+                        <line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/>
+                    </svg>
+                    <h3>No Medicines Found</h3>
+                    <p>Try refining your search terms, changing dosage filters, or registering a new medicine in the catalog.</p>
+                </div>
+            </section>
+
+            <!-- ========================================================================= -->
+            <!-- TAB 2: Facility Inventory Explorer -->
+            <!-- ========================================================================= -->
+            <section class="tab-content" id="tab-facility-inventory">
+                <div class="filter-card">
+                    <div class="filter-row">
+                        <div class="filter-group" style="flex: 2;">
+                            <label for="inventory-facility-select">Select Healthcare Facility</label>
+                            <select id="inventory-facility-select">
+                                <option value="">-- Choose a Facility --</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group search-group" style="flex: 2;">
+                            <label for="inventory-filter-search">Filter Stocked Items</label>
+                            <div class="search-input-wrapper">
+                                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                </svg>
+                                <input type="text" id="inventory-filter-search" placeholder="Filter by drug name or generic...">
+                            </div>
+                        </div>
+
+                        <div class="filter-group" style="flex: 1; display: flex; align-items: flex-end; padding-bottom: 0.5rem;">
+                            <label class="checkbox-container" style="margin: 0; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                                <input type="checkbox" id="inventory-available-only-toggle">
+                                <span style="margin-left: 6px;">In-Stock Only (Qty > 0)</span>
+                            </label>
+                        </div>
+
+                        <div class="filter-actions-group">
+                            <button id="btn-refresh-inventory" class="btn-secondary" style="padding: 0.6rem 1rem;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                                    <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                                </svg>
+                                <span>Fetch</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selected Facility Overview Header -->
+                <div id="facility-inventory-overview-bar" class="operator-badge-banner" style="display: none;">
+                    <div class="operator-badge-info">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                        <div>
+                            <strong id="inventory-fac-name" style="font-size: 1rem; color: #1e293b;">Facility Name</strong>
+                            <p id="inventory-fac-meta" style="font-size: 0.8rem; color: #64748b;">Type: Hospital | Total Stock Items: 0</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button id="btn-quick-check-availability" class="btn-outline" style="font-size: 0.825rem; background: #ffffff;">
+                            Quick Medicine Availability Check
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="inventory-loading" class="loading-state" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Fetching on-hand inventory levels...</p>
+                </div>
+
+                <!-- Inventory Table -->
+                <div id="inventory-table-container" class="inventory-table-container" style="display: none; margin-top: 1rem;">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Medicine</th>
+                                <th>Generic Active</th>
+                                <th>Batch #</th>
+                                <th>Expiry Date</th>
+                                <th>On-Hand Qty</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Staff Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body"></tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State -->
+                <div id="inventory-empty" class="empty-state" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    </svg>
+                    <h3 id="inventory-empty-title">No Facility Selected</h3>
+                    <p id="inventory-empty-desc">Choose a healthcare facility from the dropdown above to view its live pharmaceutical inventory.</p>
+                </div>
+            </section>
+
+            <!-- ========================================================================= -->
+            <!-- TAB 3: Stock Management & Registration (Staff / Admin) -->
+            <!-- ========================================================================= -->
+            <section class="tab-content" id="tab-stock-mgmt">
+                <div class="operator-badge-banner">
+                    <div class="operator-badge-info">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <div>
+                            <strong>Staff & Administrator Stock Operations</strong>
+                            <p style="font-size: 0.8rem; color: #64748b;">Secure endpoints with automatic stock validation, atomic dispensing, and non-negative balance enforcement.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="badge-stock-in" style="background: #e0e7ff; color: #4338ca; border-color: #c7d2fe;">Authenticated Operator</span>
+                    </div>
+                </div>
+
+                <div class="diagnostic-grid" style="grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));">
+                    <!-- 1. Initialize / Set Facility Inventory -->
+                    <div class="diagnostic-card" style="padding: 1.75rem;">
+                        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" width="20" height="20">
+                                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+                            </svg>
+                            Add / Set Facility Inventory
+                        </h3>
+                        <p style="font-size: 0.825rem; color: #64748b; margin-bottom: 1.25rem;">
+                            Initialize or set absolute stock for a medicine at a designated facility (POST /facilities/{id}/inventory).
+                        </p>
+
+                        <form id="form-set-inventory" class="login-form">
+                            <div class="input-group">
+                                <label for="form-set-facility">Facility *</label>
+                                <select id="form-set-facility" required>
+                                    <option value="">-- Select Target Facility --</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="form-set-medicine">Medicine *</label>
+                                <select id="form-set-medicine" required>
+                                    <option value="">-- Select Medicine --</option>
+                                </select>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                                <div class="input-group">
+                                    <label for="form-set-quantity">Quantity *</label>
+                                    <input type="number" id="form-set-quantity" min="0" required placeholder="e.g. 500">
+                                </div>
+                                <div class="input-group">
+                                    <label for="form-set-unit">Dispense Unit</label>
+                                    <input type="text" id="form-set-unit" value="tablets" placeholder="tablets, vials, etc.">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                                <div class="input-group">
+                                    <label for="form-set-batch">Batch / Lot #</label>
+                                    <input type="text" id="form-set-batch" placeholder="e.g. LOT-2026-X">
+                                </div>
+                                <div class="input-group">
+                                    <label for="form-set-expiry">Expiry Date</label>
+                                    <input type="date" id="form-set-expiry">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-primary" style="margin-top: 0.75rem;">
+                                Update Inventory Stock
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- 2. Safe Atomic Stock Adjustment / Dispense -->
+                    <div class="diagnostic-card" style="padding: 1.75rem;">
+                        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" width="20" height="20">
+                                <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+                            </svg>
+                            Dispense / Adjust Stock Delta
+                        </h3>
+                        <p style="font-size: 0.825rem; color: #64748b; margin-bottom: 1.25rem;">
+                            Safely increment (+) on restock or decrement (-) on dispensing (POST /facilities/{id}/inventory/adjust).
+                        </p>
+
+                        <form id="form-adjust-stock" class="login-form">
+                            <div class="input-group">
+                                <label for="form-adjust-facility">Facility *</label>
+                                <select id="form-adjust-facility" required>
+                                    <option value="">-- Select Target Facility --</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="form-adjust-medicine">Medicine *</label>
+                                <select id="form-adjust-medicine" required>
+                                    <option value="">-- Select Medicine --</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="form-adjust-delta">Stock Adjustment Delta (+ to restock, - to dispense) *</label>
+                                <input type="number" id="form-adjust-delta" required placeholder="e.g. +100 or -5">
+                                <small style="color: #64748b; font-size: 0.75rem;">Positive value adds to stock; negative value safely deducts.</small>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="form-adjust-reason">Audit Reason</label>
+                                <input type="text" id="form-adjust-reason" placeholder="e.g. Dispensed for Rx #4490, Received supplier shipment">
+                            </div>
+
+                            <button type="submit" class="btn-primary" style="margin-top: 0.75rem; background: #2563eb;">
+                                Apply Stock Adjustment
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- 3. Register New Medicine to Master Catalog -->
+                    <div class="diagnostic-card" style="padding: 1.75rem;">
+                        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" width="20" height="20">
+                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                            Register New Catalog Medicine
+                        </h3>
+                        <p style="font-size: 0.825rem; color: #64748b; margin-bottom: 1.25rem;">
+                            Add a new pharmaceutical product to the master network catalog (POST /medicines).
+                        </p>
+
+                        <form id="form-create-medicine" class="login-form">
+                            <div class="input-group">
+                                <label for="form-create-name">Brand / Product Name *</label>
+                                <input type="text" id="form-create-name" required placeholder="e.g. Crocin Advance, Augmentin">
+                            </div>
+
+                            <div class="input-group">
+                                <label for="form-create-generic">Generic Name / Molecule</label>
+                                <input type="text" id="form-create-generic" placeholder="e.g. Paracetamol, Amoxicillin + Clavulanate">
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                                <div class="input-group">
+                                    <label for="form-create-dosage">Dosage Form</label>
+                                    <input type="text" id="form-create-dosage" placeholder="e.g. Tablet, Syrup">
+                                </div>
+                                <div class="input-group">
+                                    <label for="form-create-strength">Strength</label>
+                                    <input type="text" id="form-create-strength" placeholder="e.g. 650mg, 125mg/5ml">
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="form-create-manufacturer">Manufacturer</label>
+                                <input type="text" id="form-create-manufacturer" placeholder="e.g. GSK, Cipla, Sun Pharma">
+                            </div>
+
+                            <button type="submit" class="btn-primary" style="margin-top: 0.75rem; background: #059669;">
+                                Register Medicine
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODALS -->
+    <!-- ========================================================================= -->
+
+    <!-- Modal: Medicine Details & Facility Stocking List -->
+    <div id="modal-medicine-details" class="modal-overlay">
+        <div class="modal-card" style="max-width: 680px;">
+            <div class="modal-header">
+                <div>
+                    <h3 id="modal-med-title" class="modal-title">Medicine Details</h3>
+                    <p id="modal-med-subtitle" style="font-size: 0.85rem; color: #64748b;">Generic Compound & Network Availability</p>
+                </div>
+                <button class="modal-close-btn" id="btn-close-med-modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Details Summary Card -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+                        <div>
+                            <span style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase;">Product ID</span>
+                            <p id="modal-med-id" style="font-weight: 700; font-family: monospace; font-size: 0.9rem; color: #0f172a;">--</p>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase;">Generic Molecule</span>
+                            <p id="modal-med-generic" style="font-weight: 600; color: #1e293b;">--</p>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase;">Dosage & Strength</span>
+                            <p id="modal-med-form-strength" style="font-weight: 600; color: #1e293b;">--</p>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase;">Manufacturer</span>
+                            <p id="modal-med-manufacturer" style="font-weight: 600; color: #1e293b;">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stocking Facilities Section -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+                        <h4 style="font-size: 1rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" width="18" height="18">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            </svg>
+                            Facilities Stocking This Medicine
+                        </h4>
+                        <span id="modal-facilities-count" style="font-size: 0.8rem; color: #64748b;">Loading stock...</span>
+                    </div>
+
+                    <div id="modal-stocking-facilities-loading" class="loading-state" style="padding: 1.5rem; display: none;">
+                        <div class="spinner" style="width: 24px; height: 24px;"></div>
+                        <p style="font-size: 0.825rem;">Checking facility stock across network...</p>
+                    </div>
+
+                    <div id="modal-stocking-facilities-list" style="max-height: 280px; overflow-y: auto; padding-right: 4px;"></div>
+
+                    <div id="modal-stocking-facilities-empty" class="empty-state" style="display: none; padding: 2rem 1rem;">
+                        <p style="font-size: 0.875rem; color: #64748b;">No facilities currently have this medicine in stock with the requested minimum quantity.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button class="btn-outline" id="btn-close-med-modal-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Specific Availability Check -->
+    <div id="modal-check-availability" class="modal-overlay">
+        <div class="modal-card" style="max-width: 520px;">
+            <div class="modal-header">
+                <div>
+                    <h3 class="modal-title">Facility Medicine Stock Check</h3>
+                    <p style="font-size: 0.85rem; color: #64748b;">Direct availability verification (GET /facilities/{f_id}/medicines/{m_id}/availability)</p>
+                </div>
+                <button class="modal-close-btn" id="btn-close-avail-modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <form id="form-query-availability" class="login-form">
+                    <div class="input-group">
+                        <label for="query-avail-facility">Facility *</label>
+                        <select id="query-avail-facility" required>
+                            <option value="">-- Select Facility --</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="query-avail-medicine">Medicine *</label>
+                        <select id="query-avail-medicine" required>
+                            <option value="">-- Select Medicine --</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">
+                        Verify Live Availability
+                    </button>
+                </form>
+
+                <!-- Result Box -->
+                <div id="avail-query-result-box" style="display: none; margin-top: 1.25rem; border-radius: 12px; padding: 1.25rem; border: 1px solid #e2e8f0; background: #f8fafc;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <h4 id="avail-result-med-name" style="font-size: 1rem; font-weight: 700; color: #1e293b;">Medicine Name</h4>
+                        <span id="avail-result-badge" class="badge-stock-in">IN STOCK</span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.85rem;">
+                        <div>
+                            <span style="color: #64748b;">Available Quantity:</span>
+                            <p><strong id="avail-result-qty" style="font-size: 1.15rem; color: #0f172a;">--</strong> <span id="avail-result-unit">units</span></p>
+                        </div>
+                        <div>
+                            <span style="color: #64748b;">Facility:</span>
+                            <p id="avail-result-fac-name" style="font-weight: 600; color: #334155;">--</p>
+                        </div>
+                        <div>
+                            <span style="color: #64748b;">Batch Number:</span>
+                            <p id="avail-result-batch" style="font-weight: 600; color: #334155;">--</p>
+                        </div>
+                        <div>
+                            <span style="color: #64748b;">Expiry Date:</span>
+                            <p id="avail-result-expiry" style="font-weight: 600; color: #334155;">--</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+                <button class="btn-outline" id="btn-close-avail-modal-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/offline-db.js"></script>
+    <script src="js/connectivity.js"></script>
+    <script src="js/sync-manager.js"></script>
+    <script src="js/medicines.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js').catch(console.warn);
+            });
+        }
+    </script>
+</body>
+</html>

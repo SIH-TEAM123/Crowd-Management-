@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Symmetry</title>
+    <!-- Import Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+        
+        <!-- Sidebar Navigation (Left Panel) -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" fill="rgba(124, 58, 237, 0.15)" stroke="#7c3aed" stroke-width="2"/>
+                    <circle cx="12" cy="12" r="3" fill="#7c3aed"/>
+                </svg>
+                <span class="logo-text">Symmetry</span>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <!-- Grid/Layout Icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"/>
+                        <rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                
+                <a href="appointments.html" class="menu-item">
+                    <!-- Calendar Icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <span>Appointments</span>
+                </a>
+                
+                <a href="queue.html" class="menu-item">
+                    <!-- Ticket/Queue Icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="6" width="20" height="12" rx="2"/>
+                        <line x1="6" y1="12" x2="18" y2="12"/>
+                    </svg>
+                    <span>Queue / Token</span>
+                </a>
+                
+                <a href="specialists.html" class="menu-item">
+                    <!-- Specialists Icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>Specialists</span>
+                </a>
+
+                <a href="diagnostics.html" class="menu-item">
+                    <!-- Diagnostics Icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    <span>Diagnostics</span>
+                </a>
+
+                <a href="medicines.html" class="menu-item">
+                    <!-- Medicines Icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10.5 20.5L3.5 13.5a4.95 4.95 0 1 1 7-7l7 7a4.95 4.95 0 1 1-7 7z"/>
+                        <line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/>
+                    </svg>
+                    <span>Medicines</span>
+                </a>
+
+                <a href="facilities.html" class="menu-item">
+                    <!-- Facilities Icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    <span>Facility Discovery</span>
+                </a>
+                
+                <a href="referrals.html" class="menu-item">
+                    <!-- Transfer/Referral Icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+                    </svg>
+                    <span>Referral Tracking</span>
+                </a>
+                
+                <a href="crowd.html" class="menu-item">
+                    <!-- Group/Users Icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                    </svg>
+                    <span>Crowd Status</span>
+                </a>
+                
+                <a href="crowd-forecast.html" class="menu-item">
+                    <!-- Chart/Trending Icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                        <polyline points="17 6 23 6 23 12"/>
+                    </svg>
+                    <span>Crowd Forecast</span>
+                </a>
+                
+                <a href="profile.html" class="menu-item active">
+                    <!-- User Settings Icon (Active) -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span>Profile</span>
+                </a>
+                
+                <a href="notifications.html" class="menu-item">
+                    <!-- Bell Icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span>Notifications</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="index.html" class="menu-item">
+                    <!-- Log Out Icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+        
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Sticky Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <div class="search-bar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input type="text" placeholder="Search services...">
+                    </div>
+                </div>
+                
+                <div class="header-right">
+                    <button class="icon-btn" title="Help Centre">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                    </button>
+                    
+                    <button class="icon-btn" title="View alerts">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <span class="notification-dot"></span>
+                    </button>
+                    
+                    <div class="profile-badge">
+                        <div class="profile-avatar">AM</div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Profile Page Content Body -->
+            <div class="dashboard-body">
+                
+                <!-- Welcome Title Header -->
+                <div class="welcome-row">
+                    <div class="welcome-text">
+                        <h2>My Profile</h2>
+                        <p>Manage your account settings, details, and active queue information.</p>
+                    </div>
+                </div>
+                
+                <!-- Main Grid Section (Profile detail vs Appointments) -->
+                <div class="profile-grid">
+                    
+                    <!-- Left Panel: User Profile Card -->
+                    <div class="card-panel">
+                        <div class="profile-header-info">
+                            <!-- Large Avatar Capsule -->
+                            <div class="profile-avatar-large" id="avatarBadge">AM</div>
+                            <h3 class="profile-name" id="displayName">Alex Mercer</h3>
+                            <p class="profile-id" id="displayId">USR-4091</p>
+                        </div>
+                        
+                        <!-- Account Details List -->
+                        <div class="profile-details-list">
+                            <div class="detail-item">
+                                <span class="detail-label">Full Name</span>
+                                <span class="detail-value" id="valName">Alex Mercer</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">User ID</span>
+                                <span class="detail-value" id="valId">USR-4091</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Email Address</span>
+                                <span class="detail-value" id="valEmail">alex.mercer@example.com</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Phone Number</span>
+                                <span class="detail-value" id="valPhone">+1 (555) 019-2834</span>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-card-footer">
+                            <button class="btn-primary" id="btnEditProfile" style="padding: 0 24px; height: 38px;">Edit Profile</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Panel: Queue & Appointment Summary -->
+                    <div class="card-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Active Summary</h3>
+                        </div>
+                        
+                        <div class="status-list">
+                            <!-- Active Token details -->
+                            <div class="status-item">
+                                <div class="status-item-header">
+                                    <div class="status-title-row">
+                                        <span class="status-dot status-dot-warning"></span>
+                                        <span class="status-title">Current Active Token</span>
+                                    </div>
+                                    <span class="status-badge" style="color: #7c3aed; font-weight: 600;">Registered</span>
+                                </div>
+                                <div class="status-item-details" style="margin-top: 4px;">
+                                    <span>Token Number</span>
+                                    <strong style="color: #7c3aed; font-size: 1.1rem;">A-104</strong>
+                                </div>
+                            </div>
+                            
+                            <!-- Queue Status Details -->
+                            <div class="status-item">
+                                <div class="status-item-header">
+                                    <div class="status-title-row">
+                                        <span class="status-dot status-dot-active"></span>
+                                        <span class="status-title">Queue Status</span>
+                                    </div>
+                                </div>
+                                <div class="status-item-details">
+                                    <span>People Ahead: <strong>17</strong></span>
+                                    <span>Wait Time: <strong style="color: #10b981;">24 mins</strong></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Upcoming Appointments summary -->
+                            <div class="status-item">
+                                <div class="status-item-header">
+                                    <div class="status-title-row">
+                                        <span class="status-dot status-dot-neutral"></span>
+                                        <span class="status-title">Upcoming Appointment</span>
+                                    </div>
+                                </div>
+                                <div class="status-item-details" style="flex-direction: column; gap: 4px; align-items: flex-start;">
+                                    <strong>General Consultation</strong>
+                                    <span style="font-size: 0.775rem;">Date: Aug 17, 2026 at 2:30 PM (Counter 3)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- Account Actions Panel (Security Settings list) -->
+                <div class="card-panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Account Security & Actions</h3>
+                    </div>
+                    
+                    <div class="account-actions-list">
+                        
+                        <!-- Change Password Row -->
+                        <div class="account-action-item" id="btnChangePassword">
+                            <div class="action-label-group">
+                                <div class="action-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                    </svg>
+                                </div>
+                                <span class="action-text">Change Password</span>
+                            </div>
+                            <div class="action-arrow">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                    <polyline points="12 5 19 12 12 19"/>
+                                </svg>
+                            </div>
+                        </div>
+                        
+                        <!-- Logout Row -->
+                        <a href="index.html" class="account-action-item" id="btnLogout">
+                            <div class="action-label-group">
+                                <div class="action-icon" style="color: #ef4444;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                        <polyline points="16 17 21 12 16 7"/>
+                                        <line x1="21" y1="12" x2="9" y2="12"/>
+                                    </svg>
+                                </div>
+                                <span class="action-text" style="color: #ef4444;">Logout Account</span>
+                            </div>
+                            <div class="action-arrow">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                    <polyline points="12 5 19 12 12 19"/>
+                                </svg>
+                            </div>
+                        </a>
+                        
+                    </div>
+                </div>
+                
+                <!-- Offline Storage & Sync Center Panel -->
+                <div class="card-panel" style="margin-top: 20px;">
+                    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 class="panel-title">📱 Offline Mode & Local Storage</h3>
+                            <p class="panel-subtitle" style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">Manage cached health records and background synchronization queue</p>
+                        </div>
+                        <span id="profile-network-status"></span>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px;">
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+                            <div style="font-weight: 600; color: #1e293b; margin-bottom: 6px;">Sync Queue Status</div>
+                            <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;" id="profile-sync-summary">Checking pending sync queue...</div>
+                            <button class="btn btn-outline-primary" style="padding: 6px 14px; font-size: 0.85rem;" onclick="if(window.SyncManager) window.SyncManager.openSyncCenter();">
+                                🔄 Open Sync Center
+                            </button>
+                        </div>
+
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+                            <div style="font-weight: 600; color: #1e293b; margin-bottom: 6px;">Offline Privacy & Cache</div>
+                            <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">Purge cached personal health records and local appointment drafts from this device.</div>
+                            <button class="btn btn-outline-danger" id="btnClearOfflineCache" style="padding: 6px 14px; font-size: 0.85rem;">
+                                🗑️ Clear Offline Health Cache
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            
+        </main>
+        
+    </div>
+
+    <!-- Script imports -->
+    <script src="js/offline-db.js"></script>
+    <script src="js/connectivity.js"></script>
+    <script src="js/sync-manager.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/profile.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('ServiceWorker registered:', reg.scope))
+                    .catch(err => console.warn('ServiceWorker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "Symmetry - Healthcare & Crowd Management",
+  "short_name": "Symmetry",
+  "description": "Smart PHC crowd management and healthcare coordination system",
+  "start_url": "./dashboard.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait-primary"
+}

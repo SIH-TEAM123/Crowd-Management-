@@ -6,11 +6,10 @@ from pydantic import BaseModel, Field
 
 
 class InputMode(str, Enum):
-    """Supported sensing input modes."""
     SIMULATION = "SIMULATION"
     VIDEO = "VIDEO"
+    LIVE_CAMERA = "LIVE_CAMERA"
     CAMERA_RESERVED = "CAMERA_RESERVED"
-
 
 class PrivacyMode(str, Enum):
     """Privacy enforcement modes."""

@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Coordination - Healthcare Network</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+
+        <!-- ====== Sidebar ====== -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" fill="rgba(124,58,237,0.15)" stroke="#7c3aed" stroke-width="2"/>
+                    <circle cx="12" cy="12" r="3" fill="#7c3aed"/>
+                </svg>
+                <span class="logo-text">Symmetry</span>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="appointments.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <span>Appointments</span>
+                </a>
+
+                <a href="queue.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="6" width="20" height="12" rx="2"/>
+                        <line x1="6" y1="12" x2="18" y2="12"/>
+                    </svg>
+                    <span>Queue / Token</span>
+                </a>
+
+                <a href="specialists.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>Specialists</span>
+                </a>
+
+                <a href="diagnostics.html" class="menu-item active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    <span>Diagnostics</span>
+                </a>
+
+                <a href="medicines.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10.5 20.5L3.5 13.5a4.95 4.95 0 1 1 7-7l7 7a4.95 4.95 0 1 1-7 7z"/>
+                        <line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/>
+                    </svg>
+                    <span>Medicines</span>
+                </a>
+
+                <a href="facilities.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    <span>Facility Discovery</span>
+                </a>
+
+                <a href="referrals.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+                    </svg>
+                    <span>Referral Tracking</span>
+                </a>
+
+                <a href="crowd.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>Crowd Status</span>
+                </a>
+
+                <a href="crowd-forecast.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                        <polyline points="17 6 23 6 23 12"/>
+                    </svg>
+                    <span>Crowd Forecast</span>
+                </a>
+
+                <a href="profile.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span>Profile</span>
+                </a>
+
+                <a href="notifications.html" class="menu-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span>Notifications</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- ====== Main Content Area ====== -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 class="page-title">Diagnostic Coordination</h1>
+                    <p class="page-subtitle">Facility test catalogs, instant booking, live test queues, and decoupled lab result status tracking</p>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-primary" id="btn-open-book-modal">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        <span>Book Diagnostic Test</span>
+                    </button>
+                    <button class="btn btn-secondary" id="btn-global-refresh" title="Refresh all data">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"/>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                        </svg>
+                    </button>
+                    <div class="user-avatar-badge" title="User Profile">
+                        <span id="user-initials">HC</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Overview Statistics Bar -->
+            <section class="referral-stats-grid" id="diagnostic-stats-bar">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(124,58,237,0.1); color: #7c3aed;">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="stat-total-tests">--</span>
+                        <span class="stat-label">Total Test Offerings</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(16,185,129,0.1); color: #10b981;">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="stat-available-tests">--</span>
+                        <span class="stat-label">Available Now</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(245,158,11,0.1); color: #f59e0b;">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="stat-waiting-queue">--</span>
+                        <span class="stat-label">Waiting in Queue</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(14,165,233,0.1); color: #0ea5e9;">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="stat-in-progress">--</span>
+                        <span class="stat-label">In-Progress Tests</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(16,185,129,0.15); color: #059669;">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <path d="M9 15l2 2 4-4"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="stat-results-ready">--</span>
+                        <span class="stat-label">Results Available</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Navigation Tabs -->
+            <div class="tabs-container">
+                <div class="tabs-list">
+                    <button class="tab-btn active" data-tab="catalog" id="tab-btn-catalog">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                        <span>Test Directory</span>
+                    </button>
+                    <button class="tab-btn" data-tab="queues" id="tab-btn-queues">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="6" width="20" height="12" rx="2"/>
+                            <line x1="6" y1="12" x2="18" y2="12"/>
+                        </svg>
+                        <span>Live Test Queues</span>
+                    </button>
+                    <button class="tab-btn" data-tab="bookings" id="tab-btn-bookings">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                        </svg>
+                        <span>Bookings &amp; Results</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- TAB 1: Diagnostic Test Directory & Catalog                -->
+            <!-- ========================================================= -->
+            <div class="tab-content active" id="tab-content-catalog">
+                <!-- Filter Toolbar -->
+                <div class="filter-card">
+                    <div class="filter-grid">
+                        <div class="filter-group">
+                            <label for="filter-search">Search Test</label>
+                            <input type="text" id="filter-search" class="form-control" placeholder="Search by test name or keyword...">
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-facility">Facility</label>
+                            <select id="filter-facility" class="form-control">
+                                <option value="">All Healthcare Facilities</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-category">Category</label>
+                            <select id="filter-category" class="form-control">
+                                <option value="">All Categories</option>
+                                <option value="Pathology">Pathology / Blood Tests</option>
+                                <option value="Radiology">Radiology / Imaging</option>
+                                <option value="Cardiology">Cardiology (ECG/Echo)</option>
+                                <option value="Microbiology">Microbiology</option>
+                                <option value="Biochemistry">Biochemistry</option>
+                            </select>
+                        </div>
+                        <div class="filter-group filter-checkbox-group" style="display: flex; align-items: center; padding-top: 1.5rem;">
+                            <label class="custom-checkbox">
+                                <input type="checkbox" id="filter-available-only">
+                                <span class="checkbox-indicator"></span>
+                                <span class="checkbox-label">Available Only</span>
+                            </label>
+                        </div>
+                        <div class="filter-actions" style="display: flex; align-items: flex-end; gap: 0.5rem;">
+                            <button class="btn btn-secondary" id="btn-reset-filters">Reset</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View Switchers & Total count header -->
+                <div class="view-header-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span class="results-count-text" id="catalog-results-count">Showing tests...</span>
+                    <div class="view-mode-toggle">
+                        <button class="view-btn active" id="btn-view-grid" title="Grid View">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        </button>
+                        <button class="view-btn" id="btn-view-table" title="Table View">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Catalog Grid View -->
+                <div class="diagnostic-grid" id="diagnostic-cards-grid">
+                    <!-- Dynamic test cards rendered via JS -->
+                </div>
+
+                <!-- Catalog Table View (Hidden by default) -->
+                <div class="table-container" id="diagnostic-table-view" style="display: none; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 2rem;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Test Name</th>
+                                <th>Category</th>
+                                <th>Facility</th>
+                                <th>Availability</th>
+                                <th>Cost</th>
+                                <th>Est. Duration</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="diagnostic-table-tbody">
+                            <!-- Dynamic rows rendered via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty state -->
+                <div class="empty-state" id="catalog-empty-state" style="display: none;">
+                    <div class="empty-state-icon">🔬</div>
+                    <h3>No Diagnostic Tests Found</h3>
+                    <p>No tests match the current filter or search criteria. Try adjusting your search or clearing filters.</p>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- TAB 2: Live Test Queues                                   -->
+            <!-- ========================================================= -->
+            <div class="tab-content" id="tab-content-queues">
+                <!-- Facility & Test Queue Selector -->
+                <div class="filter-card">
+                    <div class="filter-grid" style="grid-template-columns: 1fr 1fr auto;">
+                        <div class="filter-group">
+                            <label for="queue-filter-facility">Select Healthcare Facility</label>
+                            <select id="queue-filter-facility" class="form-control">
+                                <option value="">Select a facility to inspect queues...</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="queue-filter-test">Select Diagnostic Test</label>
+                            <select id="queue-filter-test" class="form-control">
+                                <option value="">Select a diagnostic test...</option>
+                            </select>
+                        </div>
+                        <div class="filter-actions" style="display: flex; align-items: flex-end;">
+                            <button class="btn btn-secondary" id="btn-refresh-queue">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="23 4 23 10 17 10"/>
+                                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                                </svg>
+                                <span>Refresh Queue</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Queue Hero Metric Card -->
+                <div class="queue-hero-card" id="test-queue-hero" style="display: none;">
+                    <div class="queue-hero-header">
+                        <div>
+                            <div class="queue-hero-title" id="hero-test-name">Complete Blood Count (CBC)</div>
+                            <div class="queue-hero-sub" id="hero-facility-name">Apex Diagnostic Center</div>
+                        </div>
+                        <span class="badge badge-available" id="hero-test-avail">Service Available</span>
+                    </div>
+                    <div class="queue-hero-stats">
+                        <div class="queue-hero-stat-col">
+                            <span class="queue-hero-stat-val" id="hero-waiting-count">0</span>
+                            <span class="queue-hero-stat-lbl">Waiting In Queue</span>
+                        </div>
+                        <div class="queue-hero-stat-col">
+                            <span class="queue-hero-stat-val" id="hero-serving-count">0</span>
+                            <span class="queue-hero-stat-lbl">Currently In-Progress</span>
+                        </div>
+                        <div class="queue-hero-stat-col">
+                            <span class="queue-hero-stat-val" id="hero-total-active">0</span>
+                            <span class="queue-hero-stat-lbl">Total Active</span>
+                        </div>
+                        <div class="queue-hero-stat-col">
+                            <span class="queue-hero-stat-val" id="hero-est-wait">0 min</span>
+                            <span class="queue-hero-stat-lbl">Estimated Total Wait</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Waiting List Table -->
+                <div class="queue-table-card" id="test-queue-table-container" style="display: none;">
+                    <div class="card-header-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin: 0;">Live Waiting Patients</h3>
+                        <span class="last-updated-text" id="queue-last-updated" style="font-size: 0.8rem; color: #94a3b8;">Updated just now</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">Rank</th>
+                                <th>Booking ID</th>
+                                <th>Patient Name</th>
+                                <th>Patient ID</th>
+                                <th>Lifecycle Status</th>
+                                <th>Result Status</th>
+                                <th>Booked At</th>
+                                <th>Est. Wait</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="test-queue-tbody">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Facility-level Queue Summary Grid (when facility selected without single test) -->
+                <div id="facility-queues-overview" style="display: none; margin-top: 1.5rem;">
+                    <h3 style="font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem;">Facility Diagnostic Offerings &amp; Current Queues</h3>
+                    <div class="diagnostic-grid" id="facility-queue-cards-grid">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+                <!-- Empty state for queue tab -->
+                <div class="empty-state" id="queue-empty-prompt">
+                    <div class="empty-state-icon">📋</div>
+                    <h3>Select a Facility or Diagnostic Test</h3>
+                    <p>Choose a healthcare facility and diagnostic test above to inspect its real-time queue positions and waiting line.</p>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- TAB 3: Bookings List, Tracking & Result Status            -->
+            <!-- ========================================================= -->
+            <div class="tab-content" id="tab-content-bookings">
+                <!-- Quick Look-Up / Tracking Banner -->
+                <div class="tracking-banner">
+                    <div>
+                        <div style="font-weight: 700; color: #0f172a; font-size: 1.05rem;">Quick Patient Booking &amp; Queue Tracker</div>
+                        <div style="font-size: 0.825rem; color: #64748b;">Instant lookup for dynamic queue rank, wait time, and result availability</div>
+                    </div>
+                    <div class="tracking-input-group">
+                        <input type="text" id="input-track-booking-id" class="form-control" placeholder="Enter Booking ID (e.g. BKG_...)">
+                        <button class="btn btn-primary" id="btn-track-booking">Track Now</button>
+                    </div>
+                </div>
+
+                <!-- Live Tracking Result Display (Shown when a booking is queried) -->
+                <div class="tracking-result-card" id="tracking-result-box" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                        <div>
+                            <span style="font-size: 0.8rem; font-weight: 700; color: #7c3aed; text-transform: uppercase;">Live Diagnostic Tracking</span>
+                            <h3 id="track-patient-name" style="font-size: 1.35rem; font-weight: 800; color: #0f172a; margin: 0.2rem 0;">--</h3>
+                            <div style="font-size: 0.85rem; color: #64748b;" id="track-test-and-facility">--</div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <span id="track-booking-status-badge"></span>
+                            <span id="track-result-status-badge"></span>
+                            <button class="btn btn-secondary" id="btn-refresh-tracked-booking" title="Refresh Position">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Visual Step Timeline -->
+                    <div class="lifecycle-timeline" id="track-timeline">
+                        <div class="lifecycle-step" id="step-requested">
+                            <div class="lifecycle-step-circle">1</div>
+                            <span class="lifecycle-step-label">Requested</span>
+                        </div>
+                        <div class="lifecycle-step" id="step-booked">
+                            <div class="lifecycle-step-circle">2</div>
+                            <span class="lifecycle-step-label">Booked</span>
+                        </div>
+                        <div class="lifecycle-step" id="step-in_progress">
+                            <div class="lifecycle-step-circle">3</div>
+                            <span class="lifecycle-step-label">In Progress</span>
+                        </div>
+                        <div class="lifecycle-step" id="step-completed">
+                            <div class="lifecycle-step-circle">4</div>
+                            <span class="lifecycle-step-label">Completed</span>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Grid -->
+                    <div class="tracking-result-grid">
+                        <div class="tracking-metric">
+                            <span class="tracking-metric-val" id="track-queue-pos">--</span>
+                            <span class="tracking-metric-lbl">Queue Position</span>
+                        </div>
+                        <div class="tracking-metric">
+                            <span class="tracking-metric-val" id="track-people-ahead">--</span>
+                            <span class="tracking-metric-lbl">People Ahead</span>
+                        </div>
+                        <div class="tracking-metric">
+                            <span class="tracking-metric-val" id="track-est-wait">--</span>
+                            <span class="tracking-metric-lbl">Est. Remaining Wait</span>
+                        </div>
+                        <div class="tracking-metric">
+                            <span class="tracking-metric-val" id="track-result-state-text" style="font-size: 1.1rem;">--</span>
+                            <span class="tracking-metric-lbl" id="track-result-time-lbl">Lab Result Status</span>
+                        </div>
+                    </div>
+
+                    <!-- Explanatory Callout regarding decoupled result status -->
+                    <div class="result-status-callout" id="track-result-callout">
+                        <span id="track-callout-icon">ℹ</span>
+                        <span id="track-callout-text">Test execution and lab result availability are tracked independently.</span>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+                        <button class="btn btn-secondary" id="btn-open-update-status-from-track">Update Lifecycle Status</button>
+                        <button class="btn btn-primary" id="btn-open-update-result-from-track">Update Result Status</button>
+                    </div>
+                </div>
+
+                <!-- Bookings Filter Toolbar -->
+                <div class="filter-card">
+                    <div class="filter-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                        <div class="filter-group">
+                            <label for="filter-booking-status">Booking Lifecycle Status</label>
+                            <select id="filter-booking-status" class="form-control">
+                                <option value="">All Lifecycle States</option>
+                                <option value="REQUESTED">REQUESTED</option>
+                                <option value="BOOKED">BOOKED</option>
+                                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                                <option value="COMPLETED">COMPLETED</option>
+                                <option value="CANCELLED">CANCELLED</option>
+                                <option value="FAILED">FAILED</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-booking-result-status">Lab Result Status</label>
+                            <select id="filter-booking-result-status" class="form-control">
+                                <option value="">All Result Statuses</option>
+                                <option value="PENDING">PENDING (In-Analysis)</option>
+                                <option value="AVAILABLE">AVAILABLE (Ready)</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-booking-facility">Facility</label>
+                            <select id="filter-booking-facility" class="form-control">
+                                <option value="">All Facilities</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-booking-patient">Patient Name / ID</label>
+                            <input type="text" id="filter-booking-patient" class="form-control" placeholder="Search patient...">
+                        </div>
+                        <div class="filter-actions" style="display: flex; align-items: flex-end; gap: 0.5rem;">
+                            <button class="btn btn-secondary" id="btn-reset-booking-filters">Reset</button>
+                            <button class="btn btn-primary" id="btn-refresh-bookings">Refresh</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bookings Table -->
+                <div class="table-container" style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 2rem;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Patient Name</th>
+                                <th>Diagnostic Test</th>
+                                <th>Facility</th>
+                                <th>Booking Status</th>
+                                <th>Result Status</th>
+                                <th>Queue Rank</th>
+                                <th>Booked Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookings-table-tbody">
+                            <!-- Rendered via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State for Bookings -->
+                <div class="empty-state" id="bookings-empty-state" style="display: none;">
+                    <div class="empty-state-icon">📂</div>
+                    <h3>No Diagnostic Bookings Found</h3>
+                    <p>No bookings match the selected status or filter parameters.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- MODALS                                                        -->
+    <!-- ============================================================= -->
+
+    <!-- 1. Test Details Modal -->
+    <div class="modal-overlay" id="modal-test-details" style="display: none;">
+        <div class="modal-card" style="max-width: 580px;">
+            <div class="modal-header">
+                <div>
+                    <span class="badge badge-category" id="modal-detail-category">Category</span>
+                    <h2 class="modal-title" id="modal-detail-name" style="margin-top: 0.35rem;">Test Details</h2>
+                </div>
+                <button class="modal-close" id="btn-close-detail-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                    <div class="diag-meta-item">
+                        <span class="diag-meta-label">Healthcare Facility</span>
+                        <span class="diag-meta-val" id="modal-detail-facility">--</span>
+                    </div>
+                    <div class="diag-meta-item">
+                        <span class="diag-meta-label">Availability Status</span>
+                        <span id="modal-detail-avail-badge">--</span>
+                    </div>
+                    <div class="diag-meta-item">
+                        <span class="diag-meta-label">Test Cost</span>
+                        <span class="diag-meta-val" id="modal-detail-cost">--</span>
+                    </div>
+                    <div class="diag-meta-item">
+                        <span class="diag-meta-label">Estimated Duration</span>
+                        <span class="diag-meta-val" id="modal-detail-duration">--</span>
+                    </div>
+                </div>
+                <div style="margin-bottom: 1.25rem;">
+                    <span class="diag-meta-label">Description &amp; Preparation</span>
+                    <p style="font-size: 0.88rem; color: #334155; line-height: 1.6; margin-top: 0.25rem;" id="modal-detail-description">--</p>
+                </div>
+                <div style="background: #faf5ff; border: 1px solid #ede9fe; border-radius: 12px; padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 700; color: #6d28d9; font-size: 0.95rem;">Live Test Queue</div>
+                        <div style="font-size: 0.8rem; color: #7c3aed;" id="modal-detail-queue-text">Loading queue...</div>
+                    </div>
+                    <button class="btn btn-secondary" id="btn-jump-to-queue-from-detail" style="font-size: 0.8rem;">View Full Queue</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btn-close-detail-modal-btn">Close</button>
+                <button class="btn btn-primary" id="btn-book-from-detail-modal">Book This Test</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Book Diagnostic Test Modal -->
+    <div class="modal-overlay" id="modal-book-test" style="display: none;">
+        <div class="modal-card" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Book Diagnostic Test</h2>
+                <button class="modal-close" id="btn-close-book-modal">&times;</button>
+            </div>
+            <form id="form-book-diagnostic">
+                <div class="modal-body">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label for="book-facility-select" class="form-label required">Select Facility</label>
+                        <select id="book-facility-select" class="form-control" required>
+                            <option value="">Select healthcare facility...</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label for="book-test-select" class="form-label required">Select Diagnostic Test</label>
+                        <select id="book-test-select" class="form-control" required>
+                            <option value="">Select diagnostic test offering...</option>
+                        </select>
+                        <small id="book-test-info-hint" style="color: #64748b; font-size: 0.78rem; display: block; margin-top: 4px;"></small>
+                    </div>
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label for="book-patient-name" class="form-label required">Patient Full Name</label>
+                            <input type="text" id="book-patient-name" class="form-control" placeholder="e.g. Rahul Sharma" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="book-patient-id" class="form-label">Patient ID (Optional)</label>
+                            <input type="text" id="book-patient-id" class="form-control" placeholder="e.g. PAT_982">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label for="book-initial-status" class="form-label">Initial Booking Status</label>
+                        <select id="book-initial-status" class="form-control">
+                            <option value="REQUESTED">REQUESTED (Standard Queue Entry)</option>
+                            <option value="BOOKED">BOOKED (Confirmed Slot)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="book-notes" class="form-label">Clinical / Administrative Notes</label>
+                        <textarea id="book-notes" class="form-control" rows="2" placeholder="Fasting status, special instructions, referring doctor..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-book">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-booking">Confirm Booking</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Booking Confirmation Modal -->
+    <div class="modal-overlay" id="modal-booking-confirmation" style="display: none;">
+        <div class="modal-card" style="max-width: 520px; text-align: center;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #ecfdf5; color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1rem;">
+                ✓
+            </div>
+            <h2 class="modal-title" style="margin-bottom: 0.25rem;">Booking Confirmed!</h2>
+            <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1.25rem;">Your diagnostic test booking has been registered in the facility queue.</p>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; text-align: left; margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.65rem;">
+                    <span style="font-size: 0.8rem; color: #64748b;">Booking ID:</span>
+                    <strong id="confirm-booking-id" style="font-family: monospace; color: #7c3aed;">--</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.65rem;">
+                    <span style="font-size: 0.8rem; color: #64748b;">Diagnostic Test:</span>
+                    <strong id="confirm-test-name">--</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.65rem;">
+                    <span style="font-size: 0.8rem; color: #64748b;">Healthcare Facility:</span>
+                    <span id="confirm-facility-name">--</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.65rem;">
+                    <span style="font-size: 0.8rem; color: #64748b;">Initial Queue Rank:</span>
+                    <span class="badge-queue-pos" id="confirm-queue-pos">Position #--</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.65rem;">
+                    <span style="font-size: 0.8rem; color: #64748b;">Estimated Wait Time:</span>
+                    <strong id="confirm-est-wait">--</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-size: 0.8rem; color: #64748b;">Result Status:</span>
+                    <span class="badge-result-pending" id="confirm-result-status">Result: PENDING</span>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="justify-content: center; gap: 0.75rem;">
+                <button class="btn btn-secondary" id="btn-close-confirm-modal">Dismiss</button>
+                <button class="btn btn-primary" id="btn-track-from-confirm">Track This Booking</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Update Lifecycle Status Modal -->
+    <div class="modal-overlay" id="modal-update-status" style="display: none;">
+        <div class="modal-card" style="max-width: 520px;">
+            <div class="modal-header">
+                <div>
+                    <span style="font-size: 0.75rem; color: #7c3aed; font-weight: 700; text-transform: uppercase;">Operator State Transition</span>
+                    <h2 class="modal-title" style="margin-top: 2px;">Update Booking Status</h2>
+                </div>
+                <button class="modal-close" id="btn-close-status-modal">&times;</button>
+            </div>
+            <form id="form-update-status">
+                <div class="modal-body">
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.85rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span style="font-size: 0.8rem; color: #64748b;">Booking ID:</span>
+                            <span id="modal-status-booking-id" style="font-family: monospace; font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span style="font-size: 0.8rem; color: #64748b;">Patient Name:</span>
+                            <span id="modal-status-patient-name" style="font-weight: 600;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="font-size: 0.8rem; color: #64748b;">Current State:</span>
+                            <span id="modal-status-current-badge"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label required">Allowed Next State</label>
+                        <select id="modal-select-next-status" class="form-control" required>
+                            <!-- Valid state transitions populated dynamically -->
+                        </select>
+                        <small style="color: #64748b; font-size: 0.75rem; display: block; margin-top: 4px;">Enforces backend state machine lifecycle: REQUESTED &rarr; BOOKED &rarr; IN_PROGRESS &rarr; COMPLETED.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modal-status-notes" class="form-label">Audit / Progress Notes</label>
+                        <textarea id="modal-status-notes" class="form-control" rows="2" placeholder="e.g. Sample collected, scan scheduled for 11:30 AM..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-status-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-status-update">Apply Transition</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 5. Update Diagnostic Result Status Modal -->
+    <div class="modal-overlay" id="modal-update-result" style="display: none;">
+        <div class="modal-card" style="max-width: 520px;">
+            <div class="modal-header">
+                <div>
+                    <span style="font-size: 0.75rem; color: #10b981; font-weight: 700; text-transform: uppercase;">Laboratory Release</span>
+                    <h2 class="modal-title" style="margin-top: 2px;">Update Lab Result Status</h2>
+                </div>
+                <button class="modal-close" id="btn-close-result-modal">&times;</button>
+            </div>
+            <form id="form-update-result">
+                <div class="modal-body">
+                    <div class="result-status-callout" style="margin-top: 0; margin-bottom: 1.25rem;">
+                        <span>ℹ</span>
+                        <span><strong>Decoupled Result Architecture:</strong> Test completion does not automatically signify lab result readiness. Results are independently released here.</span>
+                    </div>
+
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.85rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span style="font-size: 0.8rem; color: #64748b;">Booking ID:</span>
+                            <span id="modal-result-booking-id" style="font-family: monospace; font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="font-size: 0.8rem; color: #64748b;">Current Result State:</span>
+                            <span id="modal-result-current-badge"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label for="modal-select-result-status" class="form-label required">Target Result Status</label>
+                        <select id="modal-select-result-status" class="form-control" required>
+                            <option value="AVAILABLE">AVAILABLE (Lab Results Ready &amp; Released)</option>
+                            <option value="PENDING">PENDING (In-Analysis / Awaiting Sign-off)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modal-result-notes" class="form-label">Result / Sign-off Notes</label>
+                        <textarea id="modal-result-notes" class="form-control" rows="2" placeholder="e.g. Pathology report signed by Dr. Roy; CBC values within normal ranges."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-result-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-result-update">Save Result Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/offline-db.js"></script>
+    <script src="js/connectivity.js"></script>
+    <script src="js/sync-manager.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/diagnostics.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js').catch(console.warn);
+            });
+        }
+    </script>
+</body>
+</html>

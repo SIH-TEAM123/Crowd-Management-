@@ -4,3 +4,7 @@
 .venv/
 venv/
 .env
+
+# Test isolation database
+test_sms_isolated.db
+*.db
