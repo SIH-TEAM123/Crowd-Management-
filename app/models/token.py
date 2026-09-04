@@ -31,6 +31,11 @@ class Token(Base):
         nullable=False
     )
 
+    emergency_flag: Mapped[bool] = mapped_column(
+    default=False,
+    nullable=False
+)
+
     token_status: Mapped[str] = mapped_column(
         String(20),
         default="WAITING",

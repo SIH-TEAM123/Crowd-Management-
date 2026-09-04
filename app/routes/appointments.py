@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -60,24 +60,58 @@ def appointment_datetime(appointment) -> datetime:
     )
 
 
+def priority_order():
+    """
+    Queue priority:
+
+    EMERGENCY -> 1
+    URGENT    -> 2
+    NORMAL    -> 3
+    """
+
+    return case(
+        (Token.priority_type == "EMERGENCY", 1),
+        (Token.priority_type == "URGENT", 2),
+        else_=3,
+    )
+
+
+# =========================================================
+# ACTIVE QUEUE
+# =========================================================
+
 async def _get_active_appointments_ordered(
     db: AsyncSession,
 ):
     """
-    Return only appointments that are not cancelled
-    and are scheduled for today or a future date.
+    Return active appointments ordered by:
+
+    1. Appointment date
+    2. Emergency priority
+    3. Urgent priority
+    4. Normal priority
+    5. Appointment time
+    6. Appointment ID
+
+    Cancelled appointments are excluded.
+    Past dates are excluded.
     """
 
     today = date.today()
 
     result = await db.execute(
         select(Appointment)
+        .join(
+            Token,
+            Token.token_id == Appointment.token_id,
+        )
         .where(
             Appointment.status != "CANCELLED",
             Appointment.appointment_date >= today,
         )
         .order_by(
             Appointment.appointment_date,
+            priority_order(),
             Appointment.appointment_time,
             Appointment.appointment_id,
         )
@@ -86,10 +120,15 @@ async def _get_active_appointments_ordered(
     return result.scalars().all()
 
 
+# =========================================================
+# REQUEST SCHEMA
+# =========================================================
+
 class AppointmentCreate(BaseModel):
     purpose: str
     appointment_date: date
     appointment_time: time
+    priority_type: str = "NORMAL"
 
 
 # =========================================================
@@ -147,6 +186,24 @@ async def create_appointment(
         )
 
     # -----------------------------------------------------
+    # Validate priority
+    # -----------------------------------------------------
+
+    priority = data.priority_type.strip().upper()
+
+    if priority not in [
+        "NORMAL",
+        "URGENT",
+        "EMERGENCY",
+    ]:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid priority type. Use NORMAL, URGENT, or EMERGENCY.",
+        )
+
+    emergency_flag = priority == "EMERGENCY"
+
+    # -----------------------------------------------------
     # Create token
     # -----------------------------------------------------
 
@@ -156,7 +213,8 @@ async def create_appointment(
         token_id=token_id,
         user_id=current_user.user_id,
         queue_position=None,
-        priority_type="NORMAL",
+        priority_type=priority,
+        emergency_flag=emergency_flag,
         token_status="WAITING",
     )
 
@@ -177,7 +235,9 @@ async def create_appointment(
     db.add(appointment)
 
     await db.commit()
+
     await db.refresh(appointment)
+    await db.refresh(token)
 
     # -----------------------------------------------------
     # Return appointment
@@ -197,6 +257,8 @@ async def create_appointment(
         "appointment_date": appointment.appointment_date,
         "appointment_time": appointment.appointment_time,
         "counter": "Counter 1",
+        "priority_type": token.priority_type,
+        "emergency_flag": token.emergency_flag,
         "status": appointment.status,
     }
 
@@ -212,18 +274,23 @@ async def get_my_appointments(
 ):
 
     result = await db.execute(
-        select(Appointment)
+        select(Appointment, Token)
+        .join(
+            Token,
+            Token.token_id == Appointment.token_id,
+        )
         .where(
             Appointment.user_id == current_user.user_id
         )
         .order_by(
             Appointment.appointment_date,
+            priority_order(),
             Appointment.appointment_time,
             Appointment.appointment_id,
         )
     )
 
-    appointments = result.scalars().all()
+    rows = result.all()
 
     return [
         {
@@ -240,9 +307,11 @@ async def get_my_appointments(
             "appointment_date": appointment.appointment_date,
             "appointment_time": appointment.appointment_time,
             "counter": "Counter 1",
+            "priority_type": token.priority_type,
+            "emergency_flag": token.emergency_flag,
             "status": appointment.status,
         }
-        for appointment in appointments
+        for appointment, token in rows
     ]
 
 
@@ -334,7 +403,7 @@ async def get_queue_status(
         )
 
         # -------------------------------------------------
-        # Remaining time
+        # Remaining service time
         # -------------------------------------------------
 
         if (
@@ -368,9 +437,8 @@ async def get_queue_status(
 
         waiting_appointments = [
             appointment
-            for appointment in active
-            if appointment.appointment_id
-            > currently_serving_id
+            for index, appointment in enumerate(active)
+            if index > current_index
         ]
 
     queue_size = len(waiting_appointments)
@@ -407,7 +475,22 @@ async def get_queue_status(
                 appointment.appointment_id,
         )
 
-        my_id = my_appointment.appointment_id
+        # Find user's actual position in the ordered queue
+
+        my_index = next(
+            (
+                index
+                for index, appointment
+                in enumerate(active)
+                if appointment.appointment_id
+                == my_appointment.appointment_id
+            ),
+            None,
+        )
+
+        if my_index is None:
+
+            my_index = 0
 
         # -------------------------------------------------
         # Already served
@@ -415,7 +498,7 @@ async def get_queue_status(
 
         if (
             currently_serving_id is not None
-            and my_id < currently_serving_id
+            and my_index < current_index
         ):
 
             my_status = "SERVED"
@@ -428,7 +511,7 @@ async def get_queue_status(
 
         elif (
             currently_serving_id is not None
-            and my_id == currently_serving_id
+            and my_index == current_index
         ):
 
             my_status = "BEING_SERVED"
@@ -445,11 +528,7 @@ async def get_queue_status(
 
             if currently_serving_id is None:
 
-                people_ahead = len([
-                    appointment
-                    for appointment in active
-                    if appointment.appointment_id < my_id
-                ])
+                people_ahead = my_index
 
                 estimated_wait = (
                     people_ahead
@@ -458,15 +537,10 @@ async def get_queue_status(
 
             else:
 
-                people_ahead = len([
-                    appointment
-                    for appointment in active
-                    if (
-                        currently_serving_id
-                        < appointment.appointment_id
-                        < my_id
-                    )
-                ])
+                people_ahead = max(
+                    my_index - current_index - 1,
+                    0,
+                )
 
                 estimated_wait = (
                     remaining_current_service
@@ -485,15 +559,7 @@ async def get_queue_status(
         # Position
         # -------------------------------------------------
 
-        position = next(
-            (
-                index + 1
-                for index, appointment
-                in enumerate(active)
-                if appointment.appointment_id == my_id
-            ),
-            None,
-        )
+        position = my_index + 1
 
         you = {
             "appointment_id":
@@ -633,19 +699,26 @@ async def get_appointment(
 ):
 
     result = await db.execute(
-        select(Appointment).where(
+        select(Appointment, Token)
+        .join(
+            Token,
+            Token.token_id == Appointment.token_id,
+        )
+        .where(
             Appointment.appointment_id == appointment_id,
             Appointment.user_id == current_user.user_id,
         )
     )
 
-    appointment = result.scalar_one_or_none()
+    row = result.first()
 
-    if appointment is None:
+    if row is None:
         raise HTTPException(
             status_code=404,
             detail="Appointment not found",
         )
+
+    appointment, token = row
 
     token_number = token_display_for(
         appointment.appointment_id
@@ -679,6 +752,12 @@ async def get_appointment(
         "counter":
             "Counter 1",
 
+        "priority_type":
+            token.priority_type,
+
+        "emergency_flag":
+            token.emergency_flag,
+
         "status":
             appointment.status,
     }
@@ -710,7 +789,9 @@ async def cancel_appointment(
             detail="Appointment not found",
         )
 
+    # -----------------------------------------------------
     # Already cancelled
+    # -----------------------------------------------------
 
     if (
         str(appointment.status).upper()
