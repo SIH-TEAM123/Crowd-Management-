@@ -1,7 +1,7 @@
 from datetime import datetime, date, time
 
 from sqlalchemy import String, Date, Time, DateTime, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
@@ -18,6 +18,13 @@ class Appointment(Base):
         String(3),
         ForeignKey("users.user_id"),
         nullable=False,
+        index=True
+    )
+
+    facility_id: Mapped[str | None] = mapped_column(
+        String(64),
+        ForeignKey("facilities.id", ondelete="SET NULL"),
+        nullable=True,
         index=True
     )
 
@@ -52,4 +59,15 @@ class Appointment(Base):
         DateTime,
         default=datetime.utcnow,
         nullable=False
+    )
+
+    facility = relationship(
+        "Facility",
+        back_populates="appointments"
+    )
+
+    sms_records = relationship(
+        "SMSDeliveryRecord",
+        back_populates="appointment",
+        cascade="all, delete-orphan"
     )

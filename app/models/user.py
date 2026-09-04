@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy import String, DateTime, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
-
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 
@@ -46,4 +46,9 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow
+    )
+    patient = relationship(
+    "Patient",
+    back_populates="user",
+    uselist=False
     )

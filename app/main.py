@@ -4,15 +4,86 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, Base
+
+# ============================================================
+# MODELS
+# ============================================================
+
 from app.models.user import User
 from app.models.appointment import Appointment
 from app.models.token import Token
 from app.models.hospital import Hospital
+from app.models.article import Article
+from app.models.arcade_score import ArcadeScore
+
+# Healthcare - T50
+from app.models.patient import Patient
+from app.models.medical_record import MedicalRecord
+from app.models.maternal_child import MaternalChildRecord
+from app.models.chronic_disease import ChronicDiseaseRecord
+from app.models.follow_up import FollowUp
+
+# Healthcare - Offline Capabilities
+from app.models.facility import Facility
+from app.models.department import Department
+from app.models.specialist import Specialist
+from app.models.diagnostic import DiagnosticTest
+from app.models.medicine import Medicine, FacilityInventory
+from app.models.referral import Referral
+from app.models.sms import SMSDeliveryRecord
+
+
+# ============================================================
+# ROUTES
+# ============================================================
+
 from app.routes.auth import router as auth_router
+from app.routes.specialists import router as specialists_router
 from app.routes.person4 import router as person4_router
 from app.routes.appointments import router as appointments_router
 from app.routes.hospitals import router as hospitals_router
+from app.routes.articles import router as articles_router
+from app.routes.arcade import router as arcade_router
+from app.routes.facilities import router as facilities_router
+from app.routes.departments import router as departments_router
+from app.routes.diagnostics import router as diagnostics_router
+from app.routes.medicines import router as medicines_router
+from app.routes.referrals import router as referrals_router
+from app.routes.operational_state import router as operational_state_router
+from app.routes.routing import router as routing_router
+from app.routes.sms import router as sms_router
+
+# Healthcare - T50
+from app.routes.patients import router as patients_router
+from app.routes.medical_records import router as medical_records_router
+from app.routes.triage import router as triage_router
+from app.routes.maternal_child import router as maternal_child_router
+from app.routes.chronic_disease import router as chronic_disease_router
+from app.routes.follow_up import router as follow_up_router
+
+# Healthcare - Offline Capabilities
+from app.routes.facilities import router as facilities_router
+from app.routes.departments import router as departments_router
+from app.routes.specialists import router as specialists_router
+from app.routes.diagnostics import router as diagnostics_router
+from app.routes.medicines import router as medicines_router
+from app.routes.referrals import router as referrals_router
+from app.routes.operational_state import router as operational_state_router
+from app.routes.routing import router as routing_router
+from app.routes.sms import router as sms_router
+
+
+# ============================================================
+# SEEDING
+# ============================================================
+
 from app.seed_hospitals import seed_hospitals
+from app.seed_articles import seed_articles
+
+
+# ============================================================
+# APPLICATION LIFESPAN
+# ============================================================
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,7 +94,11 @@ async def lifespan(app: FastAPI):
             Base.metadata.create_all
         )
 
+    # Seed initial hospital data
     await seed_hospitals()
+
+    # Seed initial article data
+    await seed_articles()
 
     yield
 
@@ -31,11 +106,20 @@ async def lifespan(app: FastAPI):
     await engine.dispose()
 
 
+# ============================================================
+# FASTAPI APPLICATION
+# ============================================================
+
 app = FastAPI(
     title="Queue Management API",
     version="1.0.0",
     lifespan=lifespan
 )
+
+
+# ============================================================
+# CORS
+# ============================================================
 
 app.add_middleware(
     CORSMiddleware,
@@ -45,15 +129,85 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Authentication routes
+
+# ============================================================
+# EXISTING VIZITOR ROUTES
+# ============================================================
+
+# Authentication
 app.include_router(auth_router)
+
+# Crowd optimization
 app.include_router(person4_router)
+
+# Appointments / Queue
 app.include_router(appointments_router)
+
+# Hospitals
 app.include_router(hospitals_router)
 
+# Articles
+app.include_router(articles_router)
+
+# Arcade
+app.include_router(arcade_router)
+app.include_router(facilities_router)
+app.include_router(specialists_router)
+app.include_router(departments_router)
+app.include_router(diagnostics_router)
+app.include_router(medicines_router)
+app.include_router(referrals_router)
+app.include_router(operational_state_router)
+app.include_router(routing_router)
+app.include_router(sms_router)
+
+# ============================================================
+# HEALTHCARE ROUTES - T50
+# ============================================================
+
+# Patient management
+app.include_router(patients_router)
+
+# Medical records
+app.include_router(medical_records_router)
+
+# Triage / risk assessment
+app.include_router(triage_router)
+
+# Maternal & child healthcare
+app.include_router(maternal_child_router)
+
+# Chronic disease management
+app.include_router(chronic_disease_router)
+
+# Follow-up management
+app.include_router(follow_up_router)
+
+
+# ============================================================
+# HEALTHCARE ROUTES - OFFLINE CAPABILITIES
+# ============================================================
+
+app.include_router(facilities_router)
+app.include_router(departments_router)
+app.include_router(specialists_router)
+app.include_router(diagnostics_router)
+app.include_router(medicines_router)
+app.include_router(referrals_router)
+app.include_router(operational_state_router)
+app.include_router(routing_router)
+app.include_router(sms_router)
+
+
+# ============================================================
+# ROOT
+# ============================================================
 
 @app.get("/")
 async def root():
     return {
         "message": "Queue Management API is running"
     }
+@app.get("/health")
+async def health():
+    return {"status": "healthy"}

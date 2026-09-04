@@ -1,9 +1,23 @@
-// Dashboard logic for VIZITOR — driven entirely by real backend
-// data (auth/me, appointments, and the shared queue/status
-// endpoint), so it always matches Queue, Crowd Status, Profile,
-// Notifications, Reports and Analytics.
+// ============================================================
+// VIZITOR — Dashboard
+//
+// SINGLE QUEUE SOURCE:
+//     VIZITOR.getQueueStatus()
+//
+// Real mode:
+//     Uses backend appointment/queue data.
+//
+// Simulation mode:
+//     Uses the shared simulation state from shared.js.
+//
+// IMPORTANT:
+//     currently_serving_token = currently served token
+//     user_simulated_token    = simulated user's token
+// ============================================================
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    "use strict";
 
     VIZITOR.requireAuthOrRedirect();
     VIZITOR.wireCommonNav();
@@ -15,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const dateTimeElement =
         document.getElementById("currentDateTime");
+
 
     function updateDateTime() {
 
@@ -36,10 +51,12 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
         if (dateTimeElement) {
+
             dateTimeElement.textContent =
                 `${dateStr} • ${timeStr}`;
         }
     }
+
 
     updateDateTime();
 
@@ -50,285 +67,422 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ============================================================
-    // Welcome Banner + avatar (real user)
+    // Welcome Banner + Avatar
     // ============================================================
 
     async function loadWelcomeUser() {
 
-        const user =
-            await VIZITOR.getCurrentUser();
+        try {
 
-        const welcomeUserEl =
-            document.getElementById(
-                "welcomeUser"
-            );
+            const user =
+                await VIZITOR.getCurrentUser();
 
-        if (user) {
+
+            const welcomeUserEl =
+                document.getElementById(
+                    "welcomeUser"
+                );
+
+
+            if (!user) {
+                return;
+            }
+
+
+            const fullName =
+                user.full_name ||
+                user.name ||
+                user.username ||
+                "";
+
 
             const firstName =
-                user.full_name?.split(" ")[0] ||
-                user.full_name;
+                fullName
+                    .trim()
+                    .split(/\s+/)[0] ||
+                fullName;
 
-            if (welcomeUserEl) {
+
+            if (
+                welcomeUserEl &&
+                firstName
+            ) {
 
                 welcomeUserEl.textContent =
                     `Welcome back, ${firstName}.`;
             }
 
-            VIZITOR.applyAvatar(
-                user.full_name
+
+            if (
+                typeof VIZITOR.applyAvatar ===
+                "function"
+            ) {
+
+                VIZITOR.applyAvatar(
+                    fullName
+                );
+            }
+
+
+        } catch (error) {
+
+            console.error(
+                "Dashboard user loading error:",
+                error
             );
         }
     }
 
 
     // ============================================================
-    // Summary cards + Service/Queue Status panel
+    // Queue / Summary UI
     //
     // SINGLE SOURCE OF TRUTH:
-    // VIZITOR.getQueueStatus()
+    //     VIZITOR.getQueueStatus()
     //
-    // When Crowd Simulation is active, shared.js supplies the
-    // simulated values automatically.
-    // When simulation is inactive, real backend data is used.
+    // Simulation-aware through shared.js.
     // ============================================================
 
     async function loadQueueDrivenUI() {
 
-        const appointments =
-            await VIZITOR.getAppointments();
+        try {
 
-        const queueStatus =
-            await VIZITOR.getQueueStatus();
-
-        const today =
-            new Date()
-                .toISOString()
-                .split("T")[0];
+            const appointments =
+                await VIZITOR.getAppointments();
 
 
-        const todayAppointments =
-            appointments.filter(
-                a =>
-                    a.status !== "CANCELLED" &&
-                    a.appointment_date === today
-            );
+            const queueStatus =
+                await VIZITOR.getQueueStatus();
 
 
-        const appointmentCounter =
-            document.getElementById(
-                "todayAppointments"
-            );
+            const today =
+                new Date()
+                    .toISOString()
+                    .split("T")[0];
 
 
-        if (appointmentCounter) {
-
-            appointmentCounter.textContent =
-                todayAppointments.length;
-        }
-
-
-        if (!queueStatus) {
-            return;
-        }
+            const todayAppointments =
+                Array.isArray(appointments)
+                    ? appointments.filter(
+                        appointment =>
+                            appointment.status !== "CANCELLED" &&
+                            appointment.appointment_date === today
+                    )
+                    : [];
 
 
-        // --------------------------------------------------------
-        // Current Queue
-        // --------------------------------------------------------
-
-        const queueElement =
-            document.getElementById(
-                "dashboardQueueCount"
-            );
-
-
-        if (queueElement) {
-
-            queueElement.textContent =
-                queueStatus.queue_size ?? 0;
-        }
-
-
-        // --------------------------------------------------------
-        // Estimated Waiting Time
-        //
-        // Real mode:
-        //   user's own wait if token exists
-        //   otherwise facility average
-        //
-        // Simulation mode:
-        //   shared simulated waiting time
-        // --------------------------------------------------------
-
-        const waitMinutes =
-            queueStatus.simulation_active
-                ? Number(
-                    queueStatus.estimated_wait_minutes ?? 0
-                )
-                : (
-                    queueStatus.you
-                        ? queueStatus.you.estimated_wait_minutes
-                        : queueStatus.estimated_wait_minutes
+            const appointmentCounter =
+                document.getElementById(
+                    "todayAppointments"
                 );
 
 
-        const waitElement =
-            document.getElementById(
-                "dashboardWaitTime"
-            );
+            if (appointmentCounter) {
 
-
-        if (waitElement) {
-
-            waitElement.textContent =
-                waitMinutes === 0
-                    ? "0 min"
-                    : `${waitMinutes} min`;
-        }
-
-
-        // --------------------------------------------------------
-        // Crowd Level
-        // --------------------------------------------------------
-
-        const crowdLevelElement =
-            document.getElementById(
-                "dashboardCrowdLevel"
-            );
-
-
-        if (crowdLevelElement) {
-
-            crowdLevelElement.textContent =
-                queueStatus.crowd_level ||
-                "Low";
-        }
-
-
-        // --------------------------------------------------------
-        // Service / Queue Status panel
-        // --------------------------------------------------------
-
-        const currentServingEl =
-            document.getElementById(
-                "svcCurrentServingToken"
-            );
-
-
-        if (currentServingEl) {
-
-            currentServingEl.textContent =
-                queueStatus.currently_serving_token ||
-                "--";
-        }
-
-
-        const yourTokenStatusEl =
-            document.getElementById(
-                "svcYourTokenStatus"
-            );
-
-        const yourTokenNumberEl =
-            document.getElementById(
-                "svcYourTokenNumber"
-            );
-
-        const peopleAheadEl =
-            document.getElementById(
-                "svcPeopleAhead"
-            );
-
-
-        // --------------------------------------------------------
-        // SIMULATION MODE
-        //
-        // The simulation uses a synthetic token SIM-001.
-        // Real appointment/token logic is not changed.
-        // --------------------------------------------------------
-
-        if (queueStatus.simulation_active) {
-
-            if (yourTokenStatusEl) {
-
-                yourTokenStatusEl.textContent =
-                    "Simulation";
+                appointmentCounter.textContent =
+                    todayAppointments.length;
             }
 
 
-            if (yourTokenNumberEl) {
-
-                yourTokenNumberEl.textContent =
-                    queueStatus.currently_serving_token ||
-                    "SIM-001";
+            if (!queueStatus) {
+                return;
             }
 
 
-            if (peopleAheadEl) {
+            const simulationActive =
+                queueStatus.simulation_active === true;
 
-                peopleAheadEl.textContent =
-                    `${queueStatus.queue_size ?? 0} people`;
+
+            // ----------------------------------------------------
+            // Current Queue
+            // ----------------------------------------------------
+
+            const queueElement =
+                document.getElementById(
+                    "dashboardQueueCount"
+                );
+
+
+            if (queueElement) {
+
+                queueElement.textContent =
+                    queueStatus.queue_size ?? 0;
             }
 
-        }
 
-        // --------------------------------------------------------
-        // REAL BACKEND MODE
-        // --------------------------------------------------------
+            // ----------------------------------------------------
+            // Estimated Waiting Time
+            // ----------------------------------------------------
 
-        else if (queueStatus.you) {
-
-            if (yourTokenStatusEl) {
-
-                yourTokenStatusEl.textContent =
-                    VIZITOR.friendlyStatusLabel(
-                        queueStatus.you.status
+            const waitMinutes =
+                simulationActive
+                    ? Number(
+                        queueStatus.estimated_wait_minutes ?? 0
+                    )
+                    : (
+                        queueStatus.you
+                            ? Number(
+                                queueStatus.you.estimated_wait_minutes ?? 0
+                            )
+                            : Number(
+                                queueStatus.estimated_wait_minutes ?? 0
+                            )
                     );
+
+
+            const waitElement =
+                document.getElementById(
+                    "dashboardWaitTime"
+                );
+
+
+            if (waitElement) {
+
+                if (
+                    Number.isFinite(waitMinutes)
+                ) {
+
+                    waitElement.textContent =
+                        `${Math.max(
+                            0,
+                            Math.ceil(waitMinutes)
+                        )} min`;
+
+                } else {
+
+                    waitElement.textContent =
+                        "--";
+                }
             }
 
 
-            if (yourTokenNumberEl) {
+            // ----------------------------------------------------
+            // Crowd Level
+            // ----------------------------------------------------
 
-                yourTokenNumberEl.textContent =
-                    queueStatus.you.token_display;
+            const crowdLevelElement =
+                document.getElementById(
+                    "dashboardCrowdLevel"
+                );
+
+
+            if (crowdLevelElement) {
+
+                crowdLevelElement.textContent =
+                    queueStatus.crowd_level ||
+                    "Unknown";
             }
 
 
-            if (peopleAheadEl) {
+            // ----------------------------------------------------
+            // Service / Queue Status
+            // ----------------------------------------------------
 
-                peopleAheadEl.textContent =
-                    `${queueStatus.you.people_ahead} people`;
-            }
-
-        }
-
-        else {
-
-            if (yourTokenStatusEl) {
-
-                yourTokenStatusEl.textContent =
-                    "No Token";
-            }
+            const currentServingEl =
+                document.getElementById(
+                    "svcCurrentServingToken"
+                );
 
 
-            if (yourTokenNumberEl) {
+            if (currentServingEl) {
 
-                yourTokenNumberEl.textContent =
+                currentServingEl.textContent =
+                    queueStatus.currently_serving_token ||
                     "--";
             }
 
 
-            if (peopleAheadEl) {
+            const yourTokenStatusEl =
+                document.getElementById(
+                    "svcYourTokenStatus"
+                );
 
-                peopleAheadEl.textContent =
-                    "0 people";
+
+            const yourTokenNumberEl =
+                document.getElementById(
+                    "svcYourTokenNumber"
+                );
+
+
+            const peopleAheadEl =
+                document.getElementById(
+                    "svcPeopleAhead"
+                );
+
+
+            // ----------------------------------------------------
+            // SIMULATION MODE
+            //
+            // IMPORTANT:
+            //
+            // currently_serving_token
+            //     = patient currently being served
+            //
+            // user_simulated_token
+            //     = simulated version of the user's token
+            //
+            // They must NEVER be treated as the same value.
+            // ----------------------------------------------------
+
+            if (simulationActive) {
+
+                const simulatedUserToken =
+                    queueStatus.user_simulated_token ||
+                    queueStatus.you?.token_display ||
+                    "--";
+
+
+                const simulatedPeopleAhead =
+                    Number(
+                        queueStatus.you?.people_ahead ??
+                        queueStatus.queue_size ??
+                        0
+                    );
+
+
+                if (yourTokenStatusEl) {
+
+                    yourTokenStatusEl.textContent =
+                        queueStatus.you?.status ===
+                        "BEING_SERVED"
+                            ? "Your Turn"
+                            : (
+                                queueStatus.you?.status ===
+                                "SERVED"
+                                    ? "Served"
+                                    : "Simulation"
+                            );
+                }
+
+
+                if (yourTokenNumberEl) {
+
+                    yourTokenNumberEl.textContent =
+                        simulatedUserToken;
+                }
+
+
+                if (peopleAheadEl) {
+
+                    peopleAheadEl.textContent =
+                        `${Math.max(
+                            0,
+                            simulatedPeopleAhead
+                        )} people`;
+                }
+
             }
+
+
+            // ----------------------------------------------------
+            // REAL BACKEND MODE
+            // ----------------------------------------------------
+
+            else if (queueStatus.you) {
+
+                if (yourTokenStatusEl) {
+
+                    yourTokenStatusEl.textContent =
+                        typeof VIZITOR.friendlyStatusLabel ===
+                        "function"
+                            ? VIZITOR.friendlyStatusLabel(
+                                queueStatus.you.status
+                            )
+                            : (
+                                queueStatus.you.status ||
+                                "Waiting"
+                            );
+                }
+
+
+                if (yourTokenNumberEl) {
+
+                    yourTokenNumberEl.textContent =
+                        queueStatus.you.token_display ||
+                        "--";
+                }
+
+
+                if (peopleAheadEl) {
+
+                    peopleAheadEl.textContent =
+                        `${Number(
+                            queueStatus.you.people_ahead ?? 0
+                        )} people`;
+                }
+
+            }
+
+
+            // ----------------------------------------------------
+            // NO PERSONAL TOKEN
+            // ----------------------------------------------------
+
+            else {
+
+                if (yourTokenStatusEl) {
+
+                    yourTokenStatusEl.textContent =
+                        "No Token";
+                }
+
+
+                if (yourTokenNumberEl) {
+
+                    yourTokenNumberEl.textContent =
+                        "--";
+                }
+
+
+                if (peopleAheadEl) {
+
+                    peopleAheadEl.textContent =
+                        "0 people";
+                }
+            }
+
+
+            console.log(
+                "DASHBOARD LIVE QUEUE:",
+                {
+                    simulation_active:
+                        simulationActive,
+
+                    currently_serving_token:
+                        queueStatus.currently_serving_token,
+
+                    user_token:
+                        simulationActive
+                            ? queueStatus.user_simulated_token
+                            : queueStatus.you?.token_display,
+
+                    people_ahead:
+                        simulationActive
+                            ? queueStatus.you?.people_ahead ??
+                              queueStatus.queue_size
+                            : queueStatus.you?.people_ahead,
+
+                    wait_minutes:
+                        waitMinutes,
+
+                    crowd_level:
+                        queueStatus.crowd_level
+                }
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Dashboard queue loading error:",
+                error
+            );
         }
     }
 
 
     // ============================================================
-    // Load Upcoming Appointment
+    // Upcoming Appointment
     // ============================================================
 
     async function loadUpcomingAppointment() {
@@ -371,93 +525,118 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        const appointments =
-            await VIZITOR.getAppointments();
+        try {
+
+            const appointments =
+                await VIZITOR.getAppointments();
 
 
-        const today =
-            new Date()
-                .toISOString()
-                .split("T")[0];
+            const today =
+                new Date()
+                    .toISOString()
+                    .split("T")[0];
 
 
-        const upcomingAppointments =
-            appointments
-                .filter(
-                    a =>
-                        a.status !== "CANCELLED" &&
-                        a.appointment_date >= today
-                )
-                .sort(
-                    (a, b) => {
+            const upcomingAppointments =
+                Array.isArray(appointments)
+                    ? appointments
+                        .filter(
+                            appointment =>
+                                appointment.status !== "CANCELLED" &&
+                                appointment.appointment_date >= today
+                        )
+                        .sort(
+                            (a, b) => {
 
-                        const first =
-                            `${a.appointment_date}T${a.appointment_time}`;
+                                const first =
+                                    `${a.appointment_date}T${a.appointment_time}`;
 
-                        const second =
-                            `${b.appointment_date}T${b.appointment_time}`;
+                                const second =
+                                    `${b.appointment_date}T${b.appointment_time}`;
 
-                        return first.localeCompare(
-                            second
-                        );
-                    }
-                );
+                                return first.localeCompare(
+                                    second
+                                );
+                            }
+                        )
+                    : [];
 
 
-        if (
-            upcomingAppointments.length === 0
-        ) {
+            if (
+                upcomingAppointments.length === 0
+            ) {
+
+                purposeElement.textContent =
+                    "No upcoming appointment";
+
+                statusElement.textContent =
+                    "--";
+
+                infoElement.textContent =
+                    "You currently have no upcoming appointments.";
+
+                dateElement.textContent =
+                    "--";
+
+                timeElement.textContent =
+                    "--";
+
+                return;
+            }
+
+
+            const appointment =
+                upcomingAppointments[0];
+
 
             purposeElement.textContent =
-                "No upcoming appointment";
+                appointment.purpose ||
+                "Appointment";
+
 
             statusElement.textContent =
+                appointment.status ||
                 "--";
+
 
             infoElement.textContent =
-                "You currently have no upcoming appointments.";
+                `Token: ${
+                    appointment.token_display ||
+                    appointment.token_id ||
+                    "--"
+                }`;
+
 
             dateElement.textContent =
-                "--";
+                typeof VIZITOR.formatDate ===
+                "function"
+                    ? VIZITOR.formatDate(
+                        appointment.appointment_date
+                    )
+                    : appointment.appointment_date;
+
 
             timeElement.textContent =
-                "--";
+                typeof VIZITOR.formatTime ===
+                "function"
+                    ? VIZITOR.formatTime(
+                        appointment.appointment_time
+                    )
+                    : appointment.appointment_time;
 
-            return;
+
+        } catch (error) {
+
+            console.error(
+                "Upcoming appointment loading error:",
+                error
+            );
         }
-
-
-        const appointment =
-            upcomingAppointments[0];
-
-
-        purposeElement.textContent =
-            appointment.purpose;
-
-        statusElement.textContent =
-            appointment.status;
-
-        infoElement.textContent =
-            `Token: ${
-                appointment.token_display ||
-                appointment.token_id
-            }`;
-
-        dateElement.textContent =
-            VIZITOR.formatDate(
-                appointment.appointment_date
-            );
-
-        timeElement.textContent =
-            VIZITOR.formatTime(
-                appointment.appointment_time
-            );
     }
 
 
     // ============================================================
     // Recent Activity
-    // (built from real appointment history)
     // ============================================================
 
     async function loadRecentActivity() {
@@ -473,72 +652,93 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        const appointments =
-            await VIZITOR.getAppointments();
+        try {
+
+            const appointments =
+                await VIZITOR.getAppointments();
 
 
-        if (appointments.length === 0) {
+            if (
+                !Array.isArray(appointments) ||
+                appointments.length === 0
+            ) {
 
-            list.innerHTML = `
-                <div class="activity-item neutral">
-                    No activity yet — book your first appointment to get started.
-                </div>
-            `;
+                list.innerHTML = `
+                    <div class="activity-item neutral">
+                        No activity yet — book your first appointment to get started.
+                    </div>
+                `;
 
-            return;
-        }
-
-
-        const sorted =
-            [...appointments].sort(
-                (a, b) =>
-                    b.appointment_id -
-                    a.appointment_id
-            );
+                return;
+            }
 
 
-        list.innerHTML =
-            sorted
-                .slice(0, 3)
-                .map(
-                    appointment => {
-
-                        const cls =
-                            appointment.status === "CANCELLED"
-                                ? "neutral"
-                                : "active";
+            const sorted =
+                [...appointments].sort(
+                    (a, b) =>
+                        Number(b.appointment_id || 0) -
+                        Number(a.appointment_id || 0)
+                );
 
 
-                        const label =
-                            appointment.status === "CANCELLED"
-                                ? "Appointment cancelled"
-                                : "Appointment booked";
+            list.innerHTML =
+                sorted
+                    .slice(0, 3)
+                    .map(
+                        appointment => {
+
+                            const cancelled =
+                                appointment.status ===
+                                "CANCELLED";
 
 
-                        return `
-                            <div class="activity-item ${cls}">
-                                <strong>${label}</strong>
-                                for ${VIZITOR.escapeHtml(
-                                    appointment.purpose
-                                )}
-                                (Token ${VIZITOR.escapeHtml(
-                                    appointment.token_display || ""
-                                )}).
-                                <span class="time">
-                                    ${VIZITOR.formatDate(
-                                        appointment.appointment_date
+                            const cls =
+                                cancelled
+                                    ? "neutral"
+                                    : "active";
+
+
+                            const label =
+                                cancelled
+                                    ? "Appointment cancelled"
+                                    : "Appointment booked";
+
+
+                            return `
+                                <div class="activity-item ${cls}">
+                                    <strong>${label}</strong>
+                                    for ${VIZITOR.escapeHtml(
+                                        appointment.purpose ||
+                                        "appointment"
                                     )}
-                                </span>
-                            </div>
-                        `;
-                    }
-                )
-                .join("");
+                                    (Token ${VIZITOR.escapeHtml(
+                                        appointment.token_display ||
+                                        ""
+                                    )}).
+                                    <span class="time">
+                                        ${VIZITOR.formatDate(
+                                            appointment.appointment_date
+                                        )}
+                                    </span>
+                                </div>
+                            `;
+                        }
+                    )
+                    .join("");
+
+
+        } catch (error) {
+
+            console.error(
+                "Recent activity loading error:",
+                error
+            );
+        }
     }
 
 
     // ============================================================
-    // Load Dashboard Data
+    // Initial Loads
     // ============================================================
 
     loadWelcomeUser();
@@ -550,13 +750,19 @@ document.addEventListener("DOMContentLoaded", () => {
     loadRecentActivity();
 
 
-    // Keep the dashboard live.
-    // During simulation, getQueueStatus() receives the shared
-    // simulation state. After Refresh Status, it automatically
-    // returns to real backend data.
+    // ============================================================
+    // LIVE DASHBOARD REFRESH
+    // ============================================================
+
     setInterval(
         loadQueueDrivenUI,
-        30000
+        5000
+    );
+
+
+    setInterval(
+        loadUpcomingAppointment,
+        15000
     );
 
 
@@ -606,7 +812,43 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
+    // ============================================================
+    // Simulation Events
+    // ============================================================
+
+    window.addEventListener(
+        "vizitorSimulationUpdated",
+        () => {
+
+            loadQueueDrivenUI();
+        }
+    );
+
+
+    window.addEventListener(
+        "vizitorSimulationCleared",
+        () => {
+
+            loadQueueDrivenUI();
+        }
+    );
+
+
+    window.addEventListener(
+        "vizitor:appointment-changed",
+        () => {
+
+            loadQueueDrivenUI();
+
+            loadUpcomingAppointment();
+
+            loadRecentActivity();
+        }
+    );
+
+
     console.log(
         "dashboard.js loaded successfully."
     );
+
 });

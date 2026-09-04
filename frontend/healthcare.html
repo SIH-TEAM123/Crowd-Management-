@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Patient Report - VIZITOR</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/healthcare.css">
+</head>
+
+<body>
+
+<div class="dashboard-layout">
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+
+            <svg class="logo-icon"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2.5"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+
+                <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"
+                      fill="rgba(124, 58, 237, 0.15)"
+                      stroke="#7c3aed"
+                      stroke-width="2"/>
+
+                <circle cx="12"
+                        cy="12"
+                        r="3"
+                        fill="#7c3aed"/>
+            </svg>
+
+            <span class="logo-text">VIZITOR</span>
+
+        </div>
+
+
+        <nav class="sidebar-menu">
+
+            <a href="dashboard.html" class="menu-item">
+
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/>
+
+                </svg>
+
+                <span>Dashboard</span>
+
+            </a>
+
+
+            <a href="appointments.html" class="menu-item">
+
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+
+                </svg>
+
+                <span>Appointments</span>
+
+            </a>
+
+
+            <a href="queue.html" class="menu-item">
+
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+
+                    <rect x="2" y="6" width="20" height="12" rx="2"/>
+                    <line x1="6" y1="12" x2="18" y2="12"/>
+                    <line x1="6" y1="8" x2="6" y2="16"/>
+                    <line x1="18" y1="8" x2="18" y2="16"/>
+
+                </svg>
+
+                <span>Queue / Token</span>
+
+            </a>
+
+
+            <a href="crowd.html" class="menu-item">
+
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+
+                </svg>
+
+                <span>Crowd Status</span>
+
+            </a>
+
+
+            <a href="crowd-forecast.html" class="menu-item">
+
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+
+                    <path d="M3 3v18h18"/>
+                    <path d="M7 16l4-5 3 3 5-7"/>
+
+                </svg>
+
+                <span>Crowd Forecast</span>
+
+            </a>
+
+
+            <!-- =================================================
+                 PATIENT 360
+            ================================================== -->
+
+            <a href="healthcare.html"
+               class="menu-item active">
+
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/>
+
+                    <path d="M12 8v8"/>
+                    <path d="M8 12h8"/>
+
+                </svg>
+
+                <span>Patient report</span>
+
+            </a>
+
+
+            <a href="profile.html" class="menu-item">
+
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+
+                </svg>
+
+                <span>Profile</span>
+
+            </a>
+
+
+            <a href="notifications.html" class="menu-item">
+
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+
+                </svg>
+
+                <span>Notifications</span>
+
+            </a>
+
+        </nav>
+
+
+        <div class="sidebar-footer">
+
+            <a href="index.html" class="menu-item">
+
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+
+                </svg>
+
+                <span>Logout</span>
+
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+
+    <main class="main-content">
+
+        <!-- TOP HEADER -->
+
+        <header class="top-header">
+
+            <div class="header-left">
+
+                <div class="search-bar">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         stroke-linecap="round"
+                         stroke-linejoin="round">
+
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21"
+                              y1="21"
+                              x2="16.65"
+                              y2="16.65"/>
+
+                    </svg>
+
+                    <input
+                        type="text"
+                        placeholder="Search services..."
+                    >
+
+                </div>
+
+
+               <div class="header-left">
+
+    <div class="search-bar">
+
+        ...
+
+    </div>
+
+</div>
+
+            </div>
+
+
+            <div class="header-right">
+
+                <button
+                    class="icon-btn"
+                    title="Help Centre"
+                    onclick="window.location.href='help.html'"
+                >
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         stroke-linecap="round"
+                         stroke-linejoin="round">
+
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12"
+                              y1="17"
+                              x2="12.01"
+                              y2="17"/>
+
+                    </svg>
+
+                </button>
+
+
+                <button
+                    class="icon-btn"
+                    title="View alerts"
+                    onclick="window.location.href='notifications.html'"
+                >
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         stroke-linecap="round"
+                         stroke-linejoin="round">
+
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+
+                    </svg>
+
+                    <span class="notification-dot"></span>
+
+                </button>
+
+
+                <div class="profile-badge">
+
+                    <div class="profile-avatar"
+                         id="healthcareAvatar">
+                        U
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- =====================================================
+             PATIENT 360 BODY
+        ====================================================== -->
+
+        <div class="dashboard-body healthcare-body">
+
+
+            <!-- WELCOME -->
+
+            <div class="welcome-row">
+
+                <div class="welcome-text">
+
+                   <h2 id="healthcareWelcome">
+    Patient Report
+</h2>
+
+                    <p>
+                        Your complete health profile, medical records and follow-up care.
+                    </p>
+
+                </div>
+
+
+                <div class="welcome-actions">
+
+                    <button
+                        class="btn-report"
+                        onclick="document.getElementById('triageSection').scrollIntoView({behavior:'smooth'})"
+                    >
+                        Digital Triage
+                    </button>
+
+                    <button
+                        class="btn-create"
+                        onclick="window.location.href='appointments.html'"
+                    >
+                        Book Appointment
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 HEALTH OVERVIEW
+            ================================================== -->
+
+            <section class="health-overview-grid">
+
+                <div class="summary-card">
+
+                    <div class="card-header-row">
+
+                        <span class="card-title">
+                            Patient
+                        </span>
+
+                        <div class="card-icon-container card-icon-purple">
+    <svg viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 21a8 8 0 0 1 16 0"/>
+    </svg>
+</div>
+
+                    </div>
+
+                    <div class="health-card-value"
+                         id="patientName">
+                        Loading...
+                    </div>
+
+                    <div class="health-card-subtext"
+                         id="patientId">
+                        --
+                    </div>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    <div class="card-header-row">
+
+                        <span class="card-title">
+                            Blood Group
+                        </span>
+
+                        <div class="card-icon-container card-icon-rose">
+                            +
+                        </div>
+
+                    </div>
+
+                    <div class="health-card-value"
+                         id="bloodGroup">
+                        --
+                    </div>
+
+                    <div class="health-card-subtext">
+                        Current profile
+                    </div>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    <div class="card-header-row">
+
+                        <span class="card-title">
+                            Risk Status
+                        </span>
+
+                        <div class="card-icon-container card-icon-amber">
+    <svg viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round">
+        <path d="M10.3 3.7 2.5 17a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+</div>
+
+                    </div>
+
+                    <div class="health-card-value"
+                         id="riskStatus">
+                        --
+                    </div>
+
+                    <div class="health-card-subtext"
+                         id="riskMessage">
+                        Checking risk profile...
+                    </div>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    <div class="card-header-row">
+
+                        <span class="card-title">
+                            Next Follow-up
+                        </span>
+
+                        <div class="card-icon-container card-icon-blue">
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="health-card-value"
+                         id="nextFollowUp">
+                        --
+                    </div>
+
+                    <div class="health-card-subtext"
+                         id="followUpStatus">
+                        No upcoming follow-up
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 PROFILE
+            ================================================== -->
+
+            <section class="card-panel healthcare-section">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h3 class="panel-title">
+                            Health Profile
+                        </h3>
+
+                        <p class="section-description">
+                            Your core healthcare information.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="health-profile-grid">
+
+                    <div>
+                        <span class="health-label">Full Name</span>
+                        <strong id="profileName">--</strong>
+                    </div>
+
+                    <div>
+                        <span class="health-label">Age</span>
+                        <strong id="profileAge">--</strong>
+                    </div>
+
+                    <div>
+                        <span class="health-label">Gender</span>
+                        <strong id="profileGender">--</strong>
+                    </div>
+
+                    <div>
+                        <span class="health-label">Contact</span>
+                        <strong id="profileContact">--</strong>
+                    </div>
+
+                    <div>
+                        <span class="health-label">Location</span>
+                        <strong id="profileLocation">--</strong>
+                    </div>
+
+                    <div>
+                        <span class="health-label">Emergency Contact</span>
+                        <strong id="profileEmergency">--</strong>
+                    </div>
+
+                    <div>
+                        <span class="health-label">Allergies</span>
+                        <strong id="profileAllergies">--</strong>
+                    </div>
+
+                    <div>
+                        <span class="health-label">Existing Conditions</span>
+                        <strong id="profileConditions">--</strong>
+                    </div>
+
+                    <div>
+                        <span class="health-label">Current Medications</span>
+                        <strong id="profileMedications">--</strong>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 RISK + FOLLOW-UP
+            ================================================== -->
+
+            <div class="health-two-column">
+
+
+                <section class="card-panel healthcare-section">
+
+                    <div class="panel-header">
+
+                        <div>
+
+                            <h3 class="panel-title">
+                                Risk & Follow-up Alerts
+                            </h3>
+
+                            <p class="section-description">
+                                Important care actions that need attention.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div id="riskAlerts"
+                         class="health-alert-list">
+
+                        <div class="health-empty">
+                            Loading alerts...
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <section class="card-panel healthcare-section">
+
+                    <div class="panel-header">
+
+                        <div>
+
+                            <h3 class="panel-title">
+                                Follow-up Schedule
+                            </h3>
+
+                            <p class="section-description">
+                                Upcoming and missed care.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div id="followUpList"
+                         class="health-list">
+
+                        <div class="health-empty">
+                            Loading follow-ups...
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+
+            <!-- =================================================
+                 DIGITAL TRIAGE
+            ================================================== -->
+
+            <section
+                class="card-panel healthcare-section"
+                id="triageSection"
+            >
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h3 class="panel-title">
+                            Digital Triage
+                        </h3>
+
+                        <p class="section-description">
+                            Describe your symptoms to receive a
+                            preliminary urgency assessment.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="triage-layout">
+
+                    <div class="triage-form">
+
+                        <label for="symptoms">
+                            Symptoms
+                        </label>
+
+                        <textarea
+                            id="symptoms"
+                            rows="6"
+                            placeholder="Example: chest pain and difficulty breathing..."
+                        ></textarea>
+
+                        <button
+                            class="btn-create"
+                            id="assessTriageBtn"
+                        >
+                            Assess Symptoms
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        id="triageResult"
+                        class="triage-result"
+                    >
+
+                        <div class="health-empty">
+                            Your triage result will appear here.
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 MEDICAL TIMELINE
+            ================================================== -->
+
+            <section class="card-panel healthcare-section">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h3 class="panel-title">
+                            Medical Timeline
+                        </h3>
+
+                        <p class="section-description">
+                            Appointments, visits, prescriptions,
+                            results and referrals in one timeline.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div id="medicalTimeline"
+                     class="timeline">
+
+                    <div class="health-empty">
+                        Loading medical timeline...
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 MATERNAL & CHILD
+            ================================================== -->
+
+            <section class="card-panel healthcare-section">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h3 class="panel-title">
+                            Maternal & Child Follow-up
+                        </h3>
+
+                        <p class="section-description">
+                            Pregnancy, ANC, vaccination and child
+                            checkup information.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div id="maternalChildList"
+                     class="health-list">
+
+                    <div class="health-empty">
+                        No maternal or child records loaded.
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 CHRONIC DISEASE
+            ================================================== -->
+
+            <section class="card-panel healthcare-section">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h3 class="panel-title">
+                            Chronic Disease Follow-up
+                        </h3>
+
+                        <p class="section-description">
+                            Long-term conditions, medication and
+                            scheduled monitoring.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div id="chronicDiseaseList"
+                     class="health-list">
+
+                    <div class="health-empty">
+                        No chronic disease records loaded.
+                    </div>
+
+                </div>
+
+            </section>
+
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- =========================================================
+     SCRIPTS
+========================================================== -->
+
+<script src="js/api.js"></script>
+<script src="js/shared.js"></script>
+<script src="js/healthcare.js"></script>
+
+</body>
+</html>

@@ -1,120 +1,22 @@
 // ============================================================
 // VIZITOR — Queue / Token page
-//
-// Real mode:
-//   Uses the live backend queue/status endpoint.
-//
-// Simulation mode:
-//   Uses the shared Crowd Status simulation state.
-//
-// IMPORTANT:
-//   Real appointment/token logic is untouched.
-//   SIM-001 is only used for the synthetic simulation.
+// Uses VIZITOR.getQueueStatus() exclusively.
+// Real backend token is never modified by simulation.
 // ============================================================
 
-
-const API_BASE = "https://vizitor.onrender.com";
-
-
-// ============================================================
-// LOAD QUEUE STATUS
-// ============================================================
 
 async function loadQueueStatus() {
 
     try {
 
-        // --------------------------------------------------------
-        // If Crowd Simulation is active, use the SAME shared
-        // simulation state used by Dashboard / Analytics / Reports.
-        // --------------------------------------------------------
+        const data =
+            await VIZITOR.getQueueStatus();
 
-        if (
-            typeof VIZITOR !== "undefined" &&
-            VIZITOR.isSimulationActive &&
-            VIZITOR.isSimulationActive()
-        ) {
-
-            const simulationState =
-                VIZITOR.getSimulationState();
-
-
-            if (simulationState) {
-
-                console.log(
-                    "SHARED SIMULATION QUEUE DATA:",
-                    simulationState
-                );
-
-
-                updateQueuePage(
-                    simulationState
-                );
-
-
-                return;
-            }
-        }
-
-
-        // ========================================================
-        // REAL BACKEND QUEUE
-        // Existing functionality preserved
-        // ========================================================
-
-        const token =
-            localStorage.getItem(
-                "access_token"
-            );
-
-
-        if (!token) {
-
-            console.error(
-                "No access token found"
-            );
-
+        if (!data) {
             return;
         }
 
-
-        const response =
-            await fetch(
-                `${API_BASE}/appointments/queue/status`,
-                {
-                    headers: {
-                        "Authorization":
-                            `Bearer ${token}`,
-
-                        "Content-Type":
-                            "application/json"
-                    }
-                }
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "Failed to load queue status"
-            );
-        }
-
-
-        const data =
-            await response.json();
-
-
-        console.log(
-            "LIVE QUEUE DATA:",
-            data
-        );
-
-
-        updateQueuePage(
-            data
-        );
-
+        updateQueuePage(data);
 
     } catch (error) {
 
@@ -132,29 +34,21 @@ async function loadQueueStatus() {
 
 function updateQueuePage(data) {
 
-    // ----------------------------------------------------------
-    // Detect simulation mode
-    // ----------------------------------------------------------
-
     const simulationActive =
         data?.simulation_active === true;
 
-
     const you =
-        simulationActive
-            ? null
-            : data.you;
+        data?.you || null;
 
 
-    // ==========================================================
+    // ========================================================
     // CURRENTLY SERVING
-    // ==========================================================
+    // ========================================================
 
     const currentToken =
         document.getElementById(
             "currentToken"
         );
-
 
     if (currentToken) {
 
@@ -164,90 +58,92 @@ function updateQueuePage(data) {
     }
 
 
-    // ==========================================================
-    // YOUR TOKEN
-    //
-    // Real mode:
-    //     Shows user's actual token.
-    //
-    // Simulation:
-    //     Shows SIM-001 as the synthetic serving token.
-    // ==========================================================
+    // ========================================================
+    // USER TOKEN
+    // ========================================================
 
     const userToken =
         document.getElementById(
             "userToken"
         );
 
+    const displayedUserToken =
+        simulationActive
+            ? (
+                data.user_simulated_token ||
+                data.real_user_token ||
+                "--"
+            )
+            : (
+                you?.token_display ||
+                "--"
+            );
 
     if (userToken) {
-
         userToken.textContent =
-            simulationActive
-                ? (
-                    data.currently_serving_token ||
-                    "SIM-001"
-                )
-                : (
-                    you?.token_display ||
-                    "--"
-                );
+            displayedUserToken;
     }
 
 
-    // ==========================================================
+    // ========================================================
+    // TOKEN LABEL
+    // ========================================================
+
+    const tokenLabel =
+        document.querySelector(
+            "#userToken + .token-label"
+        );
+
+    if (tokenLabel) {
+
+        tokenLabel.textContent =
+            simulationActive
+                ? (
+                    `Simulation • Real token ${data.real_user_token || "--"}`
+                )
+                : "Registered • Live Queue";
+    }
+
+
+    // ========================================================
     // PEOPLE AHEAD
-    // ==========================================================
+    // ========================================================
 
     const peopleAhead =
         document.getElementById(
             "peopleAhead"
         );
 
-
     if (peopleAhead) {
 
         peopleAhead.textContent =
-            simulationActive
-                ? (
-                    data.queue_size ??
-                    data.people_currently_present ??
-                    0
-                )
-                : (
-                    you?.people_ahead ??
-                    0
-                );
+            you?.people_ahead ??
+            0;
     }
 
 
-    // ==========================================================
-    // WAIT TIME
-    // ==========================================================
+    // ========================================================
+    // WAIT
+    // ========================================================
 
     const waitTime =
         document.getElementById(
             "waitTime"
         );
 
-
     if (waitTime) {
 
         const minutes =
-            simulationActive
-                ? Math.ceil(
+            Math.max(
+                0,
+                Math.ceil(
                     Number(
+                        you?.estimated_wait_minutes ??
                         data.estimated_wait_minutes ??
                         0
                     )
                 )
-                : Math.ceil(
-                    Number(
-                        you?.estimated_wait_minutes ??
-                        0
-                    )
-                );
-
+            );
 
         waitTime.innerHTML =
             `${minutes}` +
@@ -255,76 +151,134 @@ function updateQueuePage(data) {
     }
 
 
-    // ==========================================================
-    // STATUS BADGE
-    // ==========================================================
+    // ========================================================
+    // STATUS
+    // ========================================================
 
     const statusPill =
         document.getElementById(
             "statusPill"
         );
 
-
     if (statusPill) {
 
-        if (simulationActive) {
-
-            statusPill.textContent =
-                "● Simulation Active";
-
-        }
-
-        else if (
+        if (
             you?.status ===
             "BEING_SERVED"
         ) {
 
             statusPill.textContent =
-                "● Being Served";
+                "✓ Being Served";
 
-        }
+            statusPill.classList.remove(
+                "inactive-status"
+            );
 
-        else if (
-            you?.status ===
-            "WAITING"
-        ) {
+            statusPill.classList.add(
+                "active-status"
+            );
 
-            statusPill.textContent =
-                "● Waiting";
-
-        }
-
-        else if (
+        } else if (
             you?.status ===
             "SERVED"
         ) {
 
             statusPill.textContent =
-                "● Completed";
+                "✓ Completed";
 
-        }
-
-        else {
+        } else {
 
             statusPill.textContent =
-                "● " +
-                (
-                    you?.status ||
-                    "Waiting"
-                );
+                simulationActive
+                    ? "● Simulation Active"
+                    : "● Waiting";
         }
     }
 
 
-    // ==========================================================
+    // ========================================================
+    // COUNTER INSTRUCTION
+    // ========================================================
+
+    let instruction =
+        document.getElementById(
+            "queueCounterInstruction"
+        );
+
+    if (!instruction) {
+
+        instruction =
+            document.createElement("div");
+
+        instruction.id =
+            "queueCounterInstruction";
+
+        instruction.style.marginTop =
+            "16px";
+
+        instruction.style.padding =
+            "14px 16px";
+
+        instruction.style.borderRadius =
+            "12px";
+
+        instruction.style.fontWeight =
+            "700";
+
+        const note =
+            document.querySelector(
+                ".queue-note"
+            );
+
+        if (note?.parentNode) {
+
+            note.parentNode.insertBefore(
+                instruction,
+                note
+            );
+        }
+    }
+
+    if (instruction) {
+
+        if (
+            you?.status ===
+            "BEING_SERVED"
+        ) {
+
+            instruction.textContent =
+                `Proceed to Counter ${you.counter_number || data.counter_number || 1}`;
+
+            instruction.style.background =
+                "rgba(34,197,94,.10)";
+
+            instruction.style.color =
+                "#15803d";
+
+        } else {
+
+            instruction.textContent =
+                simulationActive
+                    ? `Simulation active • ${data.estimated_wait_minutes} min remaining`
+                    : "Please stay available until your token is called.";
+
+            instruction.style.background =
+                "rgba(124,58,237,.08)";
+
+            instruction.style.color =
+                "#6d28d9";
+        }
+    }
+
+
+    // ========================================================
     // QUEUE PROGRESS
-    // ==========================================================
+    // ========================================================
 
     const servingProgress =
         document.querySelector(
             ".qp-circle.serving"
         );
-
 
     if (servingProgress) {
 
@@ -339,19 +293,10 @@ function updateQueuePage(data) {
             ".qp-circle.user"
         );
 
-
     if (userProgress) {
 
         userProgress.textContent =
-            simulationActive
-                ? (
-                    data.currently_serving_token ||
-                    "SIM-001"
-                )
-                : (
-                    you?.token_display ||
-                    "--"
-                );
+            displayedUserToken;
     }
 
 
@@ -360,80 +305,54 @@ function updateQueuePage(data) {
             "aheadSub"
         );
 
-
     if (aheadSub) {
 
         aheadSub.textContent =
             simulationActive
-                ? `${data.queue_size ?? 0} in simulation`
+                ? `${you?.people_ahead ?? 0} synthetic people ahead`
                 : `${you?.people_ahead ?? 0} ahead`;
     }
 
 
-    // ==========================================================
+    // ========================================================
     // NOTE TOKEN
-    // ==========================================================
+    // ========================================================
 
     const noteToken =
         document.getElementById(
             "noteToken"
         );
 
-
     if (noteToken) {
 
         noteToken.textContent =
-            simulationActive
-                ? (
-                    data.currently_serving_token ||
-                    "SIM-001"
-                )
-                : (
-                    you?.token_display ||
-                    "--"
-                );
+            displayedUserToken;
     }
 
 
-    // ==========================================================
+    // ========================================================
     // LINKED APPOINTMENT
-    //
-    // Real appointment data is preserved.
-    // Simulation does not create fake appointments.
-    // ==========================================================
-
-    const appointment =
-        simulationActive
-            ? null
-            : (
-                you?.appointment ||
-                data.appointment
-            );
-
+    // ========================================================
 
     const purpose =
         document.getElementById(
             "linkedApptPurpose"
         );
 
-
     const date =
         document.getElementById(
             "linkedApptDate"
         );
-
 
     const time =
         document.getElementById(
             "linkedApptTime"
         );
 
-
     const appointmentToken =
         document.getElementById(
             "linkedApptToken"
         );
-
 
     const badge =
         document.getElementById(
@@ -441,134 +360,111 @@ function updateQueuePage(data) {
         );
 
 
-    // ==========================================================
-    // SIMULATION APPOINTMENT DISPLAY
-    // ==========================================================
-
     if (simulationActive) {
 
         if (purpose) {
-
             purpose.textContent =
+                you?.purpose ||
                 "Crowd Simulation";
         }
 
-
         if (date) {
-
             date.textContent =
-                "Simulation";
+                VIZITOR.formatDate(
+                    you?.appointment_date
+                );
         }
-
 
         if (time) {
-
             time.textContent =
-                "Live";
+                VIZITOR.formatTime(
+                    you?.appointment_time
+                );
         }
-
 
         if (appointmentToken) {
-
             appointmentToken.textContent =
-                data.currently_serving_token ||
-                "SIM-001";
+                data.real_user_token ||
+                "--";
         }
-
 
         if (badge) {
-
             badge.textContent =
-                "Simulation";
+                "Simulation Overlay";
         }
-
 
         return;
     }
 
 
-    // ==========================================================
-    // REAL APPOINTMENT DISPLAY
-    // Existing functionality preserved
-    // ==========================================================
+    // ========================================================
+    // REAL APPOINTMENT
+    // ========================================================
+
+    const appointment =
+        you?.appointment ||
+        data.appointment ||
+        null;
 
     if (appointment) {
 
         if (purpose) {
-
             purpose.textContent =
                 appointment.purpose ||
                 appointment.service ||
+                you?.purpose ||
                 "Current Appointment";
         }
 
-
         if (date) {
-
             date.textContent =
-                appointment.date ||
-                "--";
+                VIZITOR.formatDate(
+                    appointment.appointment_date ||
+                    appointment.date
+                );
         }
-
 
         if (time) {
-
             time.textContent =
-                appointment.time ||
-                "--";
+                VIZITOR.formatTime(
+                    appointment.appointment_time ||
+                    appointment.time
+                );
         }
-
 
         if (appointmentToken) {
-
             appointmentToken.textContent =
                 you?.token_display ||
-                appointment.token ||
                 "--";
         }
 
-
         if (badge) {
-
             badge.textContent =
                 "Active";
         }
 
-    }
-
-    else {
+    } else {
 
         if (purpose) {
-
             purpose.textContent =
                 "Current Queue Appointment";
         }
 
-
         if (date) {
-
-            date.textContent =
-                "--";
+            date.textContent = "--";
         }
-
 
         if (time) {
-
-            time.textContent =
-                "--";
+            time.textContent = "--";
         }
 
-
         if (appointmentToken) {
-
             appointmentToken.textContent =
                 you?.token_display ||
                 "--";
         }
 
-
         if (badge) {
-
             badge.textContent =
                 "Active";
         }
@@ -577,20 +473,20 @@ function updateQueuePage(data) {
 
 
 // ============================================================
-// PAGE LOAD
+// PAGE START
 // ============================================================
 
 document.addEventListener(
     "DOMContentLoaded",
     () => {
 
+        VIZITOR.wireCommonNav();
+
         loadQueueStatus();
 
-
-        // Keep queue live.
         setInterval(
             loadQueueStatus,
-            10000
+            1000
         );
 
 
@@ -599,28 +495,15 @@ document.addEventListener(
                 "btnRefresh"
             );
 
-
         if (refreshButton) {
 
             refreshButton.addEventListener(
                 "click",
-                () => {
+                async () => {
 
-                    /*
-                     * If simulation is active, Refresh Status
-                     * should return to the real backend.
-                     */
+                    VIZITOR.clearSimulationState();
 
-                    if (
-                        typeof VIZITOR !== "undefined" &&
-                        VIZITOR.clearSimulationState
-                    ) {
-
-                        VIZITOR.clearSimulationState();
-                    }
-
-
-                    loadQueueStatus();
+                    await loadQueueStatus();
                 }
             );
         }

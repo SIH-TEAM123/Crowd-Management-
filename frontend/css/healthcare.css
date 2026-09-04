@@ -1,0 +1,644 @@
+/* =========================================================
+   PATIENT 360 - HEALTHCARE MODULE
+   VIZITOR / Crowd Management
+========================================================= */
+
+.healthcare-body {
+    padding-bottom: 50px;
+}
+
+/* =========================================================
+   HEADER / WELCOME
+========================================================= */
+
+.healthcare-body .welcome-row {
+    margin-bottom: 24px;
+}
+
+.healthcare-body .welcome-text h2 {
+    margin-bottom: 6px;
+}
+
+.healthcare-body .welcome-text p {
+    color: var(--text-secondary, #6b7280);
+    margin: 0;
+}
+
+.welcome-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+
+/* =========================================================
+   HEALTH OVERVIEW CARDS
+========================================================= */
+
+.health-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+.health-overview-grid .summary-card {
+    min-height: 150px;
+}
+
+.health-card-value {
+    font-size: 25px;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-top: 18px;
+    color: var(--text-primary, #111827);
+    word-break: break-word;
+}
+
+.health-card-subtext {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-secondary, #6b7280);
+}
+
+
+/* =========================================================
+   HEALTH SECTIONS
+========================================================= */
+
+.healthcare-section {
+    margin-bottom: 22px;
+}
+
+.section-description {
+    margin: 5px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary, #6b7280);
+}
+
+.panel-header {
+    margin-bottom: 20px;
+}
+
+.panel-title {
+    margin: 0;
+}
+
+
+/* =========================================================
+   PROFILE GRID
+========================================================= */
+
+.health-profile-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.health-profile-grid > div {
+    padding: 15px 16px;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 12px;
+    background: var(--card-background, #ffffff);
+}
+
+.health-label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary, #6b7280);
+}
+
+.health-profile-grid strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+
+/* =========================================================
+   TWO COLUMN SECTION
+========================================================= */
+
+.health-two-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+}
+
+
+/* =========================================================
+   ALERTS
+========================================================= */
+
+.health-alert-list,
+.health-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.health-alert-item,
+.health-list-item {
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 12px;
+    padding: 15px;
+    background: var(--card-background, #ffffff);
+}
+
+.health-alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.health-alert-icon {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 17px;
+}
+
+.health-alert-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.health-alert-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+}
+
+.health-alert-text {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--text-secondary, #6b7280);
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   ALERT STATES
+========================================================= */
+
+.alert-high .health-alert-icon,
+.alert-missed .health-alert-icon {
+    background: rgba(239, 68, 68, 0.10);
+}
+
+.alert-due .health-alert-icon {
+    background: rgba(245, 158, 11, 0.12);
+}
+
+.alert-upcoming .health-alert-icon {
+    background: rgba(59, 130, 246, 0.10);
+}
+
+.alert-completed .health-alert-icon {
+    background: rgba(34, 197, 94, 0.10);
+}
+
+
+/* =========================================================
+   STATUS BADGES
+========================================================= */
+
+.health-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-high {
+    background: rgba(239, 68, 68, 0.10);
+    color: #dc2626;
+}
+
+.status-normal {
+    background: rgba(34, 197, 94, 0.10);
+    color: #16a34a;
+}
+
+.status-missed {
+    background: rgba(239, 68, 68, 0.10);
+    color: #dc2626;
+}
+
+.status-due {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+}
+
+.status-upcoming {
+    background: rgba(59, 130, 246, 0.10);
+    color: #2563eb;
+}
+
+.status-completed {
+    background: rgba(34, 197, 94, 0.10);
+    color: #16a34a;
+}
+
+
+/* =========================================================
+   FOLLOW-UP ITEMS
+========================================================= */
+
+.follow-up-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.follow-up-main {
+    min-width: 0;
+}
+
+.follow-up-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+}
+
+.follow-up-date {
+    margin-top: 5px;
+    font-size: 12px;
+    color: var(--text-secondary, #6b7280);
+}
+
+
+/* =========================================================
+   DIGITAL TRIAGE
+========================================================= */
+
+.triage-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 25px;
+    align-items: stretch;
+}
+
+.triage-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.triage-form label {
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+}
+
+.triage-form textarea {
+    width: 100%;
+    min-height: 150px;
+    resize: vertical;
+    padding: 14px;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 12px;
+    background: var(--card-background, #ffffff);
+    color: var(--text-primary, #111827);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.triage-form textarea:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.10);
+}
+
+.triage-form .btn-create {
+    margin-top: 12px;
+    align-self: flex-start;
+}
+
+
+/* =========================================================
+   TRIAGE RESULT
+========================================================= */
+
+.triage-result {
+    min-height: 210px;
+    padding: 20px;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 14px;
+    background: var(--card-background, #ffffff);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.triage-result-card {
+    width: 100%;
+}
+
+.triage-result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.triage-priority {
+    font-size: 23px;
+    font-weight: 700;
+}
+
+.triage-department {
+    margin-top: 5px;
+    font-size: 13px;
+    color: var(--text-secondary, #6b7280);
+}
+
+.triage-reason {
+    margin-top: 15px;
+    padding: 13px;
+    border-radius: 10px;
+    background: rgba(124, 58, 237, 0.06);
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text-primary, #111827);
+}
+
+.triage-emergency {
+    margin-top: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   TIMELINE
+========================================================= */
+
+.timeline {
+    position: relative;
+    margin-top: 8px;
+    padding-left: 27px;
+}
+
+.timeline::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 4px;
+    bottom: 4px;
+    width: 2px;
+    background: var(--border-color, #e5e7eb);
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 22px;
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -25px;
+    top: 3px;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3px solid #7c3aed;
+    box-sizing: border-box;
+}
+
+.timeline-card {
+    padding: 16px;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 12px;
+    background: var(--card-background, #ffffff);
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.timeline-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+}
+
+.timeline-date {
+    font-size: 12px;
+    color: var(--text-secondary, #6b7280);
+    white-space: nowrap;
+}
+
+.timeline-meta {
+    margin-top: 7px;
+    font-size: 12px;
+    color: var(--text-secondary, #6b7280);
+}
+
+.timeline-detail {
+    margin-top: 12px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text-primary, #111827);
+}
+
+.timeline-detail-row {
+    margin-top: 6px;
+}
+
+.timeline-detail-row strong {
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   MATERNAL / CHILD + CHRONIC DISEASE
+========================================================= */
+
+.health-record-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.health-record-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+}
+
+.health-record-subtitle {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-secondary, #6b7280);
+}
+
+.health-record-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 20px;
+    margin-top: 15px;
+}
+
+.health-record-field {
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.health-record-field span {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 11px;
+    color: var(--text-secondary, #6b7280);
+}
+
+.health-record-field strong {
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+}
+
+
+/* =========================================================
+   EMPTY / LOADING STATES
+========================================================= */
+
+.health-empty {
+    width: 100%;
+    padding: 25px 15px;
+    text-align: center;
+    color: var(--text-secondary, #6b7280);
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.health-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+    color: var(--text-secondary, #6b7280);
+    font-size: 13px;
+}
+
+.health-error {
+    padding: 14px;
+    border-radius: 10px;
+    background: rgba(239, 68, 68, 0.08);
+    color: #dc2626;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   RESPONSIVE - TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+
+    .health-overview-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .health-profile-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .health-two-column,
+    .triage-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+    .healthcare-body {
+        padding-bottom: 30px;
+    }
+
+    .health-overview-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .health-profile-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .health-two-column,
+    .triage-layout {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .welcome-actions {
+        width: 100%;
+    }
+
+    .welcome-actions button {
+        width: 100%;
+    }
+
+    .health-record-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .timeline {
+        padding-left: 23px;
+    }
+
+    .timeline-dot {
+        left: -21px;
+    }
+
+    .timeline-header {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .timeline-date {
+        white-space: normal;
+    }
+
+    .follow-up-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .health-card-value {
+        font-size: 22px;
+    }
+}

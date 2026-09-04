@@ -1,179 +1,86 @@
 // ============================================================
-// Crowd Status page
-// Live queue + synthetic crowd simulation
+// VIZITOR — Crowd Status
+//
+// Real queue remains backend-authoritative.
+// Simulation creates a temporary overlay on the real queue.
+//
+// Example:
+// Real serving = A-114
+// Synthetic users = 50
+// Simulated serving = A-115
+// Simulated user token = A-164
+//
+// Refresh Status clears the overlay.
 // ============================================================
 
+
 const counters = [
-    { name: "Counter 1", service: "General Consultation" },
-    { name: "Counter 2", service: "Document Verification" },
-    { name: "Counter 3", service: "Health Screening" },
-    { name: "Counter 4", service: "ID & License Services" }
+
+    {
+        name: "Counter 1",
+        service: "General Consultation"
+    },
+
+    {
+        name: "Counter 2",
+        service: "Document Verification"
+    },
+
+    {
+        name: "Counter 3",
+        service: "Health Screening"
+    },
+
+    {
+        name: "Counter 4",
+        service: "ID & License Services"
+    }
 ];
 
 
-// ============================================================
-// SIMULATION STATE
-// ============================================================
-
-window.simulationRunning = false;
-
-window.simulationState = {
-    queueLength: 0,
-    activeCounters: 4,
-    serviceRate: 10
-};
+window.simulationRunning =
+    false;
 
 
 // ============================================================
 // CROWD LEVEL
 // ============================================================
 
-function levelClass(level) {
-    if (level === "High") return "high";
-    if (level === "Moderate") return "moderate";
-    return "low";
-}
+function calculateLevel(queue) {
 
-
-// ============================================================
-// RECOMMENDATION
-// ============================================================
-
-function getRecommendation(level, waitMinutes) {
-
-    if (level === "No Crowd") {
-        return "No crowd right now — walk-ins can be served immediately.";
-    }
-
-    return `${level} crowd. Your current estimated waiting time is ${waitMinutes} minutes.`;
-}
-
-
-// ============================================================
-// SERVICE RATE WAIT CALCULATION
-// ============================================================
-
-function calculateWaitFromServiceRate(queueLength, serviceRate) {
-
-    queueLength = Math.max(
-        0,
-        Number(queueLength) || 0
-    );
-
-    serviceRate = Number(serviceRate);
-
-    /*
-     * Service rate = patients served per hour.
-     *
-     * Waiting time = queue / service rate × 60
-     */
-
-    if (!Number.isFinite(serviceRate) || serviceRate <= 0) {
-        return null;
-    }
-
-    return Math.max(
-        0,
-        Math.round(
-            (queueLength / serviceRate) * 60
-        )
-    );
-}
-
-
-// ============================================================
-// UPDATE SERVICE RATE WAIT TIME
-// ============================================================
-
-function updateSimulationWaitTime() {
-
-    const serviceRateInput =
-        document.getElementById("serviceRate");
-
-    if (!serviceRateInput) return;
-
-    const serviceRate =
-        Number(serviceRateInput.value);
-
-    const queueLength =
+    queue =
         Math.max(
             0,
-            Number(
-                window.simulationState.queueLength
-            ) || 0
+            Number(queue) || 0
         );
 
-    const wait =
-        calculateWaitFromServiceRate(
-            queueLength,
-            serviceRate
-        );
-
-    const waitEl =
-        document.getElementById("waitTime");
-
-    const recText =
-        document.getElementById(
-            "recommendationText"
-        );
-
-    if (wait === null) {
-
-        if (waitEl) {
-            waitEl.innerHTML =
-                `Service unavailable`;
-        }
-
-        if (recText) {
-            recText.textContent =
-                "Service rate is unavailable. Waiting time cannot be estimated until service resumes.";
-        }
-
-        return;
+    if (queue <= 0) {
+        return "No Crowd";
     }
 
-
-    if (waitEl) {
-
-        waitEl.innerHTML =
-            `${wait}` +
-            `<span class="wait-unit"> min</span>`;
+    if (queue <= 5) {
+        return "Low";
     }
 
-
-    const level =
-        calculateSimulationLevel(
-            queueLength
-        );
-
-
-    if (recText) {
-
-        recText.textContent =
-            getRecommendation(
-                level,
-                wait
-            );
+    if (queue <= 15) {
+        return "Moderate";
     }
 
-
-    const lastUpdated =
-        document.getElementById(
-            "lastUpdated"
-        );
+    return "High";
+}
 
 
-    if (
-        lastUpdated &&
-        window.simulationRunning
-    ) {
+function levelClass(level) {
 
-        lastUpdated.textContent =
-            `Simulation active — ` +
-            `${queueLength} people • ` +
-            `Service rate: ${serviceRate} patients/hour • ` +
-            `Estimated wait: ${wait} min`;
+    if (level === "High") {
+        return "high";
     }
+
+    if (level === "Moderate") {
+        return "moderate";
+    }
+
+    return "low";
 }
 
 
@@ -181,76 +88,86 @@ function updateSimulationWaitTime() {
 // RENDER CROWD STATUS
 // ============================================================
 
-function renderCrowdStatus(queueStatus) {
+function renderCrowdStatus(
+    queueStatus
+) {
+
+    const queueSize =
+        Number(
+            queueStatus.queue_size ?? 0
+        );
 
     const level =
-        queueStatus.crowd_level || "Low";
+        queueStatus.crowd_level ||
+        calculateLevel(queueSize);
 
-    const lvl =
+    const levelClassName =
         levelClass(level);
 
-    const levelText =
-        document.getElementById("levelText");
-
-    const levelBadge =
-        document.getElementById("levelBadge");
 
     const peopleEl =
-        document.getElementById("peopleCount");
+        document.getElementById(
+            "peopleCount"
+        );
 
     const queueEl =
-        document.getElementById("queueSize");
+        document.getElementById(
+            "queueSize"
+        );
 
     const waitEl =
-        document.getElementById("waitTime");
+        document.getElementById(
+            "waitTime"
+        );
 
-    const recText =
+    const levelText =
+        document.getElementById(
+            "levelText"
+        );
+
+    const levelBadge =
+        document.getElementById(
+            "levelBadge"
+        );
+
+    const recommendation =
         document.getElementById(
             "recommendationText"
         );
 
 
     if (peopleEl) {
+
         peopleEl.textContent =
             String(
-                queueStatus.people_currently_present ?? 0
+                queueStatus.people_currently_present ??
+                queueSize
             );
     }
 
 
     if (queueEl) {
+
         queueEl.textContent =
             String(
-                queueStatus.queue_size ?? 0
+                queueSize
             );
     }
 
 
     if (waitEl) {
 
-        const simulationWait =
-            window.simulationRunning
-                ? calculateWaitFromServiceRate(
-                    queueStatus.queue_size ?? 0,
-                    document.getElementById(
-                        "serviceRate"
-                    )?.value
+        waitEl.innerHTML =
+            `${Math.max(
+                0,
+                Math.ceil(
+                    Number(
+                        queueStatus.estimated_wait_minutes ??
+                        0
+                    )
                 )
-                : null;
-
-
-        if (simulationWait !== null) {
-
-            waitEl.innerHTML =
-                `${simulationWait}` +
-                `<span class="wait-unit"> min</span>`;
-
-        } else {
-
-            waitEl.innerHTML =
-                `${queueStatus.estimated_wait_minutes ?? 0}` +
-                `<span class="wait-unit"> min</span>`;
-        }
+            )}` +
+            `<span class="wait-unit"> min</span>`;
     }
 
 
@@ -260,7 +177,7 @@ function renderCrowdStatus(queueStatus) {
             level;
 
         levelText.className =
-            `crowd-level-badge ${lvl}`;
+            `crowd-level-badge ${levelClassName}`;
     }
 
 
@@ -272,9 +189,9 @@ function renderCrowdStatus(queueStatus) {
         levelBadge.className =
             "card-badge " +
             (
-                lvl === "low"
+                levelClassName === "low"
                     ? "badge-success"
-                    : lvl === "moderate"
+                    : levelClassName === "moderate"
                         ? "badge-warning"
                         : "badge-danger"
             );
@@ -284,102 +201,119 @@ function renderCrowdStatus(queueStatus) {
     const dots = {
 
         low:
-            document.getElementById("dotLow"),
+            document.getElementById(
+                "dotLow"
+            ),
 
         moderate:
-            document.getElementById("dotModerate"),
+            document.getElementById(
+                "dotModerate"
+            ),
 
         high:
-            document.getElementById("dotHigh")
+            document.getElementById(
+                "dotHigh"
+            )
     };
 
 
     const labels = {
 
         low:
-            document.getElementById("labelLow"),
+            document.getElementById(
+                "labelLow"
+            ),
 
         moderate:
-            document.getElementById("labelModerate"),
+            document.getElementById(
+                "labelModerate"
+            ),
 
         high:
-            document.getElementById("labelHigh")
+            document.getElementById(
+                "labelHigh"
+            )
     };
 
 
-    Object.values(dots).forEach(dot => {
+    Object.values(dots)
+        .forEach(
+            dot => {
 
-        if (dot) {
-            dot.classList.remove("lit");
-        }
-    });
+                if (dot) {
+                    dot.classList.remove(
+                        "lit"
+                    );
+                }
+            }
+        );
 
 
-    Object.values(labels).forEach(label => {
+    Object.values(labels)
+        .forEach(
+            label => {
 
-        if (label) {
-            label.classList.remove(
+                if (label) {
+                    label.classList.remove(
+                        "active-label"
+                    );
+                }
+            }
+        );
+
+
+    if (dots[levelClassName]) {
+
+        dots[levelClassName]
+            .classList.add(
+                "lit"
+            );
+    }
+
+
+    if (labels[levelClassName]) {
+
+        labels[levelClassName]
+            .classList.add(
                 "active-label"
             );
+    }
+
+
+    if (recommendation) {
+
+        if (
+            queueStatus.simulation_called
+        ) {
+
+            recommendation.textContent =
+                `Your token is being served. Proceed to Counter ${queueStatus.counter_number || 1}.`;
+
+        } else {
+
+            recommendation.textContent =
+                `${level} crowd. Current estimated waiting time is ${queueStatus.estimated_wait_minutes ?? 0} minutes.`;
         }
-    });
-
-
-    if (dots[lvl]) {
-        dots[lvl].classList.add("lit");
-    }
-
-
-    if (labels[lvl]) {
-        labels[lvl].classList.add(
-            "active-label"
-        );
-    }
-
-
-    if (recText) {
-
-        const wait =
-            window.simulationRunning
-                ? calculateWaitFromServiceRate(
-                    queueStatus.queue_size ?? 0,
-                    document.getElementById(
-                        "serviceRate"
-                    )?.value
-                )
-                : Number(
-                    queueStatus.estimated_wait_minutes ?? 0
-                );
-
-
-        recText.textContent =
-            getRecommendation(
-                level,
-                wait ?? 0
-            );
     }
 }
 
 
 // ============================================================
-// TREND BARS
+// TREND
 // ============================================================
 
-function renderTrendBars(queueStatus) {
+function renderTrendBars(
+    queueStatus
+) {
 
     const container =
         document.getElementById(
             "trendBars"
         );
 
-    if (!container) return;
-
-
-    const now =
-        new Date();
-
-    const currentHour =
-        now.getHours();
+    if (!container) {
+        return;
+    }
 
 
     const current =
@@ -391,146 +325,148 @@ function renderTrendBars(queueStatus) {
         );
 
 
-    const hours =
-        [-4, -3, -2, -1, 0].map(offset => {
-
-            const h =
-                (
-                    (currentHour + offset) %
-                    24 +
-                    24
-                ) % 24;
+    const now =
+        new Date();
 
 
-            const label =
-                new Date(
-                    0,
-                    0,
-                    0,
-                    h
-                ).toLocaleTimeString(
-                    "en-US",
-                    {
-                        hour: "numeric"
-                    }
-                );
-
-
-            return {
-                hour: h,
-                label
-            };
-        });
+    const currentHour =
+        now.getHours();
 
 
     const trend =
-        hours.map((h, i) => {
+        [-4, -3, -2, -1, 0]
+            .map(
+                (offset, index) => {
 
-            const isNow =
-                i === hours.length - 1;
+                    const hour =
+                        (
+                            currentHour +
+                            offset +
+                            24
+                        ) % 24;
+
+                    const label =
+                        new Date(
+                            2000,
+                            0,
+                            1,
+                            hour
+                        ).toLocaleTimeString(
+                            "en-US",
+                            {
+                                hour: "numeric"
+                            }
+                        );
+
+                    const count =
+                        index === 4
+                            ? current
+                            : Math.max(
+                                0,
+                                Math.round(
+                                    current *
+                                    (
+                                        0.55 +
+                                        index *
+                                        0.10
+                                    )
+                                )
+                            );
+
+                    return {
+                        label,
+                        count,
+                        level:
+                            calculateLevel(
+                                count
+                            ),
+                        current:
+                            index === 4
+                    };
+                }
+            );
 
 
-            const count =
-                isNow
-                    ? current
-                    : Math.max(
-                        0,
-                        Math.round(
-                            current *
-                            (
-                                0.55 +
-                                0.12 * i
-                            )
-                        )
-                    );
-
-
-            const level =
-                count <= 5
-                    ? "low"
-                    : count <= 15
-                        ? "moderate"
-                        : "high";
-
-
-            return {
-                time: h.label,
-                count,
-                level,
-                current: isNow
-            };
-        });
-
-
-    const maxCount =
+    const max =
         Math.max(
             1,
-            ...trend.map(d => d.count)
+            ...trend.map(
+                item => item.count
+            )
         );
 
 
     container.innerHTML = "";
 
 
-    trend.forEach(d => {
+    trend.forEach(
+        item => {
 
-        const wrap =
-            document.createElement("div");
+            const wrap =
+                document.createElement(
+                    "div"
+                );
+
+            wrap.className =
+                "trend-bar-wrap";
 
 
-        wrap.className =
-            "trend-bar-wrap";
+            const height =
+                Math.max(
+                    8,
+                    Math.round(
+                        item.count /
+                        max *
+                        100
+                    )
+                );
 
 
-        const heightPct =
-            Math.max(
-                8,
-                Math.round(
-                    (
-                        d.count /
-                        maxCount
-                    ) * 100
-                )
+            const level =
+                levelClass(
+                    item.level
+                );
+
+
+            wrap.innerHTML =
+
+                `<span class="trend-bar-val">
+                    ${item.count}
+                </span>` +
+
+                `<div class="trend-bar ${level}${item.current ? " current" : ""}"
+                      style="height:${height}%;">
+                </div>` +
+
+                `<span class="trend-bar-label">
+                    ${item.label}
+                </span>`;
+
+
+            container.appendChild(
+                wrap
             );
-
-
-        wrap.innerHTML =
-
-            '<span class="trend-bar-val">' +
-            d.count +
-            "</span>" +
-
-            '<div class="trend-bar ' +
-            d.level +
-            (d.current ? " current" : "") +
-            '" style="height:' +
-            heightPct +
-            '%;"></div>' +
-
-            '<span class="trend-bar-label">' +
-            d.time +
-            "</span>";
-
-
-        container.appendChild(
-            wrap
-        );
-    });
+        }
+    );
 }
 
 
 // ============================================================
-// COUNTER DISTRIBUTION
+// COUNTERS
 // ============================================================
 
-function renderCounters(queueStatus) {
+function renderCounters(
+    queueStatus
+) {
 
     const grid =
         document.getElementById(
             "countersGrid"
         );
 
-    if (!grid) return;
+    if (!grid) {
+        return;
+    }
 
 
     grid.innerHTML = "";
@@ -551,7 +487,8 @@ function renderCounters(queueStatus) {
             Math.min(
                 counters.length,
                 Number(
-                    queueStatus.active_counters ?? 4
+                    queueStatus.active_counters ??
+                    4
                 )
             )
         );
@@ -580,30 +517,30 @@ function renderCounters(queueStatus) {
             const assigned =
                 active
                     ? base +
-                      (
-                          index < remainder
-                              ? 1
-                              : 0
-                      )
+                        (
+                            index <
+                            remainder
+                                ? 1
+                                : 0
+                        )
                     : 0;
 
 
             let status;
 
-
             if (!active) {
 
                 status = "Closed";
 
-            } else if (assigned === 0) {
-
-                status = "Available";
-
-            } else if (assigned >= 6) {
+            } else if (
+                assigned >= 6
+            ) {
 
                 status = "Overloaded";
 
-            } else if (assigned >= 3) {
+            } else if (
+                assigned >= 3
+            ) {
 
                 status = "Busy";
 
@@ -624,7 +561,9 @@ function renderCounters(queueStatus) {
 
 
             const card =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
 
             card.className =
@@ -633,34 +572,34 @@ function renderCounters(queueStatus) {
 
             card.innerHTML =
 
-                '<div class="counter-card-header">' +
+                `<div class="counter-card-header">
 
-                    '<span class="counter-name">' +
-                    counter.name +
-                    "</span>" +
+                    <span class="counter-name">
+                        ${counter.name}
+                    </span>
 
-                    '<span class="card-badge ' +
-                    badge +
-                    '">' +
-                    status +
-                    "</span>" +
+                    <span class="card-badge ${badge}">
+                        ${status}
+                    </span>
 
-                "</div>" +
+                </div>
 
-                '<span class="counter-service">' +
-                counter.service +
-                "</span>" +
+                <span class="counter-service">
+                    ${counter.service}
+                </span>
 
-                '<div class="counter-queue">' +
-                (
-                    active
-                        ? `${assigned} people assigned`
-                        : "Not active"
-                ) +
-                "</div>";
+                <div class="counter-queue">
+                    ${
+                        active
+                            ? `${assigned} people assigned`
+                            : "Not active"
+                    }
+                </div>`;
 
 
-            grid.appendChild(card);
+            grid.appendChild(
+                card
+            );
         }
     );
 }
@@ -670,83 +609,96 @@ function renderCounters(queueStatus) {
 // LAST UPDATED
 // ============================================================
 
-function updateLastUpdated() {
+function updateLastUpdated(
+    queueStatus
+) {
 
-    const el =
+    const element =
         document.getElementById(
             "lastUpdated"
         );
 
-    if (!el) return;
+    if (!element) {
+        return;
+    }
 
 
-    const now =
-        new Date();
+    if (
+        queueStatus.simulation_active
+    ) {
+
+        if (
+            queueStatus.simulation_called
+        ) {
+
+            element.textContent =
+                `Simulation active — Token ${queueStatus.user_simulated_token} is being served. Proceed to Counter ${queueStatus.counter_number || 1}.`;
+
+        } else {
+
+            element.textContent =
+                `Simulation active — real token ${queueStatus.real_user_token || "--"} • simulated token ${queueStatus.user_simulated_token || "--"} • ${queueStatus.estimated_wait_minutes} min remaining.`;
+        }
+
+        return;
+    }
 
 
-    const time =
-        now.toLocaleTimeString(
+    element.textContent =
+        `Last updated: ${new Date().toLocaleTimeString(
             "en-US",
             {
                 hour: "2-digit",
                 minute: "2-digit"
             }
-        );
-
-
-    el.textContent =
-        "Last updated: " +
-        time +
-        " — live backend data.";
+        )} — live backend data.`;
 }
 
 
 // ============================================================
-// LIVE STATUS
+// RENDER EVERYTHING
+// ============================================================
+
+function renderEverything(
+    queueStatus
+) {
+
+    renderCrowdStatus(
+        queueStatus
+    );
+
+    renderTrendBars(
+        queueStatus
+    );
+
+    renderCounters(
+        queueStatus
+    );
+
+    updateLastUpdated(
+        queueStatus
+    );
+}
+
+
+// ============================================================
+// REAL STATUS
 // ============================================================
 
 async function refreshStatus() {
 
-    /*
-     * Refresh is intentionally independent.
-     *
-     * If simulation is active, do not overwrite
-     * the simulation screen automatically.
-     */
-
-    if (window.simulationRunning) {
-        return;
-    }
-
-
     try {
 
-        const queueStatus =
+        const status =
             await VIZITOR.getQueueStatus();
 
-
-        if (!queueStatus) {
+        if (!status) {
             return;
         }
 
-
-        renderCrowdStatus(
-            queueStatus
+        renderEverything(
+            status
         );
-
-
-        renderTrendBars(
-            queueStatus
-        );
-
-
-        renderCounters(
-            queueStatus
-        );
-
-
-        updateLastUpdated();
-
 
     } catch (error) {
 
@@ -759,662 +711,409 @@ async function refreshStatus() {
 
 
 // ============================================================
-// SIMULATION WAIT TIME
+// GET PERSON 3 FORECAST
 // ============================================================
 
-function calculateSimulationWait(
-    queueLength,
-    activeCounters
+async function getPerson3Forecast(
+    realStatus
 ) {
 
-    queueLength =
-        Math.max(
-            0,
-            Number(queueLength) || 0
-        );
+    try {
+
+        const you =
+            realStatus?.you || {};
 
 
-    activeCounters =
-        Math.max(
-            1,
-            Number(activeCounters) || 1
-        );
+        const appointments =
+            await VIZITOR.getAppointments();
 
 
-    const peoplePerCounter =
-        3;
+        const currentAppointment =
+            appointments.find(
+                appointment =>
+                    String(
+                        appointment.appointment_id
+                    ) ===
+                    String(
+                        you.appointment_id
+                    )
+            );
 
 
-    const capacity =
-        activeCounters *
-        peoplePerCounter;
+        const now =
+            new Date();
 
 
-    const wait =
-        (
-            queueLength /
-            capacity
-        ) * 5;
-
-
-    return Math.max(
-        0,
-        Math.round(wait)
-    );
-}
-
-
-// ============================================================
-// CROWD LEVEL FOR SIMULATION
-// ============================================================
-
-function calculateSimulationLevel(
-    queueLength
-) {
-
-    if (queueLength <= 5) {
-        return "Low";
-    }
-
-
-    if (queueLength <= 15) {
-        return "Moderate";
-    }
-
-
-    return "High";
-}
-
-
-// ============================================================
-// SAVE SIMULATION STATE FOR ALL VIZITOR PAGES
-// ============================================================
-
-function saveSharedSimulationState({
-    queueSize,
-    waitMinutes,
-    crowdLevel,
-    activeCounters,
-    serviceRate,
-    simulationUsers,
-    simulationStep,
-    servedSoFar = 0
-}) {
-
-    if (
-        typeof VIZITOR === "undefined" ||
-        !VIZITOR.setSimulationState
-    ) {
-        return;
-    }
-
-
-    VIZITOR.setSimulationState({
-
-        queue_size:
-            Math.max(
-                0,
-                Number(queueSize) || 0
-            ),
-
-        people_currently_present:
-            Math.max(
-                0,
-                Number(queueSize) || 0
-            ),
-
-        estimated_wait_minutes:
-            Math.max(
-                0,
-                Math.round(
-                    Number(waitMinutes) || 0
-                )
-            ),
-
-        crowd_level:
-            crowdLevel,
-
-        active_counters:
+        const recentArrivals =
             Math.max(
                 1,
-                Number(activeCounters) || 1
-            ),
+                Number(
+                    realStatus.queue_size ??
+                    1
+                )
+            );
 
-        service_rate:
+
+        const recentServices =
             Math.max(
+                1,
+                Number(
+                    realStatus.served_so_far ??
+                    1
+                )
+            );
+
+
+        const response =
+            await fetch(
+                `${API_BASE_URL}/optimization/forecast`,
+                {
+                    method: "GET",
+                    headers:
+                        VIZITOR.authHeaders()
+                }
+            );
+
+
+        if (
+            !response.ok
+        ) {
+
+            throw new Error(
+                `Person 3 forecast HTTP ${response.status}`
+            );
+        }
+
+
+        const forecast =
+            await response.json();
+
+
+        return {
+
+            predicted_wait_minutes:
+                Number(
+                    forecast
+                        ?.prediction
+                        ?.predicted_wait_minutes ??
+                    realStatus.estimated_wait_minutes ??
+                    0
+                ),
+
+            prediction_confidence:
+                Number(
+                    forecast
+                        ?.prediction
+                        ?.prediction_confidence ??
+                    0
+                ),
+
+            predicted_queue_length:
+                Number(
+                    forecast
+                        ?.prediction
+                        ?.predicted_queue_length ??
+                    realStatus.queue_size ??
+                    0
+                ),
+
+            currentAppointment,
+
+            now,
+
+            recentArrivals,
+
+            recentServices
+        };
+
+    } catch (error) {
+
+        console.warn(
+            "Person 3 forecast unavailable; using live queue wait:",
+            error
+        );
+
+        return {
+
+            predicted_wait_minutes:
+                Number(
+                    realStatus.estimated_wait_minutes ??
+                    0
+                ),
+
+            prediction_confidence:
                 0,
-                Number(serviceRate) || 0
-            ),
 
-        simulation_users:
-            Math.max(
-                0,
-                Number(simulationUsers) || 0
-            ),
-
-        simulation_step:
-            Number(simulationStep) || 0,
-
-        served_so_far:
-            Math.max(
-                0,
-                Number(servedSoFar) || 0
-            ),
-
-        /*
-         * Synthetic token used only by the simulation.
-         * Real backend token logic is untouched.
-         */
-        currently_serving_token:
-            "SIM-001"
-    });
+            predicted_queue_length:
+                Number(
+                    realStatus.queue_size ??
+                    0
+                )
+        };
+    }
 }
 
 
 // ============================================================
-// RUN SIMULATION
+// START SIMULATION
 // ============================================================
 
 async function runSimulation(
-    numUsers,
-    simulationBtn
+    syntheticUsers,
+    button
 ) {
 
-    window.simulationRunning =
-        true;
+    button.disabled = true;
 
-
-    simulationBtn.disabled =
-        true;
-
-
-    simulationBtn.textContent =
-        "Running...";
+    button.textContent =
+        "Starting...";
 
 
     try {
 
-        const response =
-            await fetch(
-                `http://127.0.0.1:8000/optimization/simulation?num_users=${encodeURIComponent(numUsers)}`,
-                {
-                    method: "POST"
-                }
+        // ------------------------------------------------------
+        // ALWAYS capture the REAL backend state first.
+        // ------------------------------------------------------
+
+        const realStatus =
+            await VIZITOR.apiGet(
+                "/appointments/queue/status"
             );
 
 
-        if (!response.ok) {
+        if (!realStatus) {
 
             throw new Error(
-                `Simulation failed: HTTP ${response.status}`
+                "Unable to read the real queue before simulation."
             );
         }
 
 
-        const data =
-            await response.json();
+        const realYou =
+            realStatus.you;
+
+
+        if (!realYou) {
+
+            throw new Error(
+                "No active appointment was found for the current user."
+            );
+        }
+
+
+        const realUserToken =
+            realYou.token_display;
+
+
+        const realServingToken =
+            realStatus.currently_serving_token ||
+            realUserToken;
 
 
         if (
-            !data ||
-            !Array.isArray(data.steps) ||
-            data.steps.length === 0
+            !VIZITOR.tokenNumber(
+                realUserToken
+            )
         ) {
 
             throw new Error(
-                "Backend returned no simulation steps."
+                "The real appointment token could not be converted to a numeric queue token."
             );
         }
 
 
-        const steps =
-            data.steps;
+        // ------------------------------------------------------
+        // Person 3 prediction
+        // ------------------------------------------------------
+
+        button.textContent =
+            "Loading prediction...";
 
 
-        console.log(
-            "%c========== CROWD SIMULATION START ==========",
-            "font-weight:bold;"
-        );
-
-
-        console.log(
-            "Total simulated users:",
-            numUsers
-        );
-
-
-        console.log(
-            "Total simulation steps:",
-            steps.length
-        );
-
-
-        for (
-            let i = 0;
-            i < steps.length;
-            i++
-        ) {
-
-            const step =
-                steps[i];
-
-
-            console.log(
-                `%c[CROWD SIMULATION] Step ${step.step}`,
-                "font-weight:bold;",
-                {
-                    totalUsers:
-                        numUsers,
-
-                    usersProcessed:
-                        step.users_processed,
-
-                    queueLength:
-                        step.queue_length,
-
-                    activeCounters:
-                        step.active_counters,
-
-                    prediction:
-                        step.prediction,
-
-                    optimization:
-                        step.optimization
-                }
+        const forecast =
+            await getPerson3Forecast(
+                realStatus
             );
 
 
-            const queueLength =
-                Math.max(
-                    0,
-                    Number(
-                        step.queue_length ?? 0
-                    )
-                );
-
-
-            if (
-                !Number.isFinite(
-                    queueLength
-                )
-            ) {
-
-                throw new Error(
-                    "Invalid queue length returned by backend."
-                );
-            }
-
-
-            const optimization =
-                step.optimization ||
-                {};
-
-
-            const activeCounters =
-                Math.max(
-                    1,
-                    Number(
-                        step.active_counters ??
-                        4
-                    )
-                );
-
-
-            /*
-             * Store simulation state locally.
-             */
-
-            window.simulationState.queueLength =
-                queueLength;
-
-            window.simulationState.activeCounters =
-                activeCounters;
-
-
-            // ----------------------------------------------------
-            // Service rate and waiting time
-            // ----------------------------------------------------
-
-            const serviceRate =
-                Number(
-                    document.getElementById(
-                        "serviceRate"
-                    )?.value
-                );
-
-
-            const predictedWait =
-                calculateWaitFromServiceRate(
-                    queueLength,
-                    serviceRate
-                );
-
-
-            const crowdLevel =
-                calculateSimulationLevel(
-                    queueLength
-                );
-
-
-            // ----------------------------------------------------
-            // Synchronize all VIZITOR pages
-            // ----------------------------------------------------
-
-            saveSharedSimulationState({
-
-                queueSize:
-                    queueLength,
-
-                waitMinutes:
-                    predictedWait ?? 0,
-
-                crowdLevel:
-                    crowdLevel,
-
-                activeCounters:
-                    activeCounters,
-
-                serviceRate:
-                    serviceRate,
-
-                simulationUsers:
-                    numUsers,
-
-                simulationStep:
-                    step.step,
-
-                servedSoFar:
-                    Math.max(
-                        0,
-                        numUsers - queueLength
-                    )
-            });
-
-
-            const simulatedStatus = {
-
-                crowd_level:
-                    crowdLevel,
-
-                people_currently_present:
-                    queueLength,
-
-                queue_size:
-                    queueLength,
-
-                estimated_wait_minutes:
-                    predictedWait ?? 0,
-
-                active_counters:
-                    activeCounters,
-
-                currently_serving_token:
-                    "SIM-001"
-            };
-
-
-            renderCrowdStatus(
-                simulatedStatus
-            );
-
-
-            renderTrendBars(
-                simulatedStatus
-            );
-
-
-            renderCounters(
-                simulatedStatus
-            );
-
-
-            const lastUpdated =
-                document.getElementById(
-                    "lastUpdated"
-                );
-
-
-            if (lastUpdated) {
-
-                lastUpdated.textContent =
-                    `Simulation: Step ${step.step} — ` +
-                    `${queueLength}/${numUsers} people ` +
-                    `in crowd model • ` +
-                    (
-                        predictedWait === null
-                            ? "Service unavailable"
-                            : `Estimated wait: ${predictedWait} min`
-                    );
-            }
-
-
-            const recText =
-                document.getElementById(
-                    "recommendationText"
-                );
-
-
-            if (recText) {
-
-                const action =
-                    optimization
-                        ?.recommended_action
-                        ?.type;
-
-
-                const reason =
-                    optimization
-                        ?.reason;
-
-
-                if (action) {
-
-                    recText.textContent =
-                        `${action}: ` +
-                        (
-                            reason ||
-                            `System recommends managing ${queueLength} people across ${activeCounters} active counters.`
-                        );
-
-                } else {
-
-                    recText.textContent =
-                        getRecommendation(
-                            crowdLevel,
-                            predictedWait ?? 0
-                        );
-                }
-            }
-
-
-            await new Promise(
-                resolve =>
-                    setTimeout(
-                        resolve,
-                        700
-                    )
-            );
-        }
-
-
-        // ========================================================
-        // FINAL SIMULATION STATE
-        // ========================================================
-
-        const finalStep =
-            steps[
-                steps.length - 1
-            ];
-
-
-        const finalQueue =
-            Math.max(
-                0,
-                Number(
-                    finalStep.queue_length ??
-                    numUsers
-                )
-            );
-
-
-        const finalActiveCounters =
-            Math.max(
-                1,
-                Number(
-                    finalStep.active_counters ??
-                    4
-                )
-            );
-
-
-        window.simulationState.queueLength =
-            finalQueue;
-
-
-        window.simulationState.activeCounters =
-            finalActiveCounters;
-
+        // ------------------------------------------------------
+        // Calculate temporary simulation wait.
+        //
+        // Synthetic users are inserted ahead of the user's
+        // real appointment.
+        // ------------------------------------------------------
 
         const serviceRate =
             Number(
                 document.getElementById(
                     "serviceRate"
-                )?.value
+                )?.value ||
+                10
             );
 
 
-        const finalWait =
-            calculateWaitFromServiceRate(
-                finalQueue,
+        const rate =
+            Math.max(
+                0.01,
                 serviceRate
             );
 
 
-        const finalLevel =
-            calculateSimulationLevel(
-                finalQueue
+        /*
+         * Synthetic users ahead of the appointment.
+         *
+         * At 10 patients/hour:
+         * 50 people = 300 minutes.
+         *
+         * The actual countdown is based on elapsed real time.
+         */
+
+        const serviceMinutesPerPerson =
+            60 / rate;
+
+
+        const syntheticWait =
+            syntheticUsers *
+            serviceMinutesPerPerson;
+
+
+        /*
+         * Person 3 gives the facility prediction.
+         * We combine the predicted wait with the synthetic
+         * queue workload so the simulation remains grounded
+         * in the ML source while representing the requested
+         * temporary crowd insertion.
+         */
+
+        const predictedBaseWait =
+            Math.max(
+                0,
+                Number(
+                    forecast.predicted_wait_minutes ??
+                    0
+                )
             );
 
 
-        const finalStatus = {
+        const initialWait =
+            Math.max(
+                predictedBaseWait,
+                syntheticWait
+            );
 
-            crowd_level:
-                finalLevel,
 
-            people_currently_present:
-                finalQueue,
+        const startedAt =
+            new Date();
 
-            queue_size:
-                finalQueue,
+
+        // ------------------------------------------------------
+        // Save temporary overlay.
+        // ------------------------------------------------------
+
+        VIZITOR.setSimulationState({
+
+            real_user_token:
+                realUserToken,
+
+            real_serving_token:
+                realServingToken,
+
+            real_appointment_id:
+                realYou.appointment_id,
+
+            real_purpose:
+                realYou.purpose,
+
+            real_appointment_date:
+                realYou.appointment_date,
+
+            real_appointment_time:
+                realYou.appointment_time,
+
+            base_queue_size:
+                Number(
+                    realStatus.queue_size ??
+                    0
+                ),
+
+            base_people_present:
+                Number(
+                    realStatus.people_currently_present ??
+                    realStatus.queue_size ??
+                    0
+                ),
+
+            synthetic_users:
+                syntheticUsers,
+
+            initial_wait_minutes:
+                initialWait,
 
             estimated_wait_minutes:
-                finalWait ?? 0,
+                initialWait,
+
+            service_rate:
+                rate,
+
+            minutes_per_person:
+                serviceMinutesPerPerson,
 
             active_counters:
-                finalActiveCounters,
+                Number(
+                    realStatus.active_counters ??
+                    1
+                ),
 
-            currently_serving_token:
-                "SIM-001"
-        };
+            counter_number:
+                1,
 
+            crowd_level:
+                calculateLevel(
+                    Number(
+                        realStatus.queue_size ??
+                        0
+                    ) +
+                    syntheticUsers
+                ),
 
-        // --------------------------------------------------------
-        // Save final state for all pages
-        // --------------------------------------------------------
+            served_so_far:
+                Number(
+                    realStatus.served_so_far ??
+                    0
+                ),
 
-        saveSharedSimulationState({
+            prediction_confidence:
+                Number(
+                    forecast.prediction_confidence ??
+                    0
+                ),
 
-            queueSize:
-                finalQueue,
+            predicted_queue_length:
+                Number(
+                    forecast.predicted_queue_length ??
+                    0
+                ),
 
-            waitMinutes:
-                finalWait ?? 0,
+            started_at:
+                startedAt.toISOString(),
 
-            crowdLevel:
-                finalLevel,
+            started_at_ms:
+                startedAt.getTime(),
 
-            activeCounters:
-                finalActiveCounters,
-
-            serviceRate:
-                serviceRate,
-
-            simulationUsers:
-                numUsers,
-
-            simulationStep:
-                finalStep.step,
-
-            servedSoFar:
-                Math.max(
-                    0,
-                    numUsers - finalQueue
-                )
+            simulation_step:
+                0
         });
 
 
-        renderCrowdStatus(
-            finalStatus
-        );
+        window.simulationRunning =
+            true;
 
 
-        renderTrendBars(
-            finalStatus
-        );
+        button.textContent =
+            "Simulation Active";
 
 
-        renderCounters(
-            finalStatus
-        );
-
-
-        const lastUpdated =
-            document.getElementById(
-                "lastUpdated"
-            );
-
-
-        if (lastUpdated) {
-
-            lastUpdated.textContent =
-                `Simulation Complete — ` +
-                `${finalQueue}/${numUsers} people ` +
-                `in crowd model • ` +
-                (
-                    finalWait === null
-                        ? "Service unavailable"
-                        : `Service rate: ${serviceRate} patients/hour • ` +
-                          `Estimated wait: ${finalWait} min`
-                );
-        }
-
-
-        console.log(
-            "%c========== CROWD SIMULATION COMPLETE ==========",
-            "font-weight:bold;"
-        );
-
-
-        console.log({
-
-            totalUsers:
-                numUsers,
-
-            finalQueue:
-                finalQueue,
-
-            finalWaitMinutes:
-                finalWait,
-
-            serviceRate:
-                serviceRate,
-
-            activeCounters:
-                finalActiveCounters,
-
-            currentlyServingToken:
-                "SIM-001"
-        });
+        await refreshSimulationDisplay();
 
 
     } catch (error) {
@@ -1426,110 +1125,224 @@ async function runSimulation(
 
 
         alert(
-            `Could not run simulation.\n\n` +
-            `${error?.message || "Unknown error"}`
+            `Could not start simulation.\n\n${error.message}`
         );
-
-
-        window.simulationRunning =
-            false;
 
 
     } finally {
 
-        simulationBtn.disabled =
+        button.disabled =
             false;
 
-        simulationBtn.textContent =
-            "Run Simulation";
+        if (
+            !VIZITOR.isSimulationActive()
+        ) {
+
+            button.textContent =
+                "Run Simulation";
+
+            window.simulationRunning =
+                false;
+        }
     }
 }
 
 
 // ============================================================
-// PAGE INITIALIZATION
+// LIVE SIMULATION DISPLAY
+// ============================================================
+
+async function refreshSimulationDisplay() {
+
+    const simulation =
+        VIZITOR.getSimulationState();
+
+
+    if (!simulation) {
+
+        window.simulationRunning =
+            false;
+
+        await refreshStatus();
+
+        return;
+    }
+
+
+    window.simulationRunning =
+        true;
+
+
+    const status =
+        VIZITOR.buildSimulationQueueStatus(
+            simulation
+        );
+
+
+    renderEverything(
+        status
+    );
+
+
+    // ----------------------------------------------------------
+    // Called notification
+    // ----------------------------------------------------------
+
+    if (
+        status.simulation_called
+    ) {
+
+        const calledKey =
+            `called-${status.user_simulated_token}-${status.real_appointment_id}`;
+
+
+        if (
+            localStorage.getItem(
+                "vizitor_last_sim_called"
+            ) !==
+            calledKey
+        ) {
+
+            localStorage.setItem(
+                "vizitor_last_sim_called",
+                calledKey
+            );
+
+
+            VIZITOR.addNotificationEvent({
+
+                id:
+                    calledKey,
+
+                category:
+                    "queue",
+
+                title:
+                    "Your Token Is Being Called",
+
+                message:
+                    `Token ${status.user_simulated_token} is now being served. Proceed to Counter ${status.counter_number || 1}.`,
+
+                important:
+                    true
+            });
+        }
+    }
+
+
+    const simulationButton =
+        document.getElementById(
+            "btnSimulation"
+        );
+
+
+    if (simulationButton) {
+
+        simulationButton.textContent =
+            status.simulation_called
+                ? "Called — Simulation Active"
+                : "Simulation Active";
+    }
+}
+
+
+// ============================================================
+// REFRESH / CLEAR SIMULATION
+// ============================================================
+
+async function clearSimulationAndRefresh() {
+
+    window.simulationRunning =
+        false;
+
+    VIZITOR.clearSimulationState();
+
+    localStorage.removeItem(
+        "vizitor_last_sim_called"
+    );
+
+
+    const button =
+        document.getElementById(
+            "btnSimulation"
+        );
+
+    if (button) {
+
+        button.textContent =
+            "Run Simulation";
+    }
+
+
+    await refreshStatus();
+}
+
+
+// ============================================================
+// PAGE INIT
 // ============================================================
 
 document.addEventListener(
     "DOMContentLoaded",
     () => {
 
-        if (
-            typeof VIZITOR !== "undefined" &&
-            VIZITOR.wireCommonNav
-        ) {
-
-            VIZITOR.wireCommonNav();
-        }
+        VIZITOR.wireCommonNav();
 
 
         refreshStatus();
 
 
+        // ------------------------------------------------------
+        // One-second live update.
+        // This makes the displayed simulation wait decrease with
+        // actual elapsed time rather than animation speed.
+        // ------------------------------------------------------
+
         setInterval(
-            () => {
+            async () => {
 
                 if (
-                    !window.simulationRunning
+                    VIZITOR.isSimulationActive()
                 ) {
 
-                    refreshStatus();
+                    await refreshSimulationDisplay();
+
+                } else {
+
+                    await refreshStatus();
                 }
 
             },
-            20000
+            1000
         );
 
 
-        // --------------------------------------------------------
-        // REFRESH BUTTON
-        // --------------------------------------------------------
+        // ------------------------------------------------------
+        // Refresh Status
+        // ------------------------------------------------------
 
-        const refreshBtn =
+        const refreshButton =
             document.getElementById(
                 "btnRefresh"
             );
 
+        if (refreshButton) {
 
-        if (refreshBtn) {
-
-            refreshBtn.addEventListener(
+            refreshButton.addEventListener(
                 "click",
-                async () => {
-
-                    /*
-                     * Leave simulation mode and return to
-                     * the real backend queue.
-                     */
-
-                    window.simulationRunning =
-                        false;
-
-
-                    if (
-                        typeof VIZITOR !== "undefined" &&
-                        VIZITOR.clearSimulationState
-                    ) {
-
-                        VIZITOR.clearSimulationState();
-                    }
-
-
-                    await refreshStatus();
-                }
+                clearSimulationAndRefresh
             );
         }
 
 
-        // --------------------------------------------------------
-        // SIMULATION BUTTON
-        // --------------------------------------------------------
+        // ------------------------------------------------------
+        // Simulation button
+        // ------------------------------------------------------
 
-        const simulationBtn =
+        const simulationButton =
             document.getElementById(
                 "btnSimulation"
             );
-
 
         const simulationInput =
             document.getElementById(
@@ -1538,34 +1351,32 @@ document.addEventListener(
 
 
         if (
-            simulationBtn &&
+            simulationButton &&
             simulationInput
         ) {
 
-            simulationBtn.addEventListener(
+            simulationButton.addEventListener(
                 "click",
                 async () => {
 
                     if (
-                        window.simulationRunning
+                        VIZITOR.isSimulationActive()
                     ) {
 
                         return;
                     }
 
 
-                    const numUsers =
+                    const users =
                         Number(
                             simulationInput.value
                         );
 
 
                     if (
-                        !Number.isInteger(
-                            numUsers
-                        ) ||
-                        numUsers < 1 ||
-                        numUsers > 500
+                        !Number.isInteger(users) ||
+                        users < 1 ||
+                        users > 500
                     ) {
 
                         alert(
@@ -1577,124 +1388,43 @@ document.addEventListener(
 
 
                     await runSimulation(
-                        numUsers,
-                        simulationBtn
+                        users,
+                        simulationButton
                     );
                 }
             );
         }
 
 
-        // --------------------------------------------------------
-        // SERVICE RATE — COMPLETELY INDEPENDENT
-        // --------------------------------------------------------
+        // ------------------------------------------------------
+        // Service rate
+        // ------------------------------------------------------
 
-        const serviceRateInput =
+        const serviceRate =
             document.getElementById(
                 "serviceRate"
             );
 
 
-        if (serviceRateInput) {
+        if (serviceRate) {
 
-            serviceRateInput.addEventListener(
-                "input",
+            serviceRate.addEventListener(
+                "change",
                 () => {
 
                     /*
-                     * This ONLY changes the waiting-time
-                     * calculation.
-                     *
-                     * It does not run another simulation.
-                     * It does not add people.
-                     * It does not call Refresh Status.
+                     * Do not alter the real appointment.
+                     * Re-running simulation is required to use
+                     * a different service rate.
                      */
 
                     if (
-                        !window.simulationRunning
+                        VIZITOR.isSimulationActive()
                     ) {
-                        return;
+
+                        serviceRate.title =
+                            "Service rate is fixed for the current simulation. Refresh Status and run again to change it.";
                     }
-
-
-                    const serviceRate =
-                        Number(
-                            serviceRateInput.value
-                        );
-
-
-                    window.simulationState.serviceRate =
-                        serviceRate;
-
-
-                    updateSimulationWaitTime();
-
-
-                    /*
-                     * Keep all shared pages synchronized
-                     * with the new waiting-time calculation.
-                     */
-
-                    const currentQueue =
-                        Math.max(
-                            0,
-                            Number(
-                                window.simulationState.queueLength
-                            ) || 0
-                        );
-
-
-                    const newWait =
-                        calculateWaitFromServiceRate(
-                            currentQueue,
-                            serviceRate
-                        );
-
-
-                    const currentLevel =
-                        calculateSimulationLevel(
-                            currentQueue
-                        );
-
-
-                    const existingSimulation =
-                        (
-                            typeof VIZITOR !== "undefined" &&
-                            VIZITOR.getSimulationState
-                        )
-                            ? VIZITOR.getSimulationState()
-                            : null;
-
-
-                    saveSharedSimulationState({
-
-                        queueSize:
-                            currentQueue,
-
-                        waitMinutes:
-                            newWait ?? 0,
-
-                        crowdLevel:
-                            currentLevel,
-
-                        activeCounters:
-                            window.simulationState.activeCounters,
-
-                        serviceRate:
-                            serviceRate,
-
-                        simulationUsers:
-                            existingSimulation?.simulation_users ??
-                            currentQueue,
-
-                        simulationStep:
-                            existingSimulation?.simulation_step ??
-                            0,
-
-                        servedSoFar:
-                            existingSimulation?.served_so_far ??
-                            0
-                    });
                 }
             );
         }

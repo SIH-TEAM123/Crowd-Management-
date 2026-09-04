@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Arcade - VIZITOR</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+
+        /* =====================================================
+           ARCADE PAGE
+        ===================================================== */
+
+        .arcade-body {
+            padding-bottom: 40px;
+        }
+
+        .arcade-hero {
+            margin-bottom: 24px;
+        }
+
+        .arcade-hero h2 {
+            margin-bottom: 6px;
+        }
+
+        .arcade-hero p {
+            margin: 0;
+            color: #64748b;
+        }
+
+
+        /* =====================================================
+           LIVE QUEUE STATUS
+        ===================================================== */
+
+        .arcade-queue-card {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+            padding: 20px;
+            border-radius: 16px;
+
+            background: linear-gradient(
+                135deg,
+                rgba(124, 58, 237, 0.08),
+                rgba(124, 58, 237, 0.03)
+            );
+
+            border: 1px solid rgba(124, 58, 237, 0.14);
+        }
+
+        .arcade-queue-item {
+            padding: 16px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .arcade-queue-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 7px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .arcade-queue-value {
+            display: block;
+            font-size: 24px;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .arcade-queue-status {
+            margin-top: 16px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: rgba(124, 58, 237, 0.08);
+            color: #5b21b6;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+
+        /* =====================================================
+           SECTION TITLE
+        ===================================================== */
+
+        .arcade-section-title {
+            margin: 0 0 16px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+
+        /* =====================================================
+           ARCADE GRID
+        ===================================================== */
+
+        .arcade-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+
+        /* =====================================================
+           ARCADE CARD
+        ===================================================== */
+
+        .arcade-card {
+            position: relative;
+            overflow: hidden;
+            min-height: 210px;
+            padding: 24px;
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+
+            box-shadow:
+                0 4px 14px rgba(15, 23, 42, 0.04);
+
+            cursor: pointer;
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease,
+                border-color 0.2s ease,
+                opacity 0.2s ease;
+        }
+
+        .arcade-card:hover {
+            transform: translateY(-3px);
+
+            box-shadow:
+                0 10px 24px rgba(15, 23, 42, 0.08);
+
+            border-color:
+                rgba(124, 58, 237, 0.3);
+        }
+
+
+        /* =====================================================
+           RECOMMENDED CARD
+        ===================================================== */
+
+        .arcade-card.arcade-card-recommended {
+            border-color:
+                rgba(124, 58, 237, 0.35);
+
+            box-shadow:
+                0 8px 24px rgba(124, 58, 237, 0.10);
+        }
+
+
+        .arcade-card.arcade-card-secondary {
+            opacity: 0.94;
+        }
+
+
+        /* =====================================================
+           RANK BADGE
+        ===================================================== */
+
+        .arcade-card-rank {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            min-width: 76px;
+            height: 28px;
+            padding: 0 9px;
+
+            border-radius: 999px;
+
+            background:
+                rgba(124, 58, 237, 0.10);
+
+            color: #6d28d9;
+
+            font-size: 11px;
+            font-weight: 700;
+
+            opacity: 0;
+            transform: translateY(-4px);
+
+            transition:
+                opacity 0.2s ease,
+                transform 0.2s ease;
+        }
+
+        .arcade-card.arcade-card-ranked
+        .arcade-card-rank {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+        /* =====================================================
+           ICON
+        ===================================================== */
+
+        .arcade-card-icon {
+            width: 48px;
+            height: 48px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin-bottom: 18px;
+
+            border-radius: 12px;
+
+            background:
+                rgba(124, 58, 237, 0.1);
+
+            font-size: 24px;
+        }
+
+
+        /* =====================================================
+           CARD TEXT
+        ===================================================== */
+
+        .arcade-card h3 {
+            margin: 0 0 8px;
+            font-size: 17px;
+            color: #1e293b;
+        }
+
+        .arcade-card p {
+            margin: 0;
+            color: #64748b;
+            line-height: 1.55;
+            font-size: 14px;
+        }
+
+
+        /* =====================================================
+           CARD META
+        ===================================================== */
+
+        .arcade-card-meta {
+            margin-top: 18px;
+
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            font-size: 12px;
+            font-weight: 600;
+            color: #7c3aed;
+        }
+
+
+        /* =====================================================
+           DYNAMIC FIT TEXT
+        ===================================================== */
+
+        .arcade-card-fit {
+            display: block;
+            min-height: 17px;
+            margin-top: 7px;
+
+            font-size: 11px;
+            font-weight: 600;
+
+            color: #94a3b8;
+        }
+
+        .arcade-card.arcade-card-recommended
+        .arcade-card-fit {
+            color: #7c3aed;
+        }
+
+
+        /* =====================================================
+           RECOMMENDATION
+        ===================================================== */
+
+        .arcade-recommendation {
+            margin-top: 28px;
+            padding: 20px;
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+        }
+
+        .arcade-recommendation h3 {
+            margin: 0 0 7px;
+            color: #1e293b;
+            font-size: 16px;
+        }
+
+        .arcade-recommendation p {
+            margin: 0;
+            color: #64748b;
+            line-height: 1.55;
+            font-size: 14px;
+        }
+
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+
+        @media (max-width: 900px) {
+
+            .arcade-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .arcade-queue-card {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+<div class="dashboard-layout">
+
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+
+            <svg
+                class="logo-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+
+                <path
+                    d="M12 2L2 7v10l10 5 10-5V7L12 2z"
+                    fill="rgba(124, 58, 237, 0.15)"
+                    stroke="#7c3aed"
+                    stroke-width="2"
+                />
+
+                <circle
+                    cx="12"
+                    cy="12"
+                    r="3"
+                    fill="#7c3aed"
+                />
+
+            </svg>
+
+            <span class="logo-text">
+                VIZITOR
+            </span>
+
+        </div>
+
+
+        <nav class="sidebar-menu">
+
+
+            <a
+                href="dashboard.html"
+                class="menu-item"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+
+                    <rect
+                        x="3"
+                        y="3"
+                        width="7"
+                        height="7"
+                    />
+
+                    <rect
+                        x="14"
+                        y="3"
+                        width="7"
+                        height="7"
+                    />
+
+                    <rect
+                        x="14"
+                        y="14"
+                        width="7"
+                        height="7"
+                    />
+
+                    <rect
+                        x="3"
+                        y="14"
+                        width="7"
+                        height="7"
+                    />
+
+                </svg>
+
+                <span>Dashboard</span>
+
+            </a>
+
+
+            <a
+                href="appointments.html"
+                class="menu-item"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+
+                    <rect
+                        x="3"
+                        y="4"
+                        width="18"
+                        height="18"
+                        rx="2"
+                    />
+
+                    <line
+                        x1="16"
+                        y1="2"
+                        x2="16"
+                        y2="6"
+                    />
+
+                    <line
+                        x1="8"
+                        y1="2"
+                        x2="8"
+                        y2="6"
+                    />
+
+                    <line
+                        x1="3"
+                        y1="10"
+                        x2="21"
+                        y2="10"
+                    />
+
+                </svg>
+
+                <span>Appointments</span>
+
+            </a>
+
+
+            <a
+                href="queue.html"
+                class="menu-item"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+
+                    <rect
+                        x="2"
+                        y="6"
+                        width="20"
+                        height="12"
+                        rx="2"
+                    />
+
+                    <line
+                        x1="6"
+                        y1="12"
+                        x2="18"
+                        y2="12"
+                    />
+
+                    <line
+                        x1="6"
+                        y1="8"
+                        x2="6"
+                        y2="16"
+                    />
+
+                    <line
+                        x1="18"
+                        y1="8"
+                        x2="18"
+                        y2="16"
+                    />
+
+                </svg>
+
+                <span>Queue / Token</span>
+
+            </a>
+
+
+            <a
+                href="crowd.html"
+                class="menu-item"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+
+                    <path
+                        d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                    />
+
+                    <circle
+                        cx="9"
+                        cy="7"
+                        r="4"
+                    />
+
+                    <path
+                        d="M23 21v-2a4 4 0 0 0-3-3.87"
+                    />
+
+                    <path
+                        d="M16 3.13a4 4 0 0 1 0 7.75"
+                    />
+
+                </svg>
+
+                <span>Crowd Status</span>
+
+            </a>
+
+
+            <a
+                href="crowd-forecast.html"
+                class="menu-item"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+
+                    <path
+                        d="M3 3v18h18"
+                    />
+
+                    <path
+                        d="M7 16l4-5 3 3 5-7"
+                    />
+
+                </svg>
+
+                <span>Crowd Forecast</span>
+
+            </a>
+
+
+            <a
+                href="profile.html"
+                class="menu-item"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+
+                    <path
+                        d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
+                    />
+
+                    <circle
+                        cx="12"
+                        cy="7"
+                        r="4"
+                    />
+
+                </svg>
+
+                <span>Profile</span>
+
+            </a>
+
+
+            <a
+                href="arcade.html"
+                class="menu-item active"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+
+                    <rect
+                        x="3"
+                        y="5"
+                        width="18"
+                        height="14"
+                        rx="3"
+                    />
+
+                    <line
+                        x1="8"
+                        y1="12"
+                        x2="11"
+                        y2="12"
+                    />
+
+                    <line
+                        x1="9.5"
+                        y1="10.5"
+                        x2="9.5"
+                        y2="13.5"
+                    />
+
+                    <circle
+                        cx="16"
+                        cy="10"
+                        r="1"
+                    />
+
+                    <circle
+                        cx="18"
+                        cy="13"
+                        r="1"
+                    />
+
+                </svg>
+
+                <span>Arcade</span>
+
+            </a>
+
+
+            <a
+                href="notifications.html"
+                class="menu-item"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+
+                    <path
+                        d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
+                    />
+
+                    <path
+                        d="M13.73 21a2 2 0 0 1-3.46 0"
+                    />
+
+                </svg>
+
+                <span>Notifications</span>
+
+            </a>
+
+        </nav>
+
+
+        <div class="sidebar-footer">
+
+            <a
+                href="index.html"
+                class="menu-item"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+
+                    <path
+                        d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
+                    />
+
+                    <polyline
+                        points="16 17 21 12 16 7"
+                    />
+
+                    <line
+                        x1="21"
+                        y1="12"
+                        x2="9"
+                        y2="12"
+                    />
+
+                </svg>
+
+                <span>Logout</span>
+
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+
+    <main class="main-content">
+
+
+        <header class="top-header">
+
+            <div class="header-left">
+
+                <div class="search-bar">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <circle
+                            cx="11"
+                            cy="11"
+                            r="8"
+                        />
+
+                        <line
+                            x1="21"
+                            y1="21"
+                            x2="16.65"
+                            y2="16.65"
+                        />
+
+                    </svg>
+
+                    <input
+                        type="text"
+                        placeholder="Search services..."
+                    >
+
+                </div>
+
+
+                <div class="header-tabs">
+
+                    <a
+                        href="dashboard.html"
+                        class="header-tab"
+                    >
+                        Overview
+                    </a>
+
+                    <a
+                        href="analytics.html"
+                        class="header-tab"
+                    >
+                        Analytics
+                    </a>
+
+                    <a
+                        href="reports.html"
+                        class="header-tab"
+                    >
+                        Reports
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <div class="header-right">
+
+
+                <button
+                    class="icon-btn"
+                    title="Help Centre"
+                    onclick="window.location.href='help.html'"
+                >
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <circle
+                            cx="12"
+                            cy="12"
+                            r="10"
+                        />
+
+                        <path
+                            d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+                        />
+
+                        <line
+                            x1="12"
+                            y1="17"
+                            x2="12.01"
+                            y2="17"
+                        />
+
+                    </svg>
+
+                </button>
+
+
+                <button
+                    class="icon-btn"
+                    title="View alerts"
+                    onclick="window.location.href='notifications.html'"
+                >
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <path
+                            d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
+                        />
+
+                        <path
+                            d="M13.73 21a2 2 0 0 1-3.46 0"
+                        />
+
+                    </svg>
+
+                    <span class="notification-dot"></span>
+
+                </button>
+
+
+                <div class="profile-badge">
+
+                    <div
+                        class="profile-avatar"
+                        id="arcadeProfileAvatar"
+                    >
+                        A
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- =====================================================
+             ARCADE BODY
+        ====================================================== -->
+
+        <div class="dashboard-body arcade-body">
+
+
+            <div class="arcade-hero">
+
+                <h2>
+                    🎮 Arcade
+                </h2>
+
+                <p>
+                    Make your waiting time useful, relaxing, and fun.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 LIVE QUEUE
+            ================================================== -->
+
+            <div class="arcade-queue-card">
+
+
+                <div class="arcade-queue-item">
+
+                    <span class="arcade-queue-label">
+                        Your Token
+                    </span>
+
+                    <span
+                        class="arcade-queue-value"
+                        id="arcadeUserToken"
+                    >
+                        Loading...
+                    </span>
+
+                </div>
+
+
+                <div class="arcade-queue-item">
+
+                    <span class="arcade-queue-label">
+                        Estimated Wait
+                    </span>
+
+                    <span
+                        class="arcade-queue-value"
+                        id="arcadeWaitTime"
+                    >
+                        Loading...
+                    </span>
+
+                </div>
+
+
+                <div class="arcade-queue-item">
+
+                    <span class="arcade-queue-label">
+                        Currently Serving
+                    </span>
+
+                    <span
+                        class="arcade-queue-value"
+                        id="arcadeServingToken"
+                    >
+                        Loading...
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="arcade-queue-status"
+                    id="arcadeQueueMessage"
+                    style="grid-column: 1 / -1;"
+                >
+                    Updating your live queue status...
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 OPTIONS
+            ================================================== -->
+
+            <h3 class="arcade-section-title">
+                Choose how you want to spend your wait
+            </h3>
+
+
+            <div class="arcade-grid">
+
+
+                <!-- =================================================
+                     ARTICLES
+                ================================================== -->
+
+                <div
+                    class="arcade-card"
+                    id="arcadeArticles"
+                    data-section="articles"
+                >
+
+                    <span
+                        class="arcade-card-rank"
+                        id="arcadeArticlesRank"
+                    >
+                        Recommended
+                    </span>
+
+                    <div class="arcade-card-icon">
+                        📰
+                    </div>
+
+                    <h3>
+                        Articles
+                    </h3>
+
+                    <p>
+                        Explore useful health and awareness
+                        articles while you wait.
+                    </p>
+
+                    <span
+                        class="arcade-card-fit"
+                        id="arcadeArticlesFit"
+                    >
+                        Waiting for queue context...
+                    </span>
+
+                    <span class="arcade-card-meta">
+                        Explore articles →
+                    </span>
+
+                </div>
+
+
+                <!-- =================================================
+                     WELLNESS
+                ================================================== -->
+
+                <div
+                    class="arcade-card"
+                    id="arcadeWellness"
+                    data-section="wellness"
+                >
+
+                    <span
+                        class="arcade-card-rank"
+                        id="arcadeWellnessRank"
+                    >
+                        Recommended
+                    </span>
+
+                    <div class="arcade-card-icon">
+                        🧘
+                    </div>
+
+                    <h3>
+                        Wellness
+                    </h3>
+
+                    <p>
+                        Try breathing, mindfulness, relaxation,
+                        and simple waiting-room activities.
+                    </p>
+
+                    <span
+                        class="arcade-card-fit"
+                        id="arcadeWellnessFit"
+                    >
+                        Waiting for queue context...
+                    </span>
+
+                    <span class="arcade-card-meta">
+                        Take a moment →
+                    </span>
+
+                </div>
+
+
+                <!-- =================================================
+                     CHALLENGES
+                ================================================== -->
+
+                <div
+                    class="arcade-card"
+                    id="arcadeChallenges"
+                    data-section="challenges"
+                >
+
+                    <span
+                        class="arcade-card-rank"
+                        id="arcadeChallengesRank"
+                    >
+                        Recommended
+                    </span>
+
+                    <div class="arcade-card-icon">
+                        🏆
+                    </div>
+
+                    <h3>
+                        Challenges
+                    </h3>
+
+                    <p>
+                        Take daily brain, knowledge, or wellness
+                        challenges and earn achievements.
+                    </p>
+
+                    <span
+                        class="arcade-card-fit"
+                        id="arcadeChallengesFit"
+                    >
+                        Waiting for queue context...
+                    </span>
+
+                    <span class="arcade-card-meta">
+                        View challenges →
+                    </span>
+
+                </div>
+
+
+                <!-- =================================================
+                     MINI GAMES
+                ================================================== -->
+
+                <div
+                    class="arcade-card"
+                    id="arcadeGames"
+                    data-section="games"
+                >
+
+                    <span
+                        class="arcade-card-rank"
+                        id="arcadeGamesRank"
+                    >
+                        Recommended
+                    </span>
+
+                    <div class="arcade-card-icon">
+                        🎮
+                    </div>
+
+                    <h3>
+                        Mini Games
+                    </h3>
+
+                    <p>
+                        Play quick games designed for short
+                        waiting periods.
+                    </p>
+
+                    <span
+                        class="arcade-card-fit"
+                        id="arcadeGamesFit"
+                    >
+                        Waiting for queue context...
+                    </span>
+
+                    <span class="arcade-card-meta">
+                        Play a game →
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 DYNAMIC RECOMMENDATION
+            ================================================== -->
+
+            <div class="arcade-recommendation">
+
+                <h3 id="arcadeRecommendationTitle">
+                    Finding something suitable for your wait...
+                </h3>
+
+                <p id="arcadeRecommendationText">
+                    Your recommendation will update using your
+                    current queue waiting time.
+                </p>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- =====================================================
+     API + SHARED HELPERS
+====================================================== -->
+
+<script src="js/api.js"></script>
+<script src="js/shared.js"></script>
+
+<!-- WaitWise -->
+<script src="js/arcade.js"></script>
+
+</body>
+
+</html>
