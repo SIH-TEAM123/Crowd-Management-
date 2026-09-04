@@ -820,6 +820,18 @@
 
             </div>
 
+            <div class="input-group" style="margin-top:1rem;">
+                <label for="apptPriority" style="display:block;margin-bottom:0.35rem;font-weight:600;font-size:0.875rem;color:#334155;">
+                    Priority Level
+                </label>
+                <select id="apptPriority" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:0.95rem;background:#f8fafc;outline:none;font-weight:500;">
+                    <option value="NORMAL" selected>Normal Queue (FCFS)</option>
+                    <option value="EMERGENCY">Emergency Priority (Immediate Care)</option>
+                    <option value="VULNERABLE">Senior / Differently Abled</option>
+                    <option value="TIME_CRITICAL">Time-Critical Consultation</option>
+                </select>
+            </div>
+
 
             <div
                 class="form-row"
@@ -906,6 +918,7 @@
 
 <script src="js/api.js"></script>
 <script src="js/shared.js"></script>
+<script src="js/i18n.js"></script>
 
 </body>
 </html>

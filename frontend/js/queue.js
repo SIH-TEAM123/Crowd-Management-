@@ -482,7 +482,25 @@ document.addEventListener(
 
         VIZITOR.wireCommonNav();
 
-        loadQueueStatus();
+
+    const btnViewQR = document.getElementById("btnViewQR");
+    if (btnViewQR) {
+        btnViewQR.addEventListener("click", async () => {
+            const data = await VIZITOR.getQueueStatus();
+            const apptId = data?.you?.appointment_id;
+            if (!apptId) {
+                alert("No active appointment found for your token pass.");
+                return;
+            }
+            if (typeof showQRPassModal === "function") {
+                showQRPassModal(apptId, data.you.token_display, data.you.purpose, data.you.appointment_date);
+            } else {
+                window.open(`${API_BASE_URL}/appointments/${apptId}/qr/svg`, "_blank");
+            }
+        });
+    }
+
+    loadQueueStatus();
 
         setInterval(
             loadQueueStatus,
@@ -503,7 +521,25 @@ document.addEventListener(
 
                     VIZITOR.clearSimulationState();
 
-                    await loadQueueStatus();
+                    await
+    const btnViewQR = document.getElementById("btnViewQR");
+    if (btnViewQR) {
+        btnViewQR.addEventListener("click", async () => {
+            const data = await VIZITOR.getQueueStatus();
+            const apptId = data?.you?.appointment_id;
+            if (!apptId) {
+                alert("No active appointment found for your token pass.");
+                return;
+            }
+            if (typeof showQRPassModal === "function") {
+                showQRPassModal(apptId, data.you.token_display, data.you.purpose, data.you.appointment_date);
+            } else {
+                window.open(`${API_BASE_URL}/appointments/${apptId}/qr/svg`, "_blank");
+            }
+        });
+    }
+
+    loadQueueStatus();
                 }
             );
         }

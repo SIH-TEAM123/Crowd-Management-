@@ -61,16 +61,7 @@ from app.routes.maternal_child import router as maternal_child_router
 from app.routes.chronic_disease import router as chronic_disease_router
 from app.routes.follow_up import router as follow_up_router
 
-# Healthcare - Offline Capabilities
-from app.routes.facilities import router as facilities_router
-from app.routes.departments import router as departments_router
-from app.routes.specialists import router as specialists_router
-from app.routes.diagnostics import router as diagnostics_router
-from app.routes.medicines import router as medicines_router
-from app.routes.referrals import router as referrals_router
-from app.routes.operational_state import router as operational_state_router
-from app.routes.routing import router as routing_router
-from app.routes.sms import router as sms_router
+# Offline capabilities routes imported above
 
 
 # ============================================================
@@ -151,15 +142,6 @@ app.include_router(articles_router)
 
 # Arcade
 app.include_router(arcade_router)
-app.include_router(facilities_router)
-app.include_router(specialists_router)
-app.include_router(departments_router)
-app.include_router(diagnostics_router)
-app.include_router(medicines_router)
-app.include_router(referrals_router)
-app.include_router(operational_state_router)
-app.include_router(routing_router)
-app.include_router(sms_router)
 
 # ============================================================
 # HEALTHCARE ROUTES - T50

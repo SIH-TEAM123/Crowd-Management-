@@ -112,6 +112,42 @@ const VIZITOR = (() => {
         }
     }
 
+    async function apiPost(path, body = {}) {
+        const headers = authHeaders();
+        if (!headers) {
+            return null;
+        }
+
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}${path}`,
+                {
+                    method: "POST",
+                    headers,
+                    body: JSON.stringify(body),
+                }
+            );
+
+            if (response.status === 401) {
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("isAuthenticated");
+                window.location.href = "index.html";
+                return null;
+            }
+
+            const data = await response.json();
+            if (!response.ok) {
+                console.error(`POST ${path} failed:`, data);
+                return null;
+            }
+            return data;
+        } catch (error) {
+            console.error(`POST ${path} error:`, error);
+            return null;
+        }
+    }
+
+
 
     // ========================================================
     // USER / APPOINTMENTS
@@ -174,6 +210,24 @@ const VIZITOR = (() => {
     }
 
 
+
+    async function startSimulation(numUsers = 50, serviceRateMinutes = 4.0) {
+        try {
+            const result = await apiPost("/appointments/queue/simulate", {
+                num_users: Number(numUsers) || 50,
+                service_rate_minutes: Number(serviceRateMinutes) || 4.0
+            });
+            if (result && result.success) {
+                setSimulationState(result);
+                window.dispatchEvent(new CustomEvent("vizitorSimulationUpdated", { detail: result }));
+            }
+            return result;
+        } catch (error) {
+            console.error("VIZITOR startSimulation error:", error);
+            return null;
+        }
+    }
+
     function setSimulationState(state) {
 
         try {
@@ -209,11 +263,16 @@ const VIZITOR = (() => {
     }
 
 
-    function clearSimulationState() {
-
+    async function clearSimulationState() {
         localStorage.removeItem(
             SIMULATION_STORAGE_KEY
         );
+
+        try {
+            await apiPost("/appointments/queue/simulation/reset", {});
+        } catch (e) {
+            console.warn("Backend reset notice:", e);
+        }
 
         window.dispatchEvent(
             new CustomEvent(
@@ -722,20 +781,30 @@ const VIZITOR = (() => {
     // ========================================================
 
     async function getQueueStatus() {
+        // ALWAYS query the authoritative backend queue status
+        const data = await apiGet("/appointments/queue/status");
 
-        const simulation =
-            getSimulationState();
-
-        if (simulation) {
-
-            return buildSimulationQueueStatus(
-                simulation
-            );
+        if (data) {
+            // Cache to offline DB if supported
+            if (window.OfflineDB && typeof window.OfflineDB.putRecord === "function") {
+                try {
+                    await window.OfflineDB.putRecord("meta", { key: "last_queue_status", data: data });
+                } catch (e) { /* ignore cache error */ }
+            }
+            return data;
         }
 
-        return apiGet(
-            "/appointments/queue/status"
-        );
+        // Offline fallback: attempt to read cached queue status
+        if (window.OfflineDB && typeof window.OfflineDB.getRecord === "function") {
+            try {
+                const cached = await window.OfflineDB.getRecord("meta", "last_queue_status");
+                if (cached && cached.data) {
+                    return { ...cached.data, _offline_cached: true };
+                }
+            } catch (e) { /* ignore */ }
+        }
+
+        return null;
     }
 
 
@@ -1694,6 +1763,8 @@ const VIZITOR = (() => {
         requireAuthOrRedirect,
         authHeaders,
         apiGet,
+        apiPost,
+        startSimulation,
 
         getCurrentUser,
         getAppointments,

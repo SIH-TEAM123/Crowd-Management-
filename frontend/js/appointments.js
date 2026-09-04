@@ -4,7 +4,7 @@
 // ============================================================
 
 const APPOINTMENTS_API_URL =
-    "https://vizitor.onrender.com/appointments";
+    (window.API_BASE_URL || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://127.0.0.1:8000" : "https://vizitor.onrender.com")) + "/appointments";
 
 
 // ============================================================
@@ -150,7 +150,8 @@ async function createToken(priorityType = "NORMAL") {
                 body: JSON.stringify({
                     purpose: purpose,
                     appointment_date: appointmentDate,
-                    appointment_time: appointmentTime
+                    appointment_time: appointmentTime,
+                    priority_type: priorityType || "NORMAL"
                 })
             }
         );
@@ -656,6 +657,15 @@ function renderUpcomingAppointment(
 
 
         <div class="appt-card-actions">
+
+            <button
+                class="btn-action-ghost"
+                data-action="qr"
+                style="margin-right:0.35rem;">
+
+                QR Pass
+
+            </button>
 
             <button
                 class="btn-action-ghost"
@@ -2245,9 +2255,11 @@ async function handleBookingSubmit(e) {
 
     try {
 
+        const priorityEl = document.getElementById("apptPriority");
+        const selectedPriority = priorityEl ? priorityEl.value : "NORMAL";
         result =
             await createToken(
-                "NORMAL"
+                selectedPriority
             );
 
     } catch (error) {
@@ -2774,3 +2786,46 @@ document.addEventListener(
         );
     }
 );
+
+async function showQRPassModal(appointmentId, tokenDisplay, serviceName, apptDate) {
+    let modal = document.getElementById("vizitorQRModal");
+    if (!modal) {
+        modal = document.createElement("div");
+        modal.id = "vizitorQRModal";
+        modal.className = "modal-backdrop";
+        document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = `
+        <div class="modal-card" style="max-width:380px;text-align:center;padding:1.5rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <h3 style="margin:0;font-size:1.15rem;color:#1e293b;">Digital QR Token Pass</h3>
+                <button type="button" class="modal-close-btn" onclick="document.getElementById('vizitorQRModal').style.display='none'">&times;</button>
+            </div>
+            <div id="qrModalContent" style="padding:1rem 0;">
+                <div style="color:#64748b;font-size:0.9rem;">Loading QR Pass...</div>
+            </div>
+            <div style="background:#f8fafc;padding:0.75rem;border-radius:8px;margin-top:0.75rem;border:1px solid #e2e8f0;">
+                <div style="font-size:1.25rem;font-weight:700;color:#7c3aed;">${escapeHTML(tokenDisplay || "Confirmed")}</div>
+                <div style="font-size:0.85rem;color:#475569;margin-top:0.25rem;">${escapeHTML(serviceName || "Consultation")} • ${escapeHTML(apptDate || "Today")}</div>
+            </div>
+            <button class="btn-primary" style="margin-top:1rem;width:100%;" onclick="document.getElementById('vizitorQRModal').style.display='none'">Done</button>
+        </div>
+    `;
+    modal.style.display = "flex";
+
+    try {
+        const res = await fetch(`${APPOINTMENTS_API_URL}/${encodeURIComponent(appointmentId)}/qr`, {
+            headers: (typeof VIZITOR !== "undefined" && VIZITOR.authHeaders) ? VIZITOR.authHeaders() : {}
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const qrBox = document.getElementById("qrModalContent");
+            if (qrBox && data.qr_svg) {
+                qrBox.innerHTML = data.qr_svg;
+            }
+        }
+    } catch (e) {
+        console.error("Failed to load QR pass:", e);
+    }
+}

@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    const API_BASE_URL = "https://vizitor.onrender.com";
+    const API_BASE_URL = window.API_BASE_URL || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://127.0.0.1:8000" : "https://vizitor.onrender.com");
 
     const refreshButton =
         document.getElementById("btnRefreshForecast");
@@ -86,10 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
          * Once real queue > 0, the real queue is used.
          */
 
-        const currentQueue =
-            backendQueue > 0
-                ? backendQueue
-                : 20;
+        const currentQueue = backendQueue;
 
 
         // =================================================

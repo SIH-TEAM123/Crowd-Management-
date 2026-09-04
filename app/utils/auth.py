@@ -57,3 +57,30 @@ async def get_current_user(
         )
 
     return user
+
+
+security_optional = HTTPBearer(auto_error=False)
+
+
+async def get_current_user_optional(
+    credentials: HTTPAuthorizationCredentials = Depends(security_optional),
+    db: AsyncSession = Depends(get_db)
+):
+    if credentials is None or not credentials.credentials:
+        return None
+    try:
+        payload = decode_access_token(credentials.credentials)
+        if payload is None:
+            return None
+        user_id = payload.get("sub")
+        if user_id is None:
+            return None
+        result = await db.execute(
+            select(User).where(User.user_id == user_id)
+        )
+        user = result.scalar_one_or_none()
+        if user is None or not user.is_verified:
+            return None
+        return user
+    except Exception:
+        return None

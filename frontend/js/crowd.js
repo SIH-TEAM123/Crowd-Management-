@@ -1010,6 +1010,8 @@ async function runSimulation(
         // Save temporary overlay.
         // ------------------------------------------------------
 
+        await VIZITOR.startSimulation(syntheticUsers, serviceMinutesPerPerson);
+
         VIZITOR.setSimulationState({
 
             real_user_token:

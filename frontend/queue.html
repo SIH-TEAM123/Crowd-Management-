@@ -340,6 +340,15 @@
 
                 <div class="welcome-actions">
 
+                    <button class="btn-report" id="btnViewQR" style="margin-right:0.5rem;background:#7c3aed;color:#fff;border-color:#7c3aed;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;margin-right:4px;">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        View QR Pass
+                    </button>
                     <button class="btn-report" id="btnViewAppt">
 
                         <svg viewBox="0 0 24 24"
@@ -395,7 +404,7 @@
 
                         <span class="token-number-large"
                               id="userToken">
-                            A-104
+                            --
                         </span>
 
                         <span class="token-label">
@@ -432,7 +441,7 @@
 
                         <span class="serving-number-large"
                               id="currentToken">
-                            A-087
+                            A-114
                         </span>
 
                         <span class="token-label">
@@ -546,7 +555,7 @@
 
                         <div class="qp-circle serving"
                              title="Currently serving">
-                            A-087
+                            A-114
                         </div>
 
                         <span class="qp-sub">
@@ -580,7 +589,7 @@
 
                         <div class="qp-circle user"
                              title="Your token">
-                            A-104
+                            --
                         </div>
 
                         <span class="qp-sub">
@@ -731,6 +740,7 @@
 
 <script src="js/api.js"></script>
 <script src="js/shared.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/queue.js"></script>
 
 </body>

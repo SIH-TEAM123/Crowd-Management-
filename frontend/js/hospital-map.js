@@ -7,8 +7,11 @@
 
     // api.js already defines this globally
     const API_URL =
+        window.API_BASE_URL ||
         window.VIZITOR_API_URL ||
-        "https://vizitor.onrender.com";
+        (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+            ? "http://127.0.0.1:8000"
+            : "https://vizitor.onrender.com");
 
     const DEFAULT_LOCATION = {
         latitude: 19.8135,
