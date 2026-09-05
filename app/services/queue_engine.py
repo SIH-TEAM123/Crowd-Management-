@@ -232,14 +232,14 @@ class QueueEngine:
 
             if not due_appointments:
                 if active:
-                    # Upcoming appointments for today/future: first one is next in line
-                    currently_serving_appt = None
-                    currently_serving_id = None
-                    current_index = -1
+                    # Upcoming appointments for today/future: first one in line is actively called/served
+                    currently_serving_appt = active[0]
+                    currently_serving_id = currently_serving_appt.appointment_id
+                    current_index = 0
                     remaining_current_service = 0.0
-                    currently_serving_token_num = None
-                    currently_serving_display = None
-                    waiting_appointments = list(active)
+                    currently_serving_token_num = (self.TOKEN_START - 1) + currently_serving_id
+                    currently_serving_display = self.format_token(currently_serving_token_num)
+                    waiting_appointments = active[1:]
                 else:
                     # Only simulation active
                     currently_serving_appt = None
@@ -270,7 +270,7 @@ class QueueEngine:
                 serving_idx = active.index(currently_serving_appt) if currently_serving_appt in active else -1
                 waiting_appointments = active[serving_idx + 1:] if serving_idx >= 0 else []
 
-            real_queue_size = len(waiting_appointments)
+            real_queue_size = len(active)
 
             # Simulation Progression (if active)
             sim_synthetic_remaining = 0
@@ -324,40 +324,51 @@ class QueueEngine:
             if user_active_appts:
                 my_appt = user_active_appts[0]
                 my_id = my_appt.appointment_id
-                base_my_token_num = (TOKEN_START - 1) + my_id
-                real_position = active.index(my_appt) + 1 if my_appt in active else None
+                base_my_token_num = self.token_number_for(my_id)
+                my_idx = active.index(my_appt) if my_appt in active else -1
+                real_position = (my_idx + 1) if my_idx >= 0 else None
 
-                if currently_serving_id is not None and my_id < currently_serving_id:
-                    my_status = "SERVED"
-                    people_ahead = 0
-                    my_wait = 0.0
-                    my_token_num = base_my_token_num
-                elif currently_serving_id is not None and my_id == currently_serving_id:
-                    my_status = "BEING_SERVED"
-                    people_ahead = 0
-                    my_wait = 0.0
-                    my_token_num = currently_serving_token_num
+                # People strictly ahead in the queue sequence
+                if my_idx >= 0 and current_index >= 0:
+                    real_ahead = max(0, my_idx - current_index)
                 else:
+                    real_ahead = max(0, len([a for a in active if a.appointment_id < my_id]))
+
+                if self.simulation_active and sim_synthetic_remaining > 0:
                     my_status = "WAITING"
-                    if currently_serving_id is None:
-                        real_ahead = len([a for a in active if a.appointment_id < my_id])
-                    else:
-                        real_ahead = len([a for a in active if currently_serving_id < a.appointment_id < my_id])
-
                     people_ahead = real_ahead + sim_synthetic_remaining
-
-                    # Example: Serving 114, 50 ahead -> User receives 114 + 50 + 1 = 165
-                    if self.simulation_active and sim_synthetic_remaining > 0:
-                        my_token_num = currently_serving_token_num + people_ahead + 1
-                    else:
-                        my_token_num = base_my_token_num
-
+                    my_token_num = (currently_serving_token_num or self.TOKEN_START) + people_ahead + 1
                     my_wait = round(
                         remaining_current_service + (people_ahead * rate_minutes),
                         1
                     )
+                else:
+                    if my_idx >= 0 and current_index >= 0:
+                        if my_idx < current_index:
+                            my_status = "SERVED"
+                            people_ahead = 0
+                            my_wait = 0.0
+                            my_token_num = base_my_token_num
+                        elif my_idx == current_index:
+                            my_status = "BEING_SERVED"
+                            people_ahead = 0
+                            my_wait = 0.0
+                            my_token_num = currently_serving_token_num or base_my_token_num
+                        else:
+                            my_status = "WAITING"
+                            people_ahead = real_ahead
+                            my_wait = round(
+                                remaining_current_service + (max(0, people_ahead - 1) * rate_minutes),
+                                1
+                            )
+                            my_token_num = base_my_token_num
+                    else:
+                        my_status = "WAITING"
+                        people_ahead = real_ahead
+                        my_wait = round(remaining_current_service + (people_ahead * rate_minutes), 1)
+                        my_token_num = base_my_token_num
 
-                assigned_counter_num = ((my_token_num - TOKEN_START) % 4) + 1
+                assigned_counter_num = ((my_token_num - self.TOKEN_START) % 4) + 1
                 assigned_counter_name = f"Counter {assigned_counter_num}"
 
                 you_data = {

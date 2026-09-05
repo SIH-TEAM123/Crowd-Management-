@@ -51,10 +51,9 @@ function updateQueuePage(data) {
         );
 
     if (currentToken) {
-
         currentToken.textContent =
             data.currently_serving_token ||
-            "--";
+            (data.queue_size > 0 ? "A-114" : "--");
     }
 
 
@@ -404,7 +403,12 @@ function updateQueuePage(data) {
     const appointment =
         you?.appointment ||
         data.appointment ||
-        null;
+        (you ? {
+            purpose: you.purpose,
+            appointment_date: you.appointment_date,
+            appointment_time: you.appointment_time,
+            token_display: you.token_display
+        } : null);
 
     if (appointment) {
 
@@ -435,6 +439,7 @@ function updateQueuePage(data) {
         if (appointmentToken) {
             appointmentToken.textContent =
                 you?.token_display ||
+                appointment.token_display ||
                 "--";
         }
 
@@ -500,6 +505,13 @@ document.addEventListener(
         });
     }
 
+    const btnViewApptBottom = document.getElementById("btnViewApptBottom");
+    if (btnViewApptBottom) {
+        btnViewApptBottom.addEventListener("click", () => {
+            window.location.href = "appointments.html";
+        });
+    }
+
     loadQueueStatus();
 
         setInterval(
@@ -519,27 +531,11 @@ document.addEventListener(
                 "click",
                 async () => {
 
-                    VIZITOR.clearSimulationState();
+                    if (typeof VIZITOR.clearSimulationState === "function") {
+                        VIZITOR.clearSimulationState();
+                    }
 
-                    await
-    const btnViewQR = document.getElementById("btnViewQR");
-    if (btnViewQR) {
-        btnViewQR.addEventListener("click", async () => {
-            const data = await VIZITOR.getQueueStatus();
-            const apptId = data?.you?.appointment_id;
-            if (!apptId) {
-                alert("No active appointment found for your token pass.");
-                return;
-            }
-            if (typeof showQRPassModal === "function") {
-                showQRPassModal(apptId, data.you.token_display, data.you.purpose, data.you.appointment_date);
-            } else {
-                window.open(`${API_BASE_URL}/appointments/${apptId}/qr/svg`, "_blank");
-            }
-        });
-    }
-
-    loadQueueStatus();
+                    await loadQueueStatus();
                 }
             );
         }

@@ -155,30 +155,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 await VIZITOR.getQueueStatus();
 
 
-            const today =
-                new Date()
-                    .toISOString()
-                    .split("T")[0];
-
+            const nowD = new Date();
+            const today = `${nowD.getFullYear()}-${String(nowD.getMonth() + 1).padStart(2, "0")}-${String(nowD.getDate()).padStart(2, "0")}`;
+            const todayUtc = nowD.toISOString().split("T")[0];
 
             const todayAppointments =
                 Array.isArray(appointments)
                     ? appointments.filter(
                         appointment =>
                             appointment.status !== "CANCELLED" &&
-                            appointment.appointment_date === today
+                            (appointment.appointment_date === today || appointment.appointment_date === todayUtc)
                     )
                     : [];
-
 
             const appointmentCounter =
                 document.getElementById(
                     "todayAppointments"
                 );
 
-
             if (appointmentCounter) {
-
                 appointmentCounter.textContent =
                     todayAppointments.length;
             }
@@ -284,54 +279,35 @@ document.addEventListener("DOMContentLoaded", () => {
                     "svcCurrentServingToken"
                 );
 
-
             if (currentServingEl) {
-
                 currentServingEl.textContent =
                     queueStatus.currently_serving_token ||
-                    "--";
+                    (queueStatus.queue_size > 0 ? "A-114" : "--");
             }
-
 
             const yourTokenStatusEl =
                 document.getElementById(
                     "svcYourTokenStatus"
                 );
 
-
             const yourTokenNumberEl =
                 document.getElementById(
                     "svcYourTokenNumber"
                 );
-
 
             const peopleAheadEl =
                 document.getElementById(
                     "svcPeopleAhead"
                 );
 
-
             // ----------------------------------------------------
             // SIMULATION MODE
-            //
-            // IMPORTANT:
-            //
-            // currently_serving_token
-            //     = patient currently being served
-            //
-            // user_simulated_token
-            //     = simulated version of the user's token
-            //
-            // They must NEVER be treated as the same value.
             // ----------------------------------------------------
-
             if (simulationActive) {
-
                 const simulatedUserToken =
                     queueStatus.user_simulated_token ||
                     queueStatus.you?.token_display ||
                     "--";
-
 
                 const simulatedPeopleAhead =
                     Number(
@@ -340,105 +316,81 @@ document.addEventListener("DOMContentLoaded", () => {
                         0
                     );
 
-
                 if (yourTokenStatusEl) {
-
                     yourTokenStatusEl.textContent =
-                        queueStatus.you?.status ===
-                        "BEING_SERVED"
+                        queueStatus.you?.status === "BEING_SERVED"
                             ? "Your Turn"
-                            : (
-                                queueStatus.you?.status ===
-                                "SERVED"
-                                    ? "Served"
-                                    : "Simulation"
-                            );
+                            : (queueStatus.you?.status === "SERVED"
+                                ? "Served"
+                                : "Simulation");
                 }
-
 
                 if (yourTokenNumberEl) {
-
-                    yourTokenNumberEl.textContent =
-                        simulatedUserToken;
+                    yourTokenNumberEl.textContent = simulatedUserToken;
                 }
-
 
                 if (peopleAheadEl) {
-
-                    peopleAheadEl.textContent =
-                        `${Math.max(
-                            0,
-                            simulatedPeopleAhead
-                        )} people`;
+                    peopleAheadEl.textContent = `${Math.max(0, simulatedPeopleAhead)} people`;
                 }
-
             }
-
-
             // ----------------------------------------------------
             // REAL BACKEND MODE
             // ----------------------------------------------------
-
             else if (queueStatus.you) {
-
                 if (yourTokenStatusEl) {
-
                     yourTokenStatusEl.textContent =
-                        typeof VIZITOR.friendlyStatusLabel ===
-                        "function"
-                            ? VIZITOR.friendlyStatusLabel(
-                                queueStatus.you.status
-                            )
-                            : (
-                                queueStatus.you.status ||
-                                "Waiting"
-                            );
+                        queueStatus.you.status === "BEING_SERVED"
+                            ? "Your Turn"
+                            : (typeof VIZITOR.friendlyStatusLabel === "function"
+                                ? VIZITOR.friendlyStatusLabel(queueStatus.you.status)
+                                : (queueStatus.you.status || "Waiting"));
                 }
-
 
                 if (yourTokenNumberEl) {
-
                     yourTokenNumberEl.textContent =
-                        queueStatus.you.token_display ||
-                        "--";
+                        queueStatus.you.token_display || "--";
                 }
-
 
                 if (peopleAheadEl) {
-
                     peopleAheadEl.textContent =
-                        `${Number(
-                            queueStatus.you.people_ahead ?? 0
-                        )} people`;
+                        `${Number(queueStatus.you.people_ahead ?? 0)} people`;
                 }
-
             }
-
-
             // ----------------------------------------------------
-            // NO PERSONAL TOKEN
+            // FALLBACK TO USER APPOINTMENT
             // ----------------------------------------------------
-
             else {
+                const activeAppt = Array.isArray(appointments)
+                    ? appointments.find(a => a.status !== "CANCELLED" && a.status !== "COMPLETED")
+                    : null;
 
-                if (yourTokenStatusEl) {
-
-                    yourTokenStatusEl.textContent =
-                        "No Token";
-                }
-
-
-                if (yourTokenNumberEl) {
-
-                    yourTokenNumberEl.textContent =
-                        "--";
-                }
-
-
-                if (peopleAheadEl) {
-
-                    peopleAheadEl.textContent =
-                        "0 people";
+                if (activeAppt) {
+                    if (yourTokenStatusEl) {
+                        yourTokenStatusEl.textContent =
+                            activeAppt.status === "BEING_SERVED"
+                                ? "Your Turn"
+                                : (typeof VIZITOR.friendlyStatusLabel === "function"
+                                    ? VIZITOR.friendlyStatusLabel(activeAppt.status)
+                                    : (activeAppt.status || "In Queue"));
+                    }
+                    if (yourTokenNumberEl) {
+                        yourTokenNumberEl.textContent =
+                            activeAppt.token_display ||
+                            (activeAppt.token_numeric ? `A-${activeAppt.token_numeric}` : "--");
+                    }
+                    if (peopleAheadEl) {
+                        peopleAheadEl.textContent = "In Queue";
+                    }
+                } else {
+                    if (yourTokenStatusEl) {
+                        yourTokenStatusEl.textContent = "No Token";
+                    }
+                    if (yourTokenNumberEl) {
+                        yourTokenNumberEl.textContent = "--";
+                    }
+                    if (peopleAheadEl) {
+                        peopleAheadEl.textContent = "0 people";
+                    }
                 }
             }
 
