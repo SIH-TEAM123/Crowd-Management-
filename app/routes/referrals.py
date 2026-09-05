@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.security import require_admin_or_operator
-from app.database import get_db
+from app.database import get_sync_db
 from app.models.referral import ReferralPriority, ReferralStatus
 from app.schemas.referral import (
     ReferralCreate,
@@ -53,7 +53,7 @@ def _to_referral_response(ref) -> ReferralResponse:
 )
 def create_referral(
     referral_in: ReferralCreate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Register a new patient referral between healthcare facilities."""
@@ -89,7 +89,7 @@ def list_referrals(
     priority: Optional[ReferralPriority] = Query(None, description="Filter by urgency priority"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve referrals across healthcare network facilities."""
     referrals = ReferralService.get_referrals(
@@ -112,7 +112,7 @@ def list_referrals(
 )
 def get_referral(
     referral_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve details and audit history for a single referral."""
     ref = ReferralService.get_referral_by_id(db, referral_id)
@@ -132,7 +132,7 @@ def get_referral(
 def update_referral_status(
     referral_id: str,
     status_update: ReferralStatusUpdate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Advance referral state (CREATED -> ACCEPTED -> IN_PROGRESS -> COMPLETED / FAILED / MISSED).

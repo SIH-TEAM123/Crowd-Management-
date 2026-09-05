@@ -4,7 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.database import get_db
+from app.database import get_sync_db
 from app.models.facility import FacilityType
 from app.models.referral import ReferralPriority
 from app.schemas.routing import (
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/facilities", tags=["Intelligent Facility Routing"])
 )
 def recommend_facilities_post(
     request: FacilityRoutingRequest,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Find and rank suitable healthcare facilities matching complex clinical and geographic requirements."""
     return RoutingService.recommend_facilities(db=db, request=request)
@@ -45,7 +45,7 @@ def recommend_facilities_get(
     source_facility_id: Optional[str] = Query(None, description="Source facility ID to exclude from recommendations"),
     max_distance_km: Optional[float] = Query(None, gt=0.0, description="Max search radius in km"),
     limit: int = Query(10, ge=1, le=100, description="Max recommendations to return"),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Query facility recommendations using URL query parameters."""
     try:

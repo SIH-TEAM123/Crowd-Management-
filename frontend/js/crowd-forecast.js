@@ -719,8 +719,8 @@ if (serviceRatePerCounter > 0) {
                 arrivalRate,
                 serviceRatePerCounter,
                 predictedQueue,
-                queuePerCounter,
-                predictedPerCounter,
+                currentDistribution,
+                predictedDistribution,
                 expectedWait,
                 congestion,
                 confidence

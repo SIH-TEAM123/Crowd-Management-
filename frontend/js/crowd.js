@@ -182,19 +182,22 @@ function renderCrowdStatus(
 
 
     if (levelBadge) {
+        if (typeof VIZITOR !== "undefined" && typeof VIZITOR.renderCrowdBadge === "function") {
+            VIZITOR.renderCrowdBadge(levelBadge, level, queueSize);
+        } else {
+            levelBadge.textContent =
+                level;
 
-        levelBadge.textContent =
-            level;
-
-        levelBadge.className =
-            "card-badge " +
-            (
-                levelClassName === "low"
-                    ? "badge-success"
-                    : levelClassName === "moderate"
-                        ? "badge-warning"
-                        : "badge-danger"
-            );
+            levelBadge.className =
+                "card-badge " +
+                (
+                    levelClassName === "low"
+                        ? "badge-success"
+                        : levelClassName === "moderate"
+                            ? "badge-warning"
+                            : "badge-danger"
+                );
+        }
     }
 
 
@@ -889,37 +892,15 @@ async function runSimulation(
         }
 
 
-        const realYou =
-            realStatus.you;
+        const realYou = realStatus.you;
 
-
-        if (!realYou) {
-
-            throw new Error(
-                "No active appointment was found for the current user."
-            );
-        }
-
-
-        const realUserToken =
-            realYou.token_display;
-
-
-        const realServingToken =
-            realStatus.currently_serving_token ||
-            realUserToken;
-
-
-        if (
-            !VIZITOR.tokenNumber(
-                realUserToken
-            )
-        ) {
-
-            throw new Error(
-                "The real appointment token could not be converted to a numeric queue token."
-            );
-        }
+        const baseTokenNum = realStatus.currently_serving_number || 112;
+        const realUserToken = realYou ? realYou.token_display : ("A-" + (baseTokenNum + (realStatus.queue_size || 0) + 1));
+        const realServingToken = realStatus.currently_serving_token || ("A-" + baseTokenNum);
+        const realAppointmentId = realYou ? realYou.appointment_id : null;
+        const realPurpose = realYou ? realYou.purpose : "General Consultation";
+        const realApptDate = realYou ? realYou.appointment_date : new Date().toISOString().split("T")[0];
+        const realApptTime = realYou ? realYou.appointment_time : "10:00:00";
 
 
         // ------------------------------------------------------
@@ -1021,16 +1002,16 @@ async function runSimulation(
                 realServingToken,
 
             real_appointment_id:
-                realYou.appointment_id,
+                realAppointmentId,
 
             real_purpose:
-                realYou.purpose,
+                realPurpose,
 
             real_appointment_date:
-                realYou.appointment_date,
+                realApptDate,
 
             real_appointment_time:
-                realYou.appointment_time,
+                realApptTime,
 
             base_queue_size:
                 Number(

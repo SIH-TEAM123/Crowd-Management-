@@ -60,6 +60,7 @@ class SimulationRequest(BaseModel):
 # =========================================================
 
 @router.post("")
+@router.post("/")
 async def create_appointment(
     data: AppointmentCreate,
     current_user: User = Depends(get_current_user),
@@ -144,7 +145,7 @@ async def create_appointment(
         "purpose": appointment.purpose,
         "appointment_date": appointment.appointment_date,
         "appointment_time": appointment.appointment_time,
-        "counter": "Counter 1",
+        "counter": f"Counter {((token_number - queue_engine.TOKEN_START) % 4) + 1}",
         "status": appointment.status,
         "priority_type": priority_type,
     }
@@ -155,6 +156,7 @@ async def create_appointment(
 # =========================================================
 
 @router.get("")
+@router.get("/")
 async def get_my_appointments(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

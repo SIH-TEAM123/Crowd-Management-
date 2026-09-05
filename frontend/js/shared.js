@@ -41,23 +41,34 @@ const VIZITOR = (() => {
 
 
     function authHeaders() {
-
-        const token = requireAuthOrRedirect();
-
-        if (!token) {
-            return null;
-        }
-
-        return {
-            "Authorization": `Bearer ${token}`,
+        const token = getAccessToken();
+        const headers = {
             "Content-Type": "application/json"
         };
+        if (token && token !== "DEMO_MODE") {
+            headers["Authorization"] = `Bearer ${token}`;
+        }
+        return headers;
     }
 
 
     // ========================================================
     // API
     // ========================================================
+
+    function shouldRedirectOn401() {
+        const current = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
+        const publicPages = [
+            "index.html",
+            "",
+            "help.html",
+            "signup.html",
+            "verify-otp.html",
+            "forgot-password.html",
+            "reset-password.html"
+        ];
+        return !publicPages.includes(current);
+    }
 
     async function apiGet(path) {
 
@@ -78,12 +89,8 @@ const VIZITOR = (() => {
             );
 
             if (response.status === 401) {
-
                 localStorage.removeItem("access_token");
                 localStorage.removeItem("isAuthenticated");
-
-                window.location.href = "index.html";
-
                 return null;
             }
 
@@ -131,7 +138,6 @@ const VIZITOR = (() => {
             if (response.status === 401) {
                 localStorage.removeItem("access_token");
                 localStorage.removeItem("isAuthenticated");
-                window.location.href = "index.html";
                 return null;
             }
 
@@ -143,6 +149,60 @@ const VIZITOR = (() => {
             return data;
         } catch (error) {
             console.error(`POST ${path} error:`, error);
+            return null;
+        }
+    }
+
+    async function apiPut(path, body = {}) {
+        const headers = authHeaders();
+        if (!headers) return null;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}${path}`, {
+                method: "PUT",
+                headers,
+                body: JSON.stringify(body)
+            });
+
+            if (response.status === 401) {
+                return null;
+            }
+
+            const data = await response.json();
+            if (!response.ok) {
+                console.error(`PUT ${path} failed:`, data);
+                return null;
+            }
+            return data;
+        } catch (error) {
+            console.error(`PUT ${path} error:`, error);
+            return null;
+        }
+    }
+
+    async function apiPatch(path, body = {}) {
+        const headers = authHeaders();
+        if (!headers) return null;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}${path}`, {
+                method: "PATCH",
+                headers,
+                body: JSON.stringify(body)
+            });
+
+            if (response.status === 401) {
+                return null;
+            }
+
+            const data = await response.json();
+            if (!response.ok) {
+                console.error(`PATCH ${path} failed:`, data);
+                return null;
+            }
+            return data;
+        } catch (error) {
+            console.error(`PATCH ${path} error:`, error);
             return null;
         }
     }
@@ -1254,6 +1314,10 @@ const VIZITOR = (() => {
     // ========================================================
 
     async function checkNotificationChanges() {
+        const token = getAccessToken();
+        if (!token || token === "DEMO_MODE") {
+            return;
+        }
 
         try {
 
@@ -1386,36 +1450,45 @@ const VIZITOR = (() => {
                     "BEING_SERVED";
 
 
-                const token =
-                    you.token_display;
+                const token = you.token_display;
+                const counter = you.assigned_counter || (you.counter_number ? `Counter ${you.counter_number}` : "Counter 1");
 
+                // Near Turn Notification (people_ahead <= 2)
+                if (you.status === "WAITING" && you.people_ahead <= 2 && !you._nearTurnNotified) {
+                    you._nearTurnNotified = true;
+                    addNotificationEvent({
+                        id: `near-turn-${token}-${you.appointment_id || "user"}`,
+                        category: "queue",
+                        title: `Turn Approaching — ${token}`,
+                        message: `Your turn is coming up! Token ${token} has been assigned to ${counter}. Please proceed toward the counter.`,
+                        important: true
+                    });
+                }
 
                 if (
                     called &&
                     token &&
                     lastCalledToken !== token
                 ) {
-
-                    lastCalledToken =
-                        token;
-
-
+                    lastCalledToken = token;
                     addNotificationEvent({
+                        id: `called-${token}-${you.appointment_id || "user"}`,
+                        category: "queue",
+                        title: `It's Your Turn! — ${token}`,
+                        message: `Token ${token} is now being served. Please proceed to ${counter} now.`,
+                        important: true
+                    });
+                }
 
-                        id:
-                            `called-${token}-${you.appointment_id || "user"}`,
-
-                        category:
-                            "queue",
-
-                        title:
-                            "Your Token Is Being Called",
-
-                        message:
-                            `Token ${token} is now being served. Proceed to Counter ${you.counter_number || 1}.`,
-
-                        important:
-                            true
+                // Section J: Contextual Arcade Recommendation while waiting
+                if (you.status === "WAITING" && you.people_ahead >= 3 && you.estimated_wait_minutes >= 5 && !you._arcadeSuggested) {
+                    you._arcadeSuggested = true;
+                    addNotificationEvent({
+                        id: `arcade-suggest-${token}`,
+                        category: "wellness",
+                        title: "Waiting for Your Turn?",
+                        message: `You have ~${you.estimated_wait_minutes} min estimated wait. Check out the Arcade for relaxing wellness games while you wait!`,
+                        important: false
                     });
                 }
             }
@@ -1435,6 +1508,10 @@ const VIZITOR = (() => {
 
 
     function startNotificationMonitor() {
+        const token = getAccessToken();
+        if (!token || token === "DEMO_MODE") {
+            return;
+        }
 
         if (
             notificationMonitorStarted
@@ -1754,6 +1831,119 @@ const VIZITOR = (() => {
 
 
     // ========================================================
+    // SHARED QR PASS COMPONENT (SECTION D)
+    // ========================================================
+
+    function showQRPassModal(appointmentId, tokenDisplay, serviceName, apptDate) {
+        let modal = document.getElementById("vizitorQRModal");
+        if (!modal) {
+            modal = document.createElement("div");
+            modal.id = "vizitorQRModal";
+            document.body.appendChild(modal);
+        }
+
+        const passToken = tokenDisplay || "A-114";
+        const passService = serviceName || "General Consultation";
+        const passDate = apptDate || new Date().toISOString().split("T")[0];
+
+        modal.innerHTML = `
+            <div class="vizitor-modal-card" style="position:relative;background:#ffffff;border-radius:16px;max-width:380px;width:90%;margin:auto;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1);text-align:center;font-family:'Inter',system-ui,-apple-system,sans-serif;">
+                <button type="button" class="vizitor-modal-close" style="position:absolute;top:16px;right:16px;background:transparent;border:none;font-size:24px;color:#94a3b8;cursor:pointer;line-height:1;" onclick="document.getElementById('vizitorQRModal').style.display='none'">&times;</button>
+                <div style="font-size:18px;font-weight:700;color:#0f172a;margin-bottom:6px;" data-i18n="qrPassTitle">Digital QR Token Pass</div>
+                <div style="font-size:13px;color:#64748b;margin-bottom:16px;" data-i18n="qrPassSubtitle">Scan at clinic counter kiosk</div>
+
+                <div id="qrModalBox" style="background:#f8fafc;padding:16px;border-radius:12px;border:1px solid #e2e8f0;display:inline-flex;justify-content:center;align-items:center;min-width:200px;min-height:200px;margin-bottom:16px;">
+                    <div id="qrSvgHolder" style="width:180px;height:180px;display:flex;align-items:center;justify-content:center;">
+                        <svg viewBox="0 0 180 180" width="180" height="180" style="max-width:100%;height:auto;">
+                            <rect width="180" height="180" fill="#ffffff" rx="8"/>
+                            <rect x="15" y="15" width="45" height="45" fill="#0f172a" rx="4"/>
+                            <rect x="23" y="23" width="29" height="29" fill="#ffffff" rx="2"/>
+                            <rect x="29" y="29" width="17" height="17" fill="#7c3aed" rx="1"/>
+                            <rect x="120" y="15" width="45" height="45" fill="#0f172a" rx="4"/>
+                            <rect x="128" y="23" width="29" height="29" fill="#ffffff" rx="2"/>
+                            <rect x="134" y="29" width="17" height="17" fill="#7c3aed" rx="1"/>
+                            <rect x="15" y="120" width="45" height="45" fill="#0f172a" rx="4"/>
+                            <rect x="23" y="128" width="29" height="29" fill="#ffffff" rx="2"/>
+                            <rect x="29" y="134" width="17" height="17" fill="#7c3aed" rx="1"/>
+                            <rect x="70" y="20" width="10" height="10" fill="#0f172a"/>
+                            <rect x="85" y="35" width="10" height="10" fill="#7c3aed"/>
+                            <rect x="100" y="20" width="10" height="10" fill="#0f172a"/>
+                            <rect x="20" y="75" width="10" height="10" fill="#0f172a"/>
+                            <rect x="35" y="90" width="10" height="10" fill="#7c3aed"/>
+                            <rect x="75" y="70" width="30" height="30" fill="#0f172a" rx="2"/>
+                            <rect x="80" y="75" width="20" height="20" fill="#7c3aed" rx="1"/>
+                            <rect x="120" y="75" width="10" height="10" fill="#0f172a"/>
+                            <rect x="145" y="90" width="10" height="10" fill="#0f172a"/>
+                            <rect x="70" y="135" width="10" height="10" fill="#7c3aed"/>
+                            <rect x="95" y="145" width="10" height="10" fill="#0f172a"/>
+                            <rect x="125" y="130" width="10" height="10" fill="#0f172a"/>
+                            <rect x="145" y="140" width="10" height="10" fill="#7c3aed"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div style="background:#f1f5f9;padding:12px 16px;border-radius:10px;margin-bottom:16px;">
+                    <div style="font-size:20px;font-weight:800;color:#7c3aed;letter-spacing:0.5px;">${escapeHtml(passToken)}</div>
+                    <div style="font-size:13px;font-weight:500;color:#334155;margin-top:2px;">${escapeHtml(passService)} • ${escapeHtml(passDate)}</div>
+                </div>
+
+                <button type="button" class="btn-primary" style="width:100%;padding:10px;border-radius:8px;background:#7c3aed;color:#ffffff;border:none;font-weight:600;cursor:pointer;font-size:14px;" onclick="document.getElementById('vizitorQRModal').style.display='none'" data-i18n="close">Done</button>
+            </div>
+        `;
+
+        modal.style.cssText = "display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.6);z-index:1200;align-items:center;justify-content:center;backdrop-filter:blur(3px);";
+
+        if (appointmentId) {
+            apiGet(`/appointments/${encodeURIComponent(appointmentId)}/qr`).then(data => {
+                if (data && data.qr_svg) {
+                    const holder = document.getElementById("qrSvgHolder");
+                    if (holder) {
+                        holder.innerHTML = data.qr_svg;
+                        const svgEl = holder.querySelector("svg");
+                        if (svgEl) {
+                            svgEl.setAttribute("width", "180");
+                            svgEl.setAttribute("height", "180");
+                            svgEl.style.maxWidth = "100%";
+                            svgEl.style.height = "auto";
+                        }
+                    }
+                }
+            }).catch(() => {});
+        }
+    }
+
+    window.showQRPassModal = showQRPassModal;
+
+    // ========================================================
+    // SHARED CROWD DISPLAY COMPONENT (SECTION H)
+    // ========================================================
+
+    function renderCrowdBadge(elementOrId, crowdLevel, queueSize) {
+        const el = typeof elementOrId === "string" ? document.getElementById(elementOrId) : elementOrId;
+        if (!el) return;
+        const level = crowdLevel || calculateCrowdLevel(queueSize || 0);
+        const colorMap = {
+            "No Crowd": { bg: "#f1f5f9", text: "#475569", dot: "#94a3b8" },
+            "Low": { bg: "#ecfdf5", text: "#059669", dot: "#10b981" },
+            "Moderate": { bg: "#fef3c7", text: "#d97706", dot: "#f59e0b" },
+            "High": { bg: "#fee2e2", text: "#dc2626", dot: "#ef4444" },
+            "Critical": { bg: "#fdf2f8", text: "#be185d", dot: "#ec4899" }
+        };
+        const c = colorMap[level] || colorMap["Low"];
+        el.style.backgroundColor = c.bg;
+        el.style.color = c.text;
+        el.style.padding = "4px 10px";
+        el.style.borderRadius = "9999px";
+        el.style.fontWeight = "600";
+        el.style.fontSize = "0.85rem";
+        el.style.display = "inline-flex";
+        el.style.alignItems = "center";
+        el.innerHTML = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background-color:${c.dot};margin-right:6px;"></span>${escapeHtml(level)}`;
+    }
+
+    window.renderCrowdBadge = renderCrowdBadge;
+
+    // ========================================================
     // PUBLIC API
     // ========================================================
 
@@ -1764,11 +1954,16 @@ const VIZITOR = (() => {
         authHeaders,
         apiGet,
         apiPost,
+        apiPut,
+        apiPatch,
         startSimulation,
 
         getCurrentUser,
         getAppointments,
         getQueueStatus,
+        calculateCrowdLevel,
+        renderCrowdBadge,
+        showQRPassModal,
 
         getSimulationState,
         setSimulationState,

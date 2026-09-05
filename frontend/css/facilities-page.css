@@ -1,0 +1,1053 @@
+/* ============================================================
+   VIZITOR — FACILITIES & ROUTING
+   Patient 360 visual system
+   ============================================================ */
+
+.main-content {
+    min-width: 0;
+    overflow-x: hidden;
+    background: #f8fafc;
+}
+
+.main-content * {
+    box-sizing: border-box;
+}
+
+/* ============================================================
+   HEADER — KEEP THE EXISTING VIZITOR HEADER
+   ============================================================ */
+
+.top-header {
+    height: 76px !important;
+    min-height: 76px !important;
+    margin: 0 !important;
+    padding: 0 42px !important;
+    background: #fff !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+.header-left {
+    flex: 1;
+    min-width: 0;
+}
+
+.facilities-header-search {
+    width: 240px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 0 13px;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    background: #f8fafc;
+}
+
+.facilities-header-search svg {
+    width: 16px;
+    height: 16px;
+    color: #94a3b8;
+    flex: 0 0 16px;
+}
+
+.facilities-header-search input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font: 400 13px Inter, sans-serif;
+    color: #172033;
+}
+
+.facilities-header-search input::placeholder {
+    color: #94a3b8;
+}
+
+/* ============================================================
+   REMOVE DUPLICATE SECONDARY HEADER CONTROLS
+   ============================================================ */
+
+.facility-language-secondary {
+    display: none !important;
+}
+
+/* ============================================================
+   IMPORTANT:
+   PAGE ORDER SHOULD BE
+
+   HEADER
+   TITLE
+   HEALTHCARE MODULE CARDS
+   STATS
+   TABS
+   CONTENT
+   ============================================================ */
+
+.main-content {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header first */
+.main-content > .top-header {
+    order: 1;
+}
+
+/* Title second */
+.main-content > .facilities-page-intro {
+    order: 2;
+}
+
+/* Healthcare cards third */
+.main-content > .healthcare-module-strip {
+    order: 3;
+}
+
+/* Stats fourth */
+.main-content > .facilities-stats {
+    order: 4;
+}
+
+/* Tabs fifth */
+.main-content > .facilities-content-tabs {
+    order: 5;
+}
+
+/* Panels sixth */
+.main-content > .facility-content-panel {
+    order: 6;
+}
+
+/* ============================================================
+   PAGE TITLE
+   ============================================================ */
+
+.facilities-page-intro {
+    width: calc(100% - 84px);
+    margin: 28px 42px 14px;
+    padding: 0;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.facilities-page-intro h1 {
+    margin: 0;
+    color: #172033;
+    font-size: 28px;
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -0.6px;
+}
+
+.facilities-page-intro p {
+    margin: 7px 0 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   HEALTHCARE MODULE CARDS
+   Patient 360 style
+   ============================================================ */
+
+.healthcare-module-strip {
+    order: 3;
+
+    width: calc(100% - 84px);
+    margin: 0 42px 22px;
+
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+
+    background: transparent;
+}
+
+.healthcare-module-card {
+    height: 76px;
+    min-width: 0;
+
+    padding: 13px 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+
+    color: #172033;
+    text-decoration: none;
+
+    box-shadow: 0 2px 8px rgba(15, 23, 42, .04);
+
+    transition: .18s ease;
+}
+
+.healthcare-module-card:hover {
+    transform: translateY(-1px);
+    border-color: #c4b5fd;
+    box-shadow: 0 5px 15px rgba(15, 23, 42, .07);
+}
+
+.healthcare-module-card.active {
+    border-color: #ddd6fe;
+    box-shadow:
+        0 3px 12px rgba(124, 58, 237, .08),
+        inset 0 0 0 1px rgba(124, 58, 237, .04);
+}
+
+.healthcare-module-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+}
+
+.healthcare-module-icon svg {
+    width: 21px;
+    height: 21px;
+}
+
+.facilities-icon {
+    color: #7c3aed;
+    background: #f3e8ff;
+}
+
+.specialists-icon {
+    color: #0ea5e9;
+    background: #e0f2fe;
+}
+
+.diagnostics-icon {
+    color: #f97316;
+    background: #ffede5;
+}
+
+.medicines-icon {
+    color: #10b981;
+    background: #e5f8f1;
+}
+
+.referrals-icon {
+    color: #d946ef;
+    background: #fae8ff;
+}
+
+.healthcare-module-card strong {
+    display: block;
+    margin-bottom: 2px;
+    color: #172033;
+    font-size: 13px;
+    line-height: 1.2;
+    font-weight: 750;
+}
+
+.healthcare-module-card span {
+    display: block;
+    color: #64748b;
+    font-size: 11.5px;
+    line-height: 1.25;
+}
+
+/* ============================================================
+   STAT CARDS
+   ============================================================ */
+
+.facilities-stats {
+    width: calc(100% - 84px);
+    margin: 0 42px 22px;
+
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.facility-stat-card {
+    min-width: 0;
+    min-height: 88px;
+
+    padding: 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 13px;
+
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+
+    box-shadow: 0 2px 8px rgba(15, 23, 42, .04);
+}
+
+.facility-stat-icon {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+}
+
+.facility-stat-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.facility-stat-icon.purple {
+    color: #7c3aed;
+    background: #f3e8ff;
+}
+
+.facility-stat-icon.green {
+    color: #10b981;
+    background: #e8f8f2;
+}
+
+.facility-stat-icon.blue {
+    color: #3b82f6;
+    background: #eaf2ff;
+}
+
+.facility-stat-icon.red {
+    color: #ef4444;
+    background: #feecec;
+}
+
+.facility-stat-card strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #172033;
+    font-size: 21px;
+    line-height: 1;
+    font-weight: 800;
+}
+
+.facility-stat-card span {
+    display: block;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* ============================================================
+   INTERNAL TABS
+   ============================================================ */
+
+.facilities-content-tabs {
+    width: calc(100% - 84px);
+    margin: 0 42px;
+
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+}
+
+.facility-content-tab {
+    min-height: 44px;
+    padding: 0 17px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 10px 10px 0 0;
+
+    background: #fff;
+    color: #475569;
+
+    font: 700 12px Inter, sans-serif;
+
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.facility-content-tab svg {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+}
+
+.facility-content-tab:hover {
+    color: #7c3aed;
+    background: #faf5ff;
+}
+
+.facility-content-tab.active {
+    color: #fff;
+    background: #7c3aed;
+    border-color: #7c3aed;
+}
+
+/* ============================================================
+   CONTENT PANEL
+   ============================================================ */
+
+.facility-content-panel {
+    width: calc(100% - 84px);
+    margin: 0 42px 28px;
+}
+
+.facility-content-panel.active {
+    display: block;
+}
+
+/* ============================================================
+   RECOMMENDATION CARD
+   COMPACT PATIENT 360 STYLE
+   ============================================================ */
+
+.facility-query-card {
+    width: 100%;
+    padding: 20px 22px 21px;
+
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0 14px 14px 14px;
+
+    box-shadow: 0 2px 9px rgba(15, 23, 42, .045);
+}
+
+.facility-query-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.facility-query-header h2 {
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    color: #172033;
+    font-size: 17px;
+    line-height: 1.3;
+    font-weight: 750;
+}
+
+.facility-query-header h2 svg {
+    width: 19px;
+    height: 19px;
+    color: #7c3aed;
+}
+
+.facility-query-header p {
+    margin: 5px 0 0;
+    color: #64748b;
+    font-size: 11.5px;
+    line-height: 1.4;
+}
+
+/* ============================================================
+   PRIORITY
+   ============================================================ */
+
+.priority-selector {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex: 0 0 auto;
+}
+
+.priority-selector > span {
+    margin-right: 2px;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.priority-button {
+    min-width: 76px;
+    height: 38px;
+    padding: 0 11px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #dbe2ea;
+    border-radius: 9px;
+
+    background: #fff;
+    color: #475569;
+
+    font: 700 10px Inter, sans-serif;
+
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.priority-button.active {
+    color: #fff;
+    border-color: #7c3aed;
+    background: #7c3aed;
+}
+
+/* ============================================================
+   TOP FORM
+   ============================================================ */
+
+.facility-form-grid {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: 1.05fr 1.05fr 1.05fr .9fr;
+    gap: 13px;
+
+    margin-bottom: 14px;
+}
+
+.facility-field {
+    min-width: 0;
+}
+
+.facility-field label,
+.facility-gps-field > label {
+    display: block;
+    margin-bottom: 5px;
+
+    color: #334155;
+    font-size: 10.5px;
+    line-height: 1.25;
+    font-weight: 700;
+}
+
+.facility-field input,
+.facility-field select,
+.facility-location-panel input,
+.facility-location-panel select {
+    width: 100%;
+    height: 42px;
+    min-width: 0;
+
+    padding: 0 11px;
+
+    border: 1px solid #dbe2ea;
+    border-radius: 9px;
+
+    background: #fff;
+    color: #172033;
+
+    font: 400 11.5px Inter, sans-serif;
+
+    outline: none;
+}
+
+.facility-field input:focus,
+.facility-field select:focus,
+.facility-location-panel input:focus,
+.facility-location-panel select:focus {
+    border-color: #a78bfa;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, .06);
+}
+
+.facility-field input::placeholder,
+.facility-location-panel input::placeholder {
+    color: #94a3b8;
+}
+
+/* ============================================================
+   LOWER FORM ROW
+   ============================================================ */
+
+.facility-location-panel {
+    width: 100%;
+    padding: 13px;
+
+    display: grid;
+    grid-template-columns: 1.2fr 1.45fr .85fr .72fr auto;
+    gap: 11px;
+    align-items: end;
+
+    background: #faf9ff;
+    border: 1px solid #ede9fe;
+    border-radius: 11px;
+}
+
+.gps-input-row {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr;
+    gap: 6px;
+}
+
+.gps-input-row input {
+    min-width: 0;
+}
+
+.secondary-action,
+.primary-action {
+    height: 42px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    border-radius: 9px;
+
+    font: 700 11px Inter, sans-serif;
+
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.secondary-action {
+    padding: 0 12px;
+
+    border: 1px solid #dbe2ea;
+    background: #fff;
+    color: #475569;
+}
+
+.secondary-action:hover {
+    color: #7c3aed;
+    border-color: #c4b5fd;
+    background: #faf5ff;
+}
+
+.primary-action {
+    min-width: 184px;
+    padding: 0 15px;
+
+    border: 1px solid #7c3aed;
+    background: #7c3aed;
+    color: #fff;
+
+    box-shadow: 0 3px 8px rgba(124, 58, 237, .14);
+}
+
+.primary-action:hover {
+    background: #6d28d9;
+    border-color: #6d28d9;
+}
+
+.primary-action svg,
+.secondary-action svg {
+    width: 15px;
+    height: 15px;
+    flex: 0 0 15px;
+}
+
+.facility-form-actions {
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.reset-button {
+    min-width: 68px;
+}
+
+/* ============================================================
+   RESULTS
+   ============================================================ */
+
+.routing-results-header {
+    width: 100%;
+    margin: 19px 0 11px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.routing-results-header h3 {
+    margin: 0;
+    color: #172033;
+    font-size: 16px;
+}
+
+.routing-results-header h3 span {
+    margin-left: 6px;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.routing-results-header p {
+    margin: 4px 0 0;
+    color: #64748b;
+    font-size: 11px;
+}
+
+/* ============================================================
+   DIRECTORY
+   ============================================================ */
+
+.facility-directory-card {
+    width: 100%;
+    padding: 19px;
+
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0 14px 14px 14px;
+
+    box-shadow: 0 2px 9px rgba(15, 23, 42, .045);
+}
+
+.directory-toolbar {
+    display: grid;
+    grid-template-columns: 1.8fr .75fr auto;
+    gap: 13px;
+    align-items: end;
+}
+
+.facility-search-box {
+    position: relative;
+}
+
+.facility-search-box svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+
+    width: 15px;
+    height: 15px;
+
+    transform: translateY(-50%);
+
+    color: #94a3b8;
+}
+
+.facility-search-box input {
+    padding-left: 36px;
+}
+
+.directory-refresh {
+    min-width: 150px;
+}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+
+.facility-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background: rgba(15, 23, 42, .38);
+    backdrop-filter: blur(2px);
+}
+
+.facility-modal-overlay.active {
+    display: flex;
+}
+
+.facility-modal {
+    width: min(720px, calc(100vw - 48px));
+    max-height: calc(100vh - 48px);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 15px;
+
+    box-shadow: 0 25px 65px rgba(15, 23, 42, .22);
+}
+
+.facility-modal-header {
+    padding: 16px 19px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.facility-modal-header h3 {
+    margin: 0;
+    color: #172033;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.facility-modal-header p {
+    margin: 4px 0 0;
+    color: #64748b;
+    font-size: 10.5px;
+}
+
+.modal-close-button {
+    width: 34px;
+    height: 34px;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+
+    background: #fff;
+    color: #64748b;
+
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.facility-modal-body {
+    overflow-y: auto;
+    padding: 18px;
+}
+
+.facility-modal-footer {
+    padding: 11px 18px;
+
+    display: flex;
+    justify-content: flex-end;
+
+    border-top: 1px solid #e2e8f0;
+}
+
+.facility-metadata-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 9px;
+    margin-bottom: 18px;
+}
+
+.facility-metadata-grid > div {
+    padding: 11px;
+
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+}
+
+.facility-metadata-grid span {
+    display: block;
+    margin-bottom: 4px;
+
+    color: #64748b;
+    font-size: 8.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.facility-metadata-grid strong {
+    color: #172033;
+    font-size: 10.5px;
+    overflow-wrap: anywhere;
+}
+
+/* ============================================================
+   TELEMETRY
+   ============================================================ */
+
+.telemetry-section-header {
+    margin-bottom: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.telemetry-section-header h4 {
+    margin: 0;
+    color: #172033;
+    font-size: 14px;
+}
+
+.telemetry-section-header p {
+    margin: 3px 0 0;
+    color: #64748b;
+    font-size: 10px;
+}
+
+.telemetry-section-header .secondary-action {
+    height: 35px;
+}
+
+.telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 9px;
+}
+
+.telemetry-card {
+    padding: 12px;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    background: #fff;
+}
+
+.telemetry-card span {
+    display: block;
+    margin-bottom: 4px;
+
+    color: #64748b;
+    font-size: 8.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.telemetry-card strong {
+    color: #172033;
+    font-size: 16px;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1150px) {
+
+    .healthcare-module-strip,
+    .facilities-page-intro,
+    .facilities-stats,
+    .facilities-content-tabs,
+    .facility-content-panel {
+        width: calc(100% - 48px);
+        margin-left: 24px;
+        margin-right: 24px;
+    }
+
+    .healthcare-module-strip {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .facility-form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .facility-location-panel {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .facility-gps-field {
+        grid-column: span 2;
+    }
+
+    .facility-form-actions {
+        grid-column: span 2;
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 800px) {
+
+    .top-header {
+        padding: 0 18px !important;
+    }
+
+    .healthcare-module-strip,
+    .facilities-page-intro,
+    .facilities-stats,
+    .facilities-content-tabs,
+    .facility-content-panel {
+        width: calc(100% - 28px);
+        margin-left: 14px;
+        margin-right: 14px;
+    }
+
+    .healthcare-module-strip {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .facilities-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .facility-query-header {
+        flex-direction: column;
+    }
+
+    .facility-location-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .facility-gps-field,
+    .facility-form-actions {
+        grid-column: auto;
+    }
+
+    .directory-toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    .directory-refresh {
+        width: 100%;
+    }
+
+    .facility-metadata-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .telemetry-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 560px) {
+
+    .facilities-header-search {
+        width: 190px;
+    }
+
+    .healthcare-module-strip {
+        grid-template-columns: 1fr;
+    }
+
+    .facilities-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .facility-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .facility-location-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .gps-input-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .gps-input-row button {
+        grid-column: 1 / -1;
+    }
+
+    .facility-form-actions {
+        display: grid;
+        grid-template-columns: auto 1fr;
+    }
+
+    .primary-action {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .facility-metadata-grid,
+    .telemetry-grid {
+        grid-template-columns: 1fr;
+    }
+}

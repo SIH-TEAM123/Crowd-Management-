@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.security import require_admin_or_operator
-from app.database import get_db
+from app.database import get_sync_db
 from app.models.facility import FacilityType
 from app.schemas.facility import (
     FacilityCreate,
@@ -28,7 +28,7 @@ def list_facilities(
     is_active: Optional[bool] = Query(True, description="Filter by active status"),
     skip: int = Query(0, ge=0, description="Offset"),
     limit: int = Query(100, ge=1, le=500, description="Limit"),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve all facilities conforming to filter parameters."""
     return FacilityService.get_facilities(
@@ -53,7 +53,7 @@ def discover_facilities(
     is_active: bool = Query(True, description="Filter by active status"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Find facilities with calculated Haversine distances, sorted by proximity."""
     if (latitude is not None and longitude is None) or (latitude is None and longitude is not None):
@@ -81,7 +81,7 @@ def discover_facilities(
 )
 def get_facility(
     facility_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve details for a specific healthcare facility."""
     facility = FacilityService.get_by_id(db, facility_id)
@@ -101,7 +101,7 @@ def get_facility(
 )
 def create_facility(
     facility_in: FacilityCreate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Register a new healthcare facility. Requires valid admin or operator credentials."""
@@ -124,7 +124,7 @@ def create_facility(
 def update_facility(
     facility_id: str,
     facility_in: FacilityUpdate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Update details of an existing facility. Requires valid admin or operator credentials."""
@@ -145,7 +145,7 @@ def update_facility(
 def delete_facility(
     facility_id: str,
     soft_delete: bool = Query(True, description="Soft delete (set is_active=False) vs permanent removal"),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Deactivate or remove a healthcare facility. Requires valid admin or operator credentials."""

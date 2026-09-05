@@ -1,0 +1,497 @@
+/**
+ * VIZITOR — Vizi Helper Robot Stylesheet
+ * SIH 2026 / S157 — The ODRISCOLLS
+ * Additive accessibility & interactive companion layer
+ */
+
+/* ============================================================
+   CONTAINER & ROOT POSITIONING
+   ============================================================ */
+#vizi-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 52px;
+    height: 60px;
+    z-index: 850; /* Above regular content & headers, strictly below modals (1000) */
+    pointer-events: none;
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#vizi-container.vizi-hidden {
+    display: none !important;
+}
+
+#vizi-container.vizi-modal-parked {
+    opacity: 0.15;
+    pointer-events: none !important;
+    transform: scale(0.7) translate(20px, 20px);
+}
+
+/* ============================================================
+   ROBOT BODY (SVG CONTAINER)
+   ============================================================ */
+.vizi-robot-wrapper {
+    position: relative;
+    width: 48px;
+    height: 56px;
+    cursor: pointer;
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+}
+
+.vizi-robot-wrapper:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 4px;
+    border-radius: 50%;
+}
+
+.vizi-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.12));
+    transition: transform 0.25s ease;
+}
+
+.vizi-robot-wrapper:hover .vizi-svg {
+    transform: scale(1.08) translateY(-2px);
+}
+
+/* Base Idle Floating */
+.vizi-state-idle .vizi-svg-body {
+    animation: viziFloat 2.8s ease-in-out infinite;
+}
+
+@keyframes viziFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+/* Eye Blinking */
+.vizi-eye {
+    transform-origin: center;
+    animation: viziBlink 4s infinite;
+}
+
+@keyframes viziBlink {
+    0%, 94%, 98%, 100% {
+        transform: scaleY(1);
+    }
+    96% {
+        transform: scaleY(0.1);
+    }
+}
+
+/* Antenna Glow */
+.vizi-antenna-tip {
+    animation: viziGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes viziGlow {
+    0% {
+        fill: #38bdf8;
+        filter: drop-shadow(0 0 2px #38bdf8);
+    }
+    100% {
+        fill: #10b981;
+        filter: drop-shadow(0 0 5px #10b981);
+    }
+}
+
+/* ============================================================
+   ANIMATED STATES
+   ============================================================ */
+
+/* Walking / Waddling */
+.vizi-state-walking .vizi-svg {
+    animation: viziWaddle 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes viziWaddle {
+    0% {
+        transform: rotate(-4deg) translateY(0);
+    }
+    100% {
+        transform: rotate(4deg) translateY(-2px);
+    }
+}
+
+/* Waving */
+.vizi-state-waving .vizi-arm-right {
+    transform-origin: 36px 30px;
+    animation: viziWaveArm 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes viziWaveArm {
+    0% {
+        transform: rotate(-10deg);
+    }
+    100% {
+        transform: rotate(-50deg);
+    }
+}
+
+/* Celebrating */
+.vizi-state-celebrating .vizi-svg {
+    animation: viziCelebrate 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes viziCelebrate {
+    0% {
+        transform: translateY(0) scale(1) rotate(-3deg);
+    }
+    100% {
+        transform: translateY(-8px) scale(1.1) rotate(3deg);
+    }
+}
+
+/* Thinking / Looking */
+.vizi-state-thinking .vizi-head {
+    transform-origin: 24px 20px;
+    transform: rotate(6deg) translateY(-1px);
+}
+
+/* Sleeping */
+.vizi-state-sleeping .vizi-eye {
+    transform: scaleY(0.1);
+}
+
+/* ============================================================
+   ACCESSORIES: JETPACK, PARACHUTE, ELEVATOR
+   ============================================================ */
+
+/* Jetpack Flames */
+.vizi-jetpack-flame {
+    opacity: 0;
+    transform-origin: center top;
+    transition: opacity 0.2s ease;
+}
+
+.vizi-state-jetpack .vizi-jetpack-flame {
+    opacity: 1;
+    animation: viziFlameFlicker 0.15s infinite alternate;
+}
+
+@keyframes viziFlameFlicker {
+    0% {
+        transform: scaleY(0.8) scaleX(0.9);
+        fill: #f59e0b;
+    }
+    100% {
+        transform: scaleY(1.3) scaleX(1.1);
+        fill: #ef4444;
+    }
+}
+
+/* Parachute */
+.vizi-parachute-canopy {
+    position: absolute;
+    bottom: 50px;
+    left: -10px;
+    width: 68px;
+    height: 40px;
+    opacity: 0;
+    pointer-events: none;
+    transform-origin: bottom center;
+    transform: scale(0.4) translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.vizi-state-parachuting .vizi-parachute-canopy {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    animation: viziSway 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes viziSway {
+    0% {
+        transform: rotate(-6deg);
+    }
+    100% {
+        transform: rotate(6deg);
+    }
+}
+
+/* Elevator Gag */
+.vizi-elevator-cage {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    width: 64px;
+    height: 72px;
+    border: 2px solid #3b82f6;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+    display: flex;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 1;
+}
+
+.vizi-elevator-cage.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.vizi-elevator-door {
+    flex: 1;
+    height: 100%;
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    border-right: 1px solid #94a3b8;
+    transition: transform 0.35s ease-in-out;
+}
+
+.vizi-elevator-door.right {
+    border-right: none;
+    border-left: 1px solid #94a3b8;
+}
+
+.vizi-elevator-cage.closed .vizi-elevator-door.left {
+    transform: translateX(0);
+}
+.vizi-elevator-cage.closed .vizi-elevator-door.right {
+    transform: translateX(0);
+}
+.vizi-elevator-cage.open .vizi-elevator-door.left {
+    transform: translateX(-100%);
+}
+.vizi-elevator-cage.open .vizi-elevator-door.right {
+    transform: translateX(100%);
+}
+
+/* ============================================================
+   SPEECH BUBBLE
+   ============================================================ */
+.vizi-speech-bubble {
+    position: absolute;
+    bottom: 64px;
+    right: 0;
+    min-width: 160px;
+    max-width: 240px;
+    background: #ffffff;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-size: 0.815rem;
+    font-weight: 500;
+    line-height: 1.35;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(6px) scale(0.95);
+    transform-origin: bottom right;
+    transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 10;
+}
+
+.vizi-speech-bubble.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+
+.vizi-speech-tail {
+    position: absolute;
+    bottom: -6px;
+    right: 18px;
+    width: 10px;
+    height: 10px;
+    background: #ffffff;
+    border-right: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    transform: rotate(45deg);
+}
+
+.vizi-bubble-text {
+    margin: 0;
+    font-family: inherit;
+}
+
+/* ============================================================
+   ACCESSIBLE TOGGLE CONTROLS (HELP & SETTINGS)
+   ============================================================ */
+.vizi-settings-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.vizi-settings-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.vizi-settings-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #3b82f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vizi-settings-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.vizi-settings-desc {
+    margin: 2px 0 0 0;
+    font-size: 0.825rem;
+    color: #64748b;
+}
+
+.vizi-controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-top: 1px solid #f1f5f9;
+}
+
+.vizi-control-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.vizi-control-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1e293b;
+    cursor: pointer;
+}
+
+.vizi-control-sub {
+    font-size: 0.775rem;
+    color: #64748b;
+}
+
+/* Switch styling */
+.vizi-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.vizi-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.vizi-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.vizi-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.vizi-toggle input:checked + .vizi-slider {
+    background-color: #3b82f6;
+}
+
+.vizi-toggle input:focus-visible + .vizi-slider {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35);
+}
+
+.vizi-toggle input:checked + .vizi-slider:before {
+    transform: translateX(20px);
+}
+
+/* ============================================================
+   RESPONSIVE (MOBILE) ADJUSTMENTS
+   ============================================================ */
+@media (max-width: 768px) {
+    #vizi-container {
+        bottom: 16px;
+        right: 16px;
+        width: 38px;
+        height: 48px;
+    }
+
+    .vizi-robot-wrapper {
+        width: 36px;
+        height: 44px;
+    }
+
+    .vizi-speech-bubble {
+        bottom: 50px;
+        max-width: 190px;
+        font-size: 0.75rem;
+    }
+
+    .vizi-parachute-canopy {
+        width: 50px;
+        height: 30px;
+        bottom: 40px;
+        left: -7px;
+    }
+}
+
+/* ============================================================
+   ACCESSIBILITY: PREFERS-REDUCED-MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    #vizi-container {
+        transition: opacity 0.2s ease !important;
+    }
+
+    .vizi-state-idle .vizi-svg-body,
+    .vizi-eye,
+    .vizi-antenna-tip,
+    .vizi-state-walking .vizi-svg,
+    .vizi-state-waving .vizi-arm-right,
+    .vizi-state-celebrating .vizi-svg,
+    .vizi-jetpack-flame,
+    .vizi-parachute-canopy {
+        animation: none !important;
+    }
+
+    .vizi-speech-bubble {
+        transition: opacity 0.15s ease !important;
+        transform: none !important;
+    }
+}

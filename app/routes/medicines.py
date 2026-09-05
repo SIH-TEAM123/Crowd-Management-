@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.security import require_admin_or_operator
-from app.database import get_db
+from app.database import get_sync_db
 from app.schemas.medicine import (
     FacilityInventoryCreate,
     FacilityInventoryResponse,
@@ -66,7 +66,7 @@ def list_medicines(
     generic_name: Optional[str] = Query(None, description="Filter by active generic name"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Search and retrieve pharmaceutical products from the master catalog."""
     medicines = MedicineService.get_medicines(
@@ -86,7 +86,7 @@ def list_medicines(
 )
 def get_medicine(
     medicine_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve details for a specific medicine."""
     med = MedicineService.get_medicine_by_id(db, medicine_id)
@@ -106,7 +106,7 @@ def get_medicine(
 )
 def create_medicine(
     medicine_in: MedicineCreate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Register a new pharmaceutical product. Requires valid operator/admin credentials."""
@@ -130,7 +130,7 @@ def create_medicine(
 def update_medicine(
     medicine_id: str,
     medicine_in: MedicineUpdate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Update medicine metadata."""
@@ -150,7 +150,7 @@ def update_medicine(
 )
 def delete_medicine(
     medicine_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Delete a medicine record."""
@@ -176,7 +176,7 @@ def find_facilities_with_medicine(
     max_distance_km: Optional[float] = Query(None, gt=0.0, description="Max radius in km"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Locate all active healthcare facilities currently stocking a medicine."""
     med = MedicineService.get_medicine_by_id(db, medicine_id)
@@ -218,7 +218,7 @@ def get_facility_inventory(
     is_available_only: bool = Query(False, description="Filter only in-stock items (qty > 0)"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Fetch facility medicine stock levels."""
     records = MedicineService.get_facility_inventory(
@@ -240,7 +240,7 @@ def get_facility_inventory(
 def set_facility_inventory(
     facility_id: str,
     inv_in: FacilityInventoryCreate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Set absolute stock level for a medicine at a facility."""
@@ -270,7 +270,7 @@ def adjust_facility_inventory_stock(
     facility_id: str,
     medicine_id: str = Query(..., description="Medicine ID to adjust"),
     adjustment: InventoryStockAdjustment = ...,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Safely increase (restock) or decrease (dispense) inventory.
@@ -301,7 +301,7 @@ def adjust_facility_inventory_stock(
 def check_medicine_availability(
     facility_id: str,
     medicine_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Check if a specific medicine is available in facility inventory."""
     inv = MedicineService.check_facility_medicine_stock(db, facility_id, medicine_id)

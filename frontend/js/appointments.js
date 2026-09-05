@@ -94,11 +94,10 @@ async function createToken(priorityType = "NORMAL") {
     const token = localStorage.getItem("access_token");
 
     if (!token) {
-        window.location.href = "index.html";
-
+        showErrorModal("Please sign in to book an appointment.");
         return {
             success: false,
-            message: "Please login again."
+            message: "Please sign in to book an appointment."
         };
     }
 
@@ -241,10 +240,7 @@ async function loadAppointmentsFromServer() {
         localStorage.getItem("access_token");
 
     if (!token) {
-
-        window.location.href =
-            "index.html";
-
+        console.warn("[Appointments] No access_token found in localStorage. Browsing in public view.");
         return;
     }
 
@@ -284,14 +280,7 @@ async function loadAppointmentsFromServer() {
         }
 
         if (response.status === 401) {
-
-            localStorage.removeItem(
-                "access_token"
-            );
-
-            window.location.href =
-                "index.html";
-
+            console.warn("[Appointments] Server returned 401. User session may need renewal, but keeping login intact.");
             return;
         }
 
@@ -1295,6 +1284,14 @@ function showBookingSuccess({
 }) {
 
     injectAppointmentModalStyles();
+
+    try {
+        window.dispatchEvent(new CustomEvent("vizitorAppointmentBooked", {
+            detail: { token, queuePosition, service, date, time }
+        }));
+    } catch (e) {
+        console.warn("Could not dispatch vizitorAppointmentBooked event:", e);
+    }
 
     const old =
         document.getElementById(

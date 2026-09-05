@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.security import require_admin_or_operator
-from app.database import get_db
+from app.database import get_sync_db
 from app.schemas.sms import (
     SMSDeliveryRecordResponse,
     SMSSendRequest,
@@ -24,7 +24,7 @@ router = APIRouter(prefix="/sms", tags=["SMS Token Notifications"])
 def send_token_sms_direct(
     appointment_id: str,
     sms_req: Optional[SMSSendRequest] = None,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Direct alias endpoint to trigger authoritative token SMS."""
@@ -46,7 +46,7 @@ def send_token_sms_direct(
 )
 def get_sms_history(
     appointment_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Retrieve audit records of SMS messages dispatched for an appointment."""

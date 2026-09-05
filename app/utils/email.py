@@ -32,19 +32,23 @@ Queue Management Team
 """
     )
 
-    with smtplib.SMTP(
-        settings.SMTP_HOST,
-        settings.SMTP_PORT,
-        timeout=30
-    ) as server:
+    if not settings.SMTP_HOST or not settings.SMTP_USERNAME or settings.SMTP_HOST == "smtp.example.com":
+        print(f"[DEV MODE] SMTP not configured. OTP for {recipient_email}: {otp}")
+        return
 
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
-
-        server.login(
-            settings.SMTP_USERNAME,
-            settings.SMTP_PASSWORD
-        )
-
-        server.send_message(message)
+    try:
+        with smtplib.SMTP(
+            settings.SMTP_HOST,
+            settings.SMTP_PORT,
+            timeout=10
+        ) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(
+                settings.SMTP_USERNAME,
+                settings.SMTP_PASSWORD
+            )
+            server.send_message(message)
+    except Exception as exc:
+        print(f"[DEV FALLBACK] Failed to send email via SMTP ({exc}). OTP for {recipient_email}: {otp}")

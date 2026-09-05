@@ -14,5 +14,9 @@ class Settings:
     SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
     SMTP_FROM = os.getenv("SMTP_FROM")
 
+    # Unified Queue & Token Settings (first token is 112, approx 3 minutes service rate)
+    TOKEN_START: int = int(os.getenv("TOKEN_START", "112"))
+    DEFAULT_SERVICE_RATE_MINUTES: float = float(os.getenv("DEFAULT_SERVICE_RATE_MINUTES", "3.0"))
+
 
 settings = Settings()

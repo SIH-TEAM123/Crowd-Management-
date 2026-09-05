@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.security import require_admin_or_operator
-from app.database import get_db
+from app.database import get_sync_db
 from app.models.specialist import AvailabilityStatus
 from app.schemas.specialist import (
     DoctorScheduleUpdate,
@@ -58,7 +58,7 @@ def list_specialists(
     is_available_only: bool = Query(False, description="Filter only currently available specialists"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve specialists filtered by facility, department, specialization, and availability status."""
     specialists = SpecialistService.get_specialists(
@@ -85,7 +85,7 @@ def list_available_specialists(
     specialization: Optional[str] = Query(None, description="Filter by specialization"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve only specialists who are currently marked as AVAILABLE."""
     specialists = SpecialistService.get_specialists(
@@ -108,7 +108,7 @@ def list_available_specialists(
 def get_doctor_slots(
     specialist_id: str,
     date_str: Optional[str] = Query(None, alias="date", description="Target date in YYYY-MM-DD format (defaults to today)"),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve doctor's time slots on the specified date with availability and booking status."""
     if date_str:
@@ -141,7 +141,7 @@ def get_doctor_slots(
 def update_doctor_schedule(
     specialist_id: str,
     schedule_in: DoctorScheduleUpdate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Update doctor's OPD schedule configuration. Requires admin/operator credentials."""
@@ -161,7 +161,7 @@ def update_doctor_schedule(
 )
 def get_specialist(
     specialist_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve details for a specific medical specialist."""
     specialist = SpecialistService.get_by_id(db, specialist_id)
@@ -181,7 +181,7 @@ def get_specialist(
 )
 def create_specialist(
     specialist_in: SpecialistCreate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Register a new specialist. Requires valid admin/operator credentials."""
@@ -212,7 +212,7 @@ def create_specialist(
 def update_specialist(
     specialist_id: str,
     specialist_in: SpecialistUpdate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Update specialist information or availability status. Requires valid credentials."""
@@ -240,7 +240,7 @@ def update_specialist(
 )
 def delete_specialist(
     specialist_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Remove a specialist record. Requires valid admin or operator credentials."""

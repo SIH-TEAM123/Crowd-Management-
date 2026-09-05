@@ -17,14 +17,13 @@ async function loadProfile() {
     const displayId = document.getElementById("displayId");
     const avatarBadge = document.getElementById("avatarBadge");
 
-    // Phone isn't stored by the backend yet — keep a local,
-    // per-user override so it doesn't leak across accounts.
-    const storedPhone = localStorage.getItem(localProfileKey(user.user_id, "phone"));
+    // Phone read from backend user model or local cache
+    const phone = user.phone_number || storedPhone || "Not provided";
 
     if (valName) valName.textContent = user.full_name;
     if (valId) valId.textContent = `USR-${user.user_id}`;
     if (valEmail) valEmail.textContent = user.email;
-    if (valPhone) valPhone.textContent = storedPhone || "Not provided";
+    if (valPhone) valPhone.textContent = phone;
     if (displayName) displayName.textContent = user.full_name;
     if (displayId) displayId.textContent = `USR-${user.user_id}`;
 
@@ -84,31 +83,90 @@ document.addEventListener("DOMContentLoaded", () => {
     loadProfile();
     setInterval(loadActiveSummary, 20000);
 
-    // Edit Profile — name/email are managed by the backend account;
-    // only phone is editable locally for now.
+    // Edit Profile Modal Wiring
+    const modalEditProfile = document.getElementById("modalEditProfile");
     const editProfileBtn = document.getElementById("btnEditProfile");
+    const btnCloseEditModal = document.getElementById("btnCloseEditModal");
+    const btnCancelEdit = document.getElementById("btnCancelEdit");
+    const formEditProfile = document.getElementById("formEditProfile");
+    const editFullName = document.getElementById("editFullName");
+    const editEmail = document.getElementById("editEmail");
+    const editPhone = document.getElementById("editPhone");
+
+    function openEditModal(user) {
+        if (!modalEditProfile) return;
+        if (editFullName) editFullName.value = user.full_name || "";
+        if (editEmail) editEmail.value = user.email || "";
+        const currentPhone = user.phone_number || localStorage.getItem(localProfileKey(user.user_id, "phone")) || "";
+        if (editPhone) editPhone.value = (currentPhone === "Not provided") ? "" : currentPhone;
+        modalEditProfile.style.display = "flex";
+    }
+
+    function closeEditModal() {
+        if (modalEditProfile) modalEditProfile.style.display = "none";
+    }
+
     if (editProfileBtn) {
         editProfileBtn.addEventListener("click", async () => {
             const user = await VIZITOR.getCurrentUser();
             if (!user) return;
+            openEditModal(user);
+        });
+    }
 
-            const valPhone = document.getElementById("valPhone");
+    if (btnCloseEditModal) btnCloseEditModal.addEventListener("click", closeEditModal);
+    if (btnCancelEdit) btnCancelEdit.addEventListener("click", closeEditModal);
 
-            const newPhone = prompt(
-                "Enter your Phone Number:\n(Name & email are managed by your account and can't be changed here.)",
-                valPhone.textContent === "Not provided" ? "" : valPhone.textContent
-            );
-            if (newPhone === null) return;
+    if (formEditProfile) {
+        formEditProfile.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const fullName = editFullName ? editFullName.value.trim() : "";
+            const email = editEmail ? editEmail.value.trim() : "";
+            const phone = editPhone ? editPhone.value.trim() : "";
 
-            if (newPhone.trim() === "") {
-                alert("Phone number cannot be empty!");
-                return;
+            const saveBtn = document.getElementById("btnSaveProfile");
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.textContent = "Saving...";
             }
 
-            localStorage.setItem(localProfileKey(user.user_id, "phone"), newPhone.trim());
-            valPhone.textContent = newPhone.trim();
+            try {
+                const res = await VIZITOR.apiPut("/auth/me", {
+                    full_name: fullName,
+                    email: email,
+                    phone_number: phone
+                });
 
-            alert("Profile updated successfully!");
+                if (res) {
+                    const valName = document.getElementById("valName");
+                    const valEmail = document.getElementById("valEmail");
+                    const valPhone = document.getElementById("valPhone");
+                    const displayName = document.getElementById("displayName");
+
+                    if (valName) valName.textContent = res.full_name || fullName;
+                    if (valEmail) valEmail.textContent = res.email || email;
+                    if (valPhone) valPhone.textContent = res.phone_number || phone || "Not provided";
+                    if (displayName) displayName.textContent = res.full_name || fullName;
+
+                    if (res.phone_number || phone) {
+                        localStorage.setItem(localProfileKey(res.user_id, "phone"), res.phone_number || phone);
+                    }
+                    VIZITOR.applyAvatar(res.full_name || fullName);
+
+                    closeEditModal();
+                    alert("Profile updated successfully!");
+                } else {
+                    alert("Failed to update profile. Please try again.");
+                }
+            } catch (err) {
+                console.error("Profile update error:", err);
+                alert("Failed to update profile. Please check your inputs.");
+            } finally {
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = "Save Changes";
+                }
+            }
         });
     }
 

@@ -70,6 +70,7 @@ from app.routes.follow_up import router as follow_up_router
 
 from app.seed_hospitals import seed_hospitals
 from app.seed_articles import seed_articles
+from app.seed_healthcare import seed_healthcare_network
 
 
 # ============================================================
@@ -90,6 +91,13 @@ async def lifespan(app: FastAPI):
 
     # Seed initial article data
     await seed_articles()
+
+    # Seed initial healthcare network data (Facilities, Specialists, Diagnostics, Medicines, Referrals)
+    try:
+        import asyncio
+        await asyncio.to_thread(seed_healthcare_network)
+    except Exception as e:
+        print(f"[Lifespan] Healthcare network seeding notice: {e}")
 
     yield
 
@@ -170,14 +178,14 @@ app.include_router(follow_up_router)
 # HEALTHCARE ROUTES - OFFLINE CAPABILITIES
 # ============================================================
 
+app.include_router(operational_state_router)
+app.include_router(routing_router)
 app.include_router(facilities_router)
 app.include_router(departments_router)
 app.include_router(specialists_router)
 app.include_router(diagnostics_router)
 app.include_router(medicines_router)
 app.include_router(referrals_router)
-app.include_router(operational_state_router)
-app.include_router(routing_router)
 app.include_router(sms_router)
 
 
@@ -185,11 +193,19 @@ app.include_router(sms_router)
 # ROOT
 # ============================================================
 
-@app.get("/")
+@app.get("/api")
 async def root():
     return {
         "message": "Queue Management API is running"
     }
+
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
+
+# Mount frontend static files so frontend is accessible directly on port 8000
+import os
+from fastapi.staticfiles import StaticFiles
+
+if os.path.exists("frontend"):
+    app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.security import require_admin_or_operator
-from app.database import get_db
+from app.database import get_sync_db
 from app.schemas.department import DepartmentCreate, DepartmentResponse
 from app.services.department_service import DepartmentService
 
@@ -19,7 +19,7 @@ router = APIRouter(tags=["Departments"])
 )
 def get_facility_departments(
     facility_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve all active OPD clinical departments available at the specified facility."""
     try:
@@ -41,7 +41,7 @@ def get_facility_departments(
 def create_facility_department(
     facility_id: str,
     dept_in: DepartmentCreate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Create a new clinical department for a facility. Requires admin or operator credentials."""
@@ -63,7 +63,7 @@ def create_facility_department(
 )
 def get_department(
     department_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve details of an individual clinical department."""
     dept = DepartmentService.get_by_id(db, department_id)

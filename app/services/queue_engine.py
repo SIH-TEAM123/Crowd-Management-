@@ -21,6 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.appointment import Appointment
 from app.models.token import Token
 from app.models.user import User
+from app.config import settings
 
 
 # ============================================================
@@ -28,9 +29,9 @@ from app.models.user import User
 # ============================================================
 
 TOKEN_PREFIX = "A"
-TOKEN_START = 114  # Queue starts strictly from token 114
+TOKEN_START = settings.TOKEN_START  # Configurable starting token (default 114)
 
-SERVICE_RATE_MINUTES = 4.0  # Average minutes per patient service
+SERVICE_RATE_MINUTES = settings.DEFAULT_SERVICE_RATE_MINUTES  # Average minutes per patient service
 
 # Crowd Level Thresholds
 CROWD_LOW_MAX = 5
@@ -42,23 +43,41 @@ class QueueEngine:
     """
     Authoritative Queue Engine for VIZITOR.
     Manages real database appointments, priority ordering,
-    unique person crowd tracking, and active simulation state.
+    unique person crowd tracking, rolling throughput tracking,
+    and single-source token counter with simulation offset.
     """
 
     def __init__(self):
-        # Simulation state (in-memory overlay tied to the same queue engine)
+        self.TOKEN_START: int = TOKEN_START
         self.simulation_active: bool = False
         self.simulation_synthetic_users: int = 0
         self.simulation_started_at: Optional[datetime] = None
         self.simulation_service_rate_minutes: float = SERVICE_RATE_MINUTES
         self.simulation_facility_id: str = "FAC-MAIN-001"
+        self.simulated_tokens_offset: int = 0
+        self.service_durations_history: List[float] = [SERVICE_RATE_MINUTES, SERVICE_RATE_MINUTES]
 
-    def format_token(self, token_num: int) -> str:
-        """Return standardized token display string, e.g. A-114"""
+    def get_average_service_time(self) -> float:
+        """Calculate dynamic rolling average service time based on real throughput."""
+        if not self.service_durations_history:
+            return SERVICE_RATE_MINUTES
+        return round(sum(self.service_durations_history) / len(self.service_durations_history), 2)
+
+    def record_service_duration(self, duration_minutes: float):
+        """Record an actual completed service duration into the rolling throughput tracker."""
+        d = max(0.5, min(30.0, float(duration_minutes)))
+        self.service_durations_history.append(d)
+        if len(self.service_durations_history) > 25:
+            self.service_durations_history.pop(0)
+
+    def format_token(self, token_num: Optional[int]) -> Optional[str]:
+        """Return standardized token display string, e.g. A-112 or None if null."""
+        if token_num is None:
+            return None
         return f"{TOKEN_PREFIX}-{token_num}"
 
     def parse_token_number(self, token_str: Optional[str]) -> Optional[int]:
-        """Extract integer token number from token string (e.g. 'A-114' -> 114)"""
+        """Extract integer token number from token string (e.g. 'A-112' -> 112)"""
         if not token_str:
             return None
         m = re.search(r'(\d+)\s*$', str(token_str))
@@ -77,12 +96,12 @@ class QueueEngine:
         return "Critical"
 
     def token_display_for(self, appointment_id: int) -> str:
-        """Strictly starts from 114: appointment 1 -> A-114, appointment 2 -> A-115"""
-        token_num = (TOKEN_START - 1) + appointment_id
+        """Starts strictly from configured TOKEN_START (112) + real appointments + simulation offset."""
+        token_num = self.token_number_for(appointment_id)
         return self.format_token(token_num)
 
     def token_number_for(self, appointment_id: int) -> int:
-        return (TOKEN_START - 1) + appointment_id
+        return (self.TOKEN_START - 1) + appointment_id + self.simulated_tokens_offset
 
     async def get_active_appointments_ordered(
         self, db: AsyncSession
@@ -134,15 +153,18 @@ class QueueEngine:
         return appointments
 
     def start_simulation(self, num_users: int = 50, service_rate_minutes: float = SERVICE_RATE_MINUTES) -> Dict[str, Any]:
-        """Activate backend simulation overlay."""
+        """Activate backend simulation overlay and advance unified counter by N users."""
         self.simulation_active = True
-        self.simulation_synthetic_users = max(1, min(500, int(num_users)))
+        n = max(1, min(500, int(num_users)))
+        self.simulation_synthetic_users = n
+        self.simulated_tokens_offset += n
         self.simulation_started_at = datetime.now()
         self.simulation_service_rate_minutes = max(0.5, float(service_rate_minutes))
 
         return {
             "simulation_active": True,
             "synthetic_users": self.simulation_synthetic_users,
+            "simulated_tokens_offset": self.simulated_tokens_offset,
             "started_at": self.simulation_started_at.isoformat(),
             "service_rate_minutes": self.simulation_service_rate_minutes,
         }
@@ -151,11 +173,13 @@ class QueueEngine:
         """Reset backend simulation to normal live state."""
         self.simulation_active = False
         self.simulation_synthetic_users = 0
+        self.simulated_tokens_offset = 0
         self.simulation_started_at = None
         self.simulation_service_rate_minutes = SERVICE_RATE_MINUTES
 
         return {
             "simulation_active": False,
+            "simulated_tokens_offset": 0,
             "message": "Simulation cleared. Normal live queue active."
         }
 
@@ -177,84 +201,116 @@ class QueueEngine:
         rate_minutes = (
             self.simulation_service_rate_minutes
             if self.simulation_active
-            else SERVICE_RATE_MINUTES
+            else self.get_average_service_time()
         )
 
-        due_appointments = [
-            a for a in active
-            if datetime.combine(a.appointment_date, a.appointment_time) <= now
-        ]
-
-        if not due_appointments:
+        if not active and not self.simulation_active:
+            # Initially NO active token when queue is empty
             currently_serving_appt = None
             currently_serving_id = None
             current_index = -1
             remaining_current_service = 0.0
-            currently_serving_token_num = TOKEN_START
-        else:
-            first_appt = due_appointments[0]
-            ref_time = datetime.combine(first_appt.appointment_date, first_appt.appointment_time)
-            minutes_elapsed = max(0.0, (now - ref_time).total_seconds() / 60.0)
-            tokens_advanced = int(minutes_elapsed // rate_minutes)
-            current_index = min(tokens_advanced, len(active) - 1)
-
-            currently_serving_appt = active[current_index]
-            currently_serving_id = currently_serving_appt.appointment_id
-            currently_serving_token_num = (TOKEN_START - 1) + currently_serving_id
-
-            if current_index >= len(active) - 1 and tokens_advanced >= len(active):
-                remaining_current_service = 0.0
-            else:
-                time_in_service = minutes_elapsed % rate_minutes
-                remaining_current_service = max(0.0, rate_minutes - time_in_service)
-
-        if currently_serving_id is None:
-            waiting_appointments = list(active)
-        else:
-            serving_idx = active.index(currently_serving_appt) if currently_serving_appt in active else -1
-            waiting_appointments = active[serving_idx + 1:] if serving_idx >= 0 else []
-
-        real_queue_size = len(waiting_appointments)
-
-        # Simulation Progression (if active)
-        sim_synthetic_remaining = 0
-        sim_completed_count = 0
-        if self.simulation_active and self.simulation_started_at:
-            sim_elapsed_min = max(0.0, (now - self.simulation_started_at).total_seconds() / 60.0)
-            sim_completed_count = min(
-                self.simulation_synthetic_users,
-                int(sim_elapsed_min // rate_minutes)
-            )
-            sim_synthetic_remaining = max(0, self.simulation_synthetic_users - sim_completed_count)
-            currently_serving_token_num += sim_completed_count
-
-        total_queue_size = real_queue_size + sim_synthetic_remaining
-
-        # UNIQUE PHYSICAL PERSONS IN CROWD (One User = One Person)
-        unique_physical_users: Set[str] = set()
-        for appt in waiting_appointments:
-            unique_physical_users.add(appt.user_id)
-        if currently_serving_appt:
-            unique_physical_users.add(currently_serving_appt.user_id)
-
-        people_currently_present = len(unique_physical_users) + sim_synthetic_remaining
-
-        if total_queue_size == 0 and currently_serving_appt is None and not self.simulation_active:
+            currently_serving_token_num = None
+            currently_serving_display = None
+            waiting_appointments = []
+            real_queue_size = 0
+            total_queue_size = 0
             people_currently_present = 0
-
-        # Global wait time
-        if total_queue_size == 0:
             estimated_wait_minutes = 0.0
-        elif currently_serving_appt is None and not self.simulation_active:
-            estimated_wait_minutes = round(total_queue_size * rate_minutes, 1)
+            crowd_level = "No Crowd"
+            sim_completed_count = 0
+            sim_synthetic_remaining = 0
         else:
-            estimated_wait_minutes = round(
-                remaining_current_service + (max(total_queue_size - 1, 0) * rate_minutes),
-                1
-            )
+            # We have appointments or simulation active
+            due_appointments = [
+                a for a in active
+                if datetime.combine(a.appointment_date, a.appointment_time) <= now
+            ]
 
-        crowd_level = self.calculate_crowd_level(total_queue_size)
-        currently_serving_display = self.format_token(currently_serving_token_num)
+            if not due_appointments:
+                if active:
+                    # Upcoming appointments for today/future: first one is next in line
+                    currently_serving_appt = None
+                    currently_serving_id = None
+                    current_index = -1
+                    remaining_current_service = 0.0
+                    currently_serving_token_num = None
+                    currently_serving_display = None
+                    waiting_appointments = list(active)
+                else:
+                    # Only simulation active
+                    currently_serving_appt = None
+                    currently_serving_id = None
+                    current_index = -1
+                    remaining_current_service = 0.0
+                    currently_serving_token_num = self.TOKEN_START
+                    currently_serving_display = self.format_token(self.TOKEN_START)
+                    waiting_appointments = []
+            else:
+                first_appt = due_appointments[0]
+                # Measure elapsed time from when this appointment became due or was created
+                ref_time = datetime.combine(first_appt.appointment_date, first_appt.appointment_time)
+                minutes_elapsed = max(0.0, (now - ref_time).total_seconds() / 60.0)
+                tokens_advanced = int(minutes_elapsed // rate_minutes)
+                current_index = min(tokens_advanced, len(active) - 1)
+
+                currently_serving_appt = active[current_index]
+                currently_serving_id = currently_serving_appt.appointment_id
+                currently_serving_token_num = (self.TOKEN_START - 1) + currently_serving_id
+
+                if current_index >= len(active) - 1 and tokens_advanced >= len(active):
+                    remaining_current_service = 0.0
+                else:
+                    time_in_service = minutes_elapsed % rate_minutes
+                    remaining_current_service = max(0.0, rate_minutes - time_in_service)
+
+                serving_idx = active.index(currently_serving_appt) if currently_serving_appt in active else -1
+                waiting_appointments = active[serving_idx + 1:] if serving_idx >= 0 else []
+
+            real_queue_size = len(waiting_appointments)
+
+            # Simulation Progression (if active)
+            sim_synthetic_remaining = 0
+            sim_completed_count = 0
+            if self.simulation_active and self.simulation_started_at:
+                sim_elapsed_min = max(0.0, (now - self.simulation_started_at).total_seconds() / 60.0)
+                sim_completed_count = min(
+                    self.simulation_synthetic_users,
+                    int(sim_elapsed_min // rate_minutes)
+                )
+                sim_synthetic_remaining = max(0, self.simulation_synthetic_users - sim_completed_count)
+                if currently_serving_token_num is None:
+                    currently_serving_token_num = self.TOKEN_START + sim_completed_count
+                else:
+                    currently_serving_token_num += sim_completed_count
+
+            total_queue_size = real_queue_size + sim_synthetic_remaining
+
+            # UNIQUE PHYSICAL PERSONS IN CROWD (One User = One Person)
+            unique_physical_users: Set[str] = set()
+            for appt in waiting_appointments:
+                unique_physical_users.add(appt.user_id)
+            if currently_serving_appt:
+                unique_physical_users.add(currently_serving_appt.user_id)
+
+            people_currently_present = len(unique_physical_users) + sim_synthetic_remaining
+
+            if total_queue_size == 0 and currently_serving_appt is None and not self.simulation_active:
+                people_currently_present = 0
+
+            # Global wait time
+            if total_queue_size == 0:
+                estimated_wait_minutes = 0.0
+            elif currently_serving_appt is None and not self.simulation_active:
+                estimated_wait_minutes = round(total_queue_size * rate_minutes, 1)
+            else:
+                estimated_wait_minutes = round(
+                    remaining_current_service + (max(total_queue_size - 1, 0) * rate_minutes),
+                    1
+                )
+
+            crowd_level = self.calculate_crowd_level(total_queue_size)
+            currently_serving_display = self.format_token(currently_serving_token_num) if currently_serving_token_num else None
 
         you_data = None
         if current_user:
@@ -298,6 +354,9 @@ class QueueEngine:
                         1
                     )
 
+                assigned_counter_num = ((my_token_num - TOKEN_START) % 4) + 1
+                assigned_counter_name = f"Counter {assigned_counter_num}"
+
                 you_data = {
                     "appointment_id": my_appt.appointment_id,
                     "token_display": self.format_token(my_token_num),
@@ -309,6 +368,8 @@ class QueueEngine:
                     "people_ahead": people_ahead if my_status == "WAITING" else 0,
                     "estimated_wait_minutes": my_wait,
                     "status": my_status,
+                    "assigned_counter": assigned_counter_name,
+                    "counter_number": assigned_counter_num,
                 }
 
         return {

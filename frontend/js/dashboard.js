@@ -267,10 +267,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
             if (crowdLevelElement) {
-
-                crowdLevelElement.textContent =
-                    queueStatus.crowd_level ||
-                    "Unknown";
+                if (typeof VIZITOR !== "undefined" && typeof VIZITOR.renderCrowdBadge === "function") {
+                    VIZITOR.renderCrowdBadge(crowdLevelElement, queueStatus.crowd_level, queueStatus.queue_size);
+                } else {
+                    crowdLevelElement.textContent = queueStatus.crowd_level || "Unknown";
+                }
             }
 
 

@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.security import require_admin_or_operator
-from app.database import get_db
+from app.database import get_sync_db
 from app.schemas.operational_state import (
     CameraTelemetryPublish,
     CameraTelemetryResponse,
@@ -25,7 +25,7 @@ router = APIRouter(prefix="/facilities", tags=["Facility Operational State & Tel
 )
 def get_all_facilities_operational_state(
     is_active_only: bool = Query(True, description="Filter only active facilities"),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Compile real-time operational states across healthcare network facilities."""
     return OperationalStateService.get_all_operational_states(
@@ -40,7 +40,7 @@ def get_all_facilities_operational_state(
 )
 def get_facility_operational_state(
     facility_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve unified operational state combining database state, queue, prediction, and camera telemetry.
 
@@ -66,7 +66,7 @@ def get_facility_operational_state(
 def publish_camera_telemetry(
     facility_id: str,
     telemetry_in: CameraTelemetryPublish,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Ingest real-time crowd telemetry from YOLO/ByteTrack vision pipeline.

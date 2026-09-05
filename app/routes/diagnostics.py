@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.security import require_admin_or_operator
-from app.database import get_db
+from app.database import get_sync_db
 from app.models.diagnostic import BookingStatus, ResultStatus
 from app.schemas.diagnostic import (
     DiagnosticBookingCreate,
@@ -84,7 +84,7 @@ def list_diagnostics(
     is_available_only: bool = Query(False, description="Filter only available services"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve diagnostic test catalog."""
     diagnostics = DiagnosticService.get_diagnostics(
@@ -109,7 +109,7 @@ def list_available_diagnostics(
     name: Optional[str] = Query(None, description="Search by test name"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve only available diagnostic tests across facilities."""
     diagnostics = DiagnosticService.get_diagnostics(
@@ -130,7 +130,7 @@ def list_available_diagnostics(
 def check_test_availability(
     facility_id: str = Query(..., description="Target facility ID"),
     test_name: str = Query(..., description="Test name to check"),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ) -> Dict[str, Any]:
     """Verify if a requested diagnostic test is available at a specific facility."""
     is_avail, diag = DiagnosticService.check_availability(db, facility_id, test_name)
@@ -149,7 +149,7 @@ def check_test_availability(
 )
 def get_facility_diagnostic_queues(
     facility_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve operational queue status across all diagnostic offerings in a facility."""
     return DiagnosticService.get_facility_diagnostic_queues(db, facility_id)
@@ -162,7 +162,7 @@ def get_facility_diagnostic_queues(
 )
 def get_diagnostic_queue(
     diagnostic_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve real-time queue position and waiting patient list for a diagnostic test."""
     queue_summary = DiagnosticService.get_diagnostic_queue(db, diagnostic_id)
@@ -181,7 +181,7 @@ def get_diagnostic_queue(
 )
 def get_diagnostic(
     diagnostic_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve details for a single diagnostic test."""
     diag = DiagnosticService.get_diagnostic_by_id(db, diagnostic_id)
@@ -201,7 +201,7 @@ def get_diagnostic(
 )
 def create_diagnostic(
     diag_in: DiagnosticTestCreate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Add a new diagnostic test to a facility catalog. Requires valid operator/admin credentials."""
@@ -232,7 +232,7 @@ def create_diagnostic(
 def update_diagnostic(
     diagnostic_id: str,
     diag_in: DiagnosticTestUpdate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Update diagnostic test parameters or availability."""
@@ -260,7 +260,7 @@ def update_diagnostic(
 )
 def delete_diagnostic(
     diagnostic_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Delete a diagnostic test record."""
@@ -285,7 +285,7 @@ def delete_diagnostic(
 )
 def create_booking(
     booking_in: DiagnosticBookingCreate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Book a diagnostic test for a patient at an available facility."""
     if booking_in.id:
@@ -320,7 +320,7 @@ def list_bookings(
     result_status: Optional[ResultStatus] = Query(None, description="Filter by result availability status"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """List diagnostic bookings with queue and status tracking."""
     bookings = DiagnosticService.get_bookings(
@@ -343,7 +343,7 @@ def list_bookings(
 )
 def get_booking_queue_position(
     booking_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve calculated real-time queue position and estimated wait time."""
     q_pos_resp = DiagnosticService.get_booking_queue_position(db, booking_id)
@@ -362,7 +362,7 @@ def get_booking_queue_position(
 )
 def get_booking(
     booking_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """Retrieve details for a specific diagnostic booking."""
     booking = DiagnosticService.get_booking_by_id(db, booking_id)
@@ -382,7 +382,7 @@ def get_booking(
 def update_booking_status(
     booking_id: str,
     status_update: DiagnosticBookingStatusUpdate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Update booking lifecycle status (REQUESTED -> BOOKED -> IN_PROGRESS -> COMPLETED / CANCELLED / FAILED).
@@ -413,7 +413,7 @@ def update_booking_status(
 def update_result_status(
     booking_id: str,
     result_update: DiagnosticBookingResultStatusUpdate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
     _token: str = Depends(require_admin_or_operator),
 ):
     """Update result availability status (PENDING or AVAILABLE) independently of booking lifecycle state."""

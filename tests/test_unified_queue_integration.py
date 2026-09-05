@@ -65,24 +65,30 @@ async def db_session():
 
 
 @pytest.mark.asyncio
-async def test_token_starts_at_114(db_session: AsyncSession):
-    """Test 1: Starting token is strictly 114 (A-114)"""
+async def test_token_starts_at_112_and_null_when_empty(db_session: AsyncSession):
+    """Test 1: Initially no active token when queue is empty, first appointment receives token 112 (A-112)"""
     engine_inst = QueueEngine()
+
+    # Initial empty state must have NO active token (NULL)
+    empty_status = await engine_inst.get_queue_status(db_session)
+    assert empty_status["currently_serving_token"] is None
+    assert empty_status["currently_serving_number"] is None
+    assert empty_status["queue_size"] == 0
     
-    # Token display for first appointment
-    assert engine_inst.token_display_for(1) == "A-114"
-    assert engine_inst.token_number_for(1) == 114
+    # Token display for first appointment is strictly 112
+    assert engine_inst.token_display_for(1) == "A-112"
+    assert engine_inst.token_number_for(1) == 112
     
     # Next sequential tokens
-    assert engine_inst.token_display_for(2) == "A-115"
-    assert engine_inst.token_number_for(2) == 115
-    assert engine_inst.token_display_for(3) == "A-116"
-    assert engine_inst.token_number_for(3) == 116
+    assert engine_inst.token_display_for(2) == "A-113"
+    assert engine_inst.token_number_for(2) == 113
+    assert engine_inst.token_display_for(3) == "A-114"
+    assert engine_inst.token_number_for(3) == 114
 
 
 @pytest.mark.asyncio
 async def test_sequential_appointments_and_fcfs(db_session: AsyncSession):
-    """Test 2: Sequential appointment creation produces sequential tokens"""
+    """Test 2: Sequential appointment creation produces sequential tokens (112, 113, ...)"""
     engine_inst = QueueEngine()
     
     user1 = User(user_id="U01", email="u1@test.com", full_name="Test User", password_hash="pw", is_verified=True)
@@ -93,22 +99,22 @@ async def test_sequential_appointments_and_fcfs(db_session: AsyncSession):
     tomorrow = date.today() + timedelta(days=1)
     
     # Appointment 1
-    t1 = Token(token_id=str(uuid4()), user_id=user1.user_id, queue_position=114, priority_type="NORMAL", token_status="WAITING")
+    t1 = Token(token_id=str(uuid4()), user_id=user1.user_id, queue_position=112, priority_type="NORMAL", token_status="WAITING")
     a1 = Appointment(user_id=user1.user_id, token_id=t1.token_id, purpose="Checkup", appointment_date=tomorrow, appointment_time=time(10, 0), status="PENDING")
     db_session.add_all([t1, a1])
     await db_session.commit()
     await db_session.refresh(a1)
 
-    assert engine_inst.token_display_for(a1.appointment_id) == "A-114"
+    assert engine_inst.token_display_for(a1.appointment_id) == "A-112"
 
     # Appointment 2
-    t2 = Token(token_id=str(uuid4()), user_id=user2.user_id, queue_position=115, priority_type="NORMAL", token_status="WAITING")
+    t2 = Token(token_id=str(uuid4()), user_id=user2.user_id, queue_position=113, priority_type="NORMAL", token_status="WAITING")
     a2 = Appointment(user_id=user2.user_id, token_id=t2.token_id, purpose="Dental", appointment_date=tomorrow, appointment_time=time(10, 15), status="PENDING")
     db_session.add_all([t2, a2])
     await db_session.commit()
     await db_session.refresh(a2)
 
-    assert engine_inst.token_display_for(a2.appointment_id) == "A-115"
+    assert engine_inst.token_display_for(a2.appointment_id) == "A-113"
 
 
 @pytest.mark.asyncio
@@ -159,8 +165,8 @@ async def test_simulation_uses_same_queue_engine(db_session: AsyncSession):
     assert status_before["queue_size"] == 1
     assert status_before["people_currently_present"] == 1
     assert status_before["you"]["people_ahead"] == 0
-    assert status_before["you"]["token_number"] == 114
-    assert status_before["you"]["token_display"] == "A-114"
+    assert status_before["you"]["token_number"] == 112
+    assert status_before["you"]["token_display"] == "A-112"
 
     # Activate simulation with 50 synthetic users ahead
     engine_inst.start_simulation(num_users=50, service_rate_minutes=4.0)
@@ -173,10 +179,10 @@ async def test_simulation_uses_same_queue_engine(db_session: AsyncSession):
     assert status_sim["simulation_synthetic_users"] == 50
     assert status_sim["people_currently_present"] == 51  # 50 synthetic unique + 1 real user
 
-    # User's token reflects: currently serving (114) + people ahead (50) + 1 = 165
+    # User's token reflects: currently serving (112) + people ahead (50) + 1 = 163
     assert status_sim["you"]["people_ahead"] == 50
-    assert status_sim["you"]["token_number"] == 165
-    assert status_sim["you"]["token_display"] == "A-165"
+    assert status_sim["you"]["token_number"] == 163
+    assert status_sim["you"]["token_display"] == "A-163"
     assert status_sim["you"]["estimated_wait_minutes"] == 50 * 4.0
 
     # Reset simulation
@@ -184,7 +190,7 @@ async def test_simulation_uses_same_queue_engine(db_session: AsyncSession):
     status_after = await engine_inst.get_queue_status(db_session, user)
     assert status_after["simulation_active"] is False
     assert status_after["queue_size"] == 1
-    assert status_after["you"]["token_number"] == 114
+    assert status_after["you"]["token_number"] == 112
 
 
 @pytest.mark.asyncio
@@ -255,3 +261,25 @@ async def test_qr_payload_and_svg_generation():
     assert svg.startswith("<svg")
     assert svg.endswith("</svg>")
     assert 'viewBox="0 0 240 240"' in svg
+
+
+@pytest.mark.asyncio
+async def test_unified_token_counter_progression_with_simulation():
+    """Test 8: Real booking -> Add N simulated -> Next booking receives (previous counter) + N + 1"""
+    engine = QueueEngine()
+    t1 = engine.token_number_for(1)
+    assert t1 == engine.TOKEN_START
+
+    t2 = engine.token_number_for(2)
+    assert t2 == t1 + 1
+
+    # Simulate adding 50 people
+    sim_res = engine.start_simulation(num_users=50)
+    assert sim_res["simulated_tokens_offset"] == 50
+
+    # Next real booking must equal previous + 50 + 1
+    t3 = engine.token_number_for(3)
+    assert t3 == t2 + 50 + 1
+
+    engine.reset_simulation()
+    assert engine.token_number_for(1) == engine.TOKEN_START
