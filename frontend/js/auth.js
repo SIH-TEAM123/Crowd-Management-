@@ -1,4 +1,4 @@
-// Real authentication using FastAPI
+﻿// Real authentication using FastAPI
 const LOCAL_API_URL = "http://127.0.0.1:8000";
 const RENDER_API_URL = "https://vizitor.onrender.com";
 
@@ -12,7 +12,7 @@ function getEffectiveApiBaseUrl() {
     return isLocal ? LOCAL_API_URL : RENDER_API_URL;
 }
 
-var API_BASE_URL = getEffectiveApiBaseUrl();
+// API_BASE_URL is provided centrally by api.js
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -189,3 +189,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
+
