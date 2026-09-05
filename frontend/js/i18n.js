@@ -12,6 +12,13 @@
 
     const STORAGE_KEY = "vizitor_lang";
 
+    const LANG_INFO = {
+        or: { label: "ଓଡ଼ିଆ", name: "Odia", code: "OR" },
+        mr: { label: "मराठी", name: "Marathi", code: "MR" },
+        hi: { label: "हिंदी", name: "Hindi", code: "HI" },
+        en: { label: "English", name: "English", code: "EN" }
+    };
+
     const TRANSLATIONS = {
         or: {
             brandName: "VIZITOR",
@@ -432,7 +439,7 @@
             faq3Q: "Can a single patient book multiple tests or visits?",
             faq3A: "Yes! While multiple visits create individual queue tokens, VIZITOR's intelligent crowd deduplication ensures each patient is counted as exactly one physical person in the facility crowd density meter.",
             faq4Q: "Where do I view my Digital QR Pass?",
-            faq4A: "Digital QR Passes can be viewed from either the Appointments tab or directly on the Live Queue page via the "View QR Pass" button.",
+            faq4A: "Digital QR Passes can be viewed from either the Appointments tab or directly on the Live Queue page via the \"View QR Pass\" button.",
 
             // Vizi Assistant
             viziHelperTitle: "Vizi Assistant",
@@ -480,6 +487,7 @@
         "Logout": { or: "ଲଗ୍ ଆଉଟ୍", mr: "लॉग आउट", hi: "लॉग आउट" },
         "Sign Out": { or: "ଲଗ୍ ଆଉଟ୍", mr: "लॉग आउट", hi: "लॉग आउट" },
         "Help": { or: "ସହାୟତା", mr: "मदत", hi: "सहायता" },
+        "Language": { or: "ଭାଷା", mr: "भाषा", hi: "भाषा" },
 
         // Appointments Page
         "My Appointments": { or: "ମୋର ଆପଏଣ୍ଟମେଣ୍ଟ", mr: "माझ्या अपॉइंटमेंट्स", hi: "मेरे अपॉइंटमेंट्स" },
@@ -764,7 +772,6 @@
     ];
 
     function getCurrentLang() {
-        // Default to Odia ("or") as requested
         return localStorage.getItem(STORAGE_KEY) || "or";
     }
 
@@ -842,8 +849,11 @@
     function translateSubtree(root, lang) {
         if (!root) return;
 
-        // Skip language switcher itself
+        // Skip language switcher elements
         if (root.id === "vizitorLangSwitcher" || (root.closest && root.closest("#vizitorLangSwitcher"))) {
+            return;
+        }
+        if (root.id === "vizitorFloatingLang" || (root.closest && root.closest("#vizitorFloatingLang"))) {
             return;
         }
 
@@ -858,7 +868,7 @@
                     if (tag === "script" || tag === "style" || tag === "svg" || tag === "path" || tag === "code" || tag === "pre" || tag === "textarea") {
                         return NodeFilter.FILTER_REJECT;
                     }
-                    if (parent.closest("#vizitorLangSwitcher")) {
+                    if (parent.closest("#vizitorLangSwitcher") || parent.closest("#vizitorFloatingLang")) {
                         return NodeFilter.FILTER_REJECT;
                     }
                     if (!node.nodeValue || !node.nodeValue.trim()) {
@@ -913,6 +923,7 @@
 
         const lang = getCurrentLang();
         const dict = TRANSLATIONS[lang] || TRANSLATIONS.or;
+        const currentInfo = LANG_INFO[lang] || LANG_INFO.or;
 
         // 1. Elements explicitly marked with data-i18n
         document.querySelectorAll("[data-i18n]").forEach(el => {
@@ -951,58 +962,201 @@
             translateSubtree(document.body, lang);
         }
 
-        // 4. Update language switcher dropdown selection
-        const select = document.getElementById("vizitorLangSelect");
-        if (select) {
-            select.value = lang;
-        }
+        // 4. Update language switcher button label & active option highlights
+        document.querySelectorAll(".vizitor-current-lang-text").forEach(el => {
+            el.textContent = `${currentInfo.label} (${currentInfo.code})`;
+        });
+
+        document.querySelectorAll(".vizitor-lang-opt").forEach(btn => {
+            if (btn.getAttribute("data-lang") === lang) {
+                btn.style.background = "#f5f3ff";
+                btn.style.color = "#7c3aed";
+                btn.style.fontWeight = "700";
+            } else {
+                btn.style.background = "transparent";
+                btn.style.color = "#1e293b";
+                btn.style.fontWeight = "500";
+            }
+        });
+
+        // 5. Update existing page <select id="langSelector"> elements
+        document.querySelectorAll("#langSelector").forEach(sel => {
+            sel.value = lang;
+        });
 
         isApplying = false;
     }
 
-    function injectLanguageSwitcher() {
-        if (document.getElementById("vizitorLangSwitcher")) return;
-
+    function createLanguageSwitcherHTML(isFloating = false) {
         const currentLang = getCurrentLang();
-        const container = document.createElement("div");
-        container.id = "vizitorLangSwitcher";
-        container.style.cssText = "display:inline-flex;align-items:center;margin-left:auto;margin-right:1rem;gap:0.4rem;font-size:0.85rem;font-weight:600;";
+        const currentInfo = LANG_INFO[currentLang] || LANG_INFO.or;
 
-        container.innerHTML = `
-            <span style="color:#64748b;display:inline-flex;align-items:center;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px;">
+        return `
+            <div style="position:relative;display:inline-flex;align-items:center;">
+                <button type="button" class="vizitor-lang-btn" aria-haspopup="true" aria-expanded="false" title="Change Language / ଭାଷା ବଦଳାନ୍ତୁ" style="display:inline-flex;align-items:center;gap:7px;background:#ffffff;border:1.5px solid #7c3aed;border-radius:20px;padding:6px 14px;font-size:0.85rem;font-weight:700;color:#1e293b;cursor:pointer;box-shadow:0 2px 6px rgba(124,58,237,0.15);transition:all 0.15s ease;">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:#7c3aed;flex-shrink:0;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span class="vizitor-current-lang-text" style="color:#0f172a;letter-spacing:0.2px;">${currentInfo.label} (${currentInfo.code})</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:#7c3aed;margin-left:1px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+
+                <div class="vizitor-lang-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 12px 28px rgba(0,0,0,0.18);min-width:185px;padding:6px;z-index:10001;">
+                    <div style="font-size:0.75rem;font-weight:700;color:#64748b;padding:6px 10px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #f1f5f9;margin-bottom:4px;display:flex;align-items:center;gap:4px;">
+                        <span>🌐</span> Select Language
+                    </div>
+                    <button type="button" class="vizitor-lang-opt" data-lang="or" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:9px 12px;border:none;border-radius:8px;background:transparent;cursor:pointer;font-size:0.875rem;text-align:left;transition:background 0.15s;">
+                        <span style="font-weight:700;">ଓଡ଼ିଆ</span>
+                        <span style="font-size:0.75rem;color:#64748b;">Odia (OR)</span>
+                    </button>
+                    <button type="button" class="vizitor-lang-opt" data-lang="mr" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:9px 12px;border:none;border-radius:8px;background:transparent;cursor:pointer;font-size:0.875rem;text-align:left;transition:background 0.15s;">
+                        <span style="font-weight:700;">मराठी</span>
+                        <span style="font-size:0.75rem;color:#64748b;">Marathi (MR)</span>
+                    </button>
+                    <button type="button" class="vizitor-lang-opt" data-lang="hi" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:9px 12px;border:none;border-radius:8px;background:transparent;cursor:pointer;font-size:0.875rem;text-align:left;transition:background 0.15s;">
+                        <span style="font-weight:700;">हिंदी</span>
+                        <span style="font-size:0.75rem;color:#64748b;">Hindi (HI)</span>
+                    </button>
+                    <button type="button" class="vizitor-lang-opt" data-lang="en" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:9px 12px;border:none;border-radius:8px;background:transparent;cursor:pointer;font-size:0.875rem;text-align:left;transition:background 0.15s;">
+                        <span style="font-weight:700;">English</span>
+                        <span style="font-size:0.75rem;color:#64748b;">English (EN)</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    function wireSwitcherEvents(wrapper) {
+        const btn = wrapper.querySelector(".vizitor-lang-btn");
+        const dropdown = wrapper.querySelector(".vizitor-lang-dropdown");
+        if (!btn || !dropdown) return;
+
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const isOpen = dropdown.style.display === "block";
+            // Close all open dropdowns first
+            document.querySelectorAll(".vizitor-lang-dropdown").forEach(d => d.style.display = "none");
+            dropdown.style.display = isOpen ? "none" : "block";
+            btn.setAttribute("aria-expanded", isOpen ? "false" : "true");
+        });
+
+        wrapper.querySelectorAll(".vizitor-lang-opt").forEach(opt => {
+            opt.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const chosen = opt.getAttribute("data-lang");
+                dropdown.style.display = "none";
+                btn.setAttribute("aria-expanded", "false");
+                setLanguage(chosen);
+            });
+            opt.addEventListener("mouseenter", () => {
+                if (opt.getAttribute("data-lang") !== getCurrentLang()) {
+                    opt.style.background = "#f8fafc";
+                }
+            });
+            opt.addEventListener("mouseleave", () => {
+                if (opt.getAttribute("data-lang") !== getCurrentLang()) {
+                    opt.style.background = "transparent";
+                }
+            });
+        });
+    }
+
+    function injectLanguageSwitcher() {
+        // 1. Check if Header Language Switcher exists
+        if (!document.getElementById("vizitorLangSwitcher")) {
+            const container = document.createElement("div");
+            container.id = "vizitorLangSwitcher";
+            container.className = "vizitor-lang-switcher-container";
+            container.style.cssText = "display:inline-flex;align-items:center;margin-right:0.6rem;z-index:999;";
+            container.innerHTML = createLanguageSwitcherHTML(false);
+
+            const mountTarget =
+                document.querySelector(".topbar-right") ||
+                document.querySelector(".topbar") ||
+                document.querySelector(".user-nav") ||
+                document.querySelector(".header-right") ||
+                document.querySelector(".dashboard-header");
+
+            if (mountTarget) {
+                mountTarget.insertBefore(container, mountTarget.firstChild);
+                wireSwitcherEvents(container);
+            }
+        }
+
+        // 2. Floating Language Button for pages without top header (Auth, Login, Signup, Map, etc.)
+        if (!mountTarget && document.body && !document.getElementById("vizitorFloatingLang")) {
+            const floatBox = document.createElement("div");
+            floatBox.id = "vizitorFloatingLang";
+            floatBox.style.cssText = "position:fixed;top:18px;right:22px;z-index:100000;";
+            floatBox.innerHTML = createLanguageSwitcherHTML(false);
+            document.body.appendChild(floatBox);
+            wireSwitcherEvents(floatBox);
+        }
+
+        // 3. Add Language Item into Sidebar if present and not already added
+        const sidebarMenu = document.querySelector(".sidebar-menu") || document.querySelector(".sidebar-nav");
+        if (sidebarMenu && !document.getElementById("sidebarLangItem")) {
+            const sideItem = document.createElement("a");
+            sideItem.id = "sidebarLangItem";
+            sideItem.href = "javascript:void(0)";
+            sideItem.className = "menu-item";
+            sideItem.title = "Change Language / ଭାଷା ବଦଳାନ୍ତୁ";
+            sideItem.style.cssText = "cursor:pointer;";
+            sideItem.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#7c3aed;">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="2" y1="12" x2="22" y2="12"></line>
                     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                 </svg>
-                ଭାଷା / Lang:
-            </span>
-            <select id="vizitorLangSelect" style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:3px 8px;font-size:0.85rem;color:#1e293b;cursor:pointer;font-weight:600;outline:none;">
-                <option value="or" ${currentLang === "or" ? "selected" : ""}>ଓଡ଼ିଆ (Odia)</option>
-                <option value="mr" ${currentLang === "mr" ? "selected" : ""}>मराठी (Marathi)</option>
-                <option value="hi" ${currentLang === "hi" ? "selected" : ""}>हिंदी (Hindi)</option>
-                <option value="en" ${currentLang === "en" ? "selected" : ""}>English</option>
-            </select>
-        `;
-
-        // Mount inside appropriate header container
-        const mountTarget =
-            document.querySelector(".topbar-right") ||
-            document.querySelector(".topbar") ||
-            document.querySelector(".user-nav") ||
-            document.querySelector(".header-right") ||
-            document.querySelector(".dashboard-header");
-
-        if (mountTarget) {
-            mountTarget.insertBefore(container, mountTarget.firstChild);
-        } else if (document.body) {
-            document.body.insertBefore(container, document.body.firstChild);
+                <span>Language (ଭାଷା)</span>
+            `;
+            sideItem.addEventListener("click", (e) => {
+                e.preventDefault();
+                // Find and click the header language button or cycle language
+                const headerBtn = document.querySelector("#vizitorLangSwitcher .vizitor-lang-btn") ||
+                                  document.querySelector("#vizitorFloatingLang .vizitor-lang-btn");
+                if (headerBtn) {
+                    headerBtn.click();
+                } else {
+                    const langs = ["or", "mr", "hi", "en"];
+                    const cur = getCurrentLang();
+                    const next = langs[(langs.indexOf(cur) + 1) % langs.length];
+                    setLanguage(next);
+                }
+            });
+            sidebarMenu.appendChild(sideItem);
         }
 
-        const select = document.getElementById("vizitorLangSelect");
-        if (select) {
-            select.addEventListener("change", (e) => {
-                setLanguage(e.target.value);
+        // 4. Enhance and hide native <select id="langSelector"> on healthcare network pages
+        document.querySelectorAll("#langSelector").forEach(sel => {
+            sel.style.display = "none";
+            if (!sel.querySelector('option[value="mr"]')) {
+                const optMr = document.createElement("option");
+                optMr.value = "mr";
+                optMr.textContent = "मराठी (MR)";
+                sel.appendChild(optMr);
+            }
+            sel.value = getCurrentLang();
+            if (!sel.dataset.vizitorWired) {
+                sel.dataset.vizitorWired = "true";
+                sel.addEventListener("change", (e) => {
+                    setLanguage(e.target.value);
+                });
+            }
+        });
+
+        // 5. Close dropdown on any document click
+        if (!window._vizitorLangDocClickWired) {
+            window._vizitorLangDocClickWired = true;
+            document.addEventListener("click", () => {
+                document.querySelectorAll(".vizitor-lang-dropdown").forEach(d => {
+                    d.style.display = "none";
+                });
+                document.querySelectorAll(".vizitor-lang-btn").forEach(b => {
+                    b.setAttribute("aria-expanded", "false");
+                });
             });
         }
     }
@@ -1023,7 +1177,12 @@
                 if (m.type === "childList" && m.addedNodes.length > 0) {
                     for (const n of m.addedNodes) {
                         if (n.nodeType === Node.ELEMENT_NODE) {
-                            if (n.id === "vizitorLangSwitcher" || (n.closest && n.closest("#vizitorLangSwitcher"))) continue;
+                            if (n.id === "vizitorLangSwitcher" ||
+                                n.id === "vizitorFloatingLang" ||
+                                n.id === "sidebarLangItem" ||
+                                (n.closest && (n.closest("#vizitorLangSwitcher") || n.closest("#vizitorFloatingLang")))) {
+                                continue;
+                            }
                             hasNewNodes = true;
                             break;
                         }
@@ -1036,6 +1195,7 @@
                 if (observerTimeout) clearTimeout(observerTimeout);
                 observerTimeout = setTimeout(() => {
                     applyTranslations();
+                    injectLanguageSwitcher();
                 }, 40);
             }
         });
