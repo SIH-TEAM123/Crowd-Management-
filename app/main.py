@@ -62,6 +62,7 @@ from app.routes.chronic_disease import router as chronic_disease_router
 from app.routes.follow_up import router as follow_up_router
 
 # Offline capabilities routes imported above
+from app.routes.camera import router as camera_router
 
 
 # ============================================================
@@ -250,6 +251,7 @@ app.include_router(diagnostics_router)
 app.include_router(medicines_router)
 app.include_router(referrals_router)
 app.include_router(sms_router)
+app.include_router(camera_router)
 
 
 # ============================================================

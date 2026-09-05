@@ -146,6 +146,361 @@
                 width: 100%;
             }
         }
+
+        /* =====================================================
+           COMPUTER VISION CROWD SENSING STYLES
+           ===================================================== */
+        .cv-sensing-card {
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+        }
+
+        .cv-sensing-grid {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 20px;
+            padding: 18px;
+        }
+
+        .cv-viewport-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .cv-video-frame {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            max-height: 420px;
+            background: #0f172a;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .cv-stream-media {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .cv-standby-cover {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+            color: #cbd5e1;
+        }
+
+        .cv-standby-cover h4 {
+            color: #f8fafc;
+            font-size: 18px;
+            margin: 12px 0 6px 0;
+            font-weight: 700;
+        }
+
+        .cv-standby-cover p {
+            color: #94a3b8;
+            font-size: 13px;
+            max-width: 320px;
+            margin: 0 0 16px 0;
+        }
+
+        .cv-primary-btn {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+        }
+
+        .cv-primary-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(124, 58, 237, 0.45);
+        }
+
+        .cv-viewport-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .cv-toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cv-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s ease;
+            border: 1px solid transparent;
+        }
+
+        .cv-btn-danger {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fca5a5;
+        }
+
+        .cv-btn-danger:hover {
+            background: #fecaca;
+        }
+
+        .cv-btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border-color: #cbd5e1;
+        }
+
+        .cv-btn-secondary.active {
+            background: #fef3c7;
+            color: #b45309;
+            border-color: #fcd34d;
+        }
+
+        .cv-btn-purple {
+            background: #ede9fe;
+            color: #6d28d9;
+            border-color: #ddd6fe;
+        }
+
+        .cv-btn-purple:hover {
+            background: #ddd6fe;
+        }
+
+        .cv-mode-select {
+            padding: 6px 10px;
+            border-radius: 7px;
+            border: 1px solid #cbd5e1;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            background: #ffffff;
+            outline: none;
+        }
+
+        .cv-select-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .cv-metrics-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .cv-kpi-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cv-kpi-card.highlight {
+            background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+            border-color: #e9d5ff;
+        }
+
+        .cv-kpi-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #64748b;
+        }
+
+        .cv-kpi-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #7c3aed;
+            line-height: 1.2;
+            margin: 4px 0;
+        }
+
+        .cv-kpi-value.sm {
+            font-size: 20px;
+            color: #1e293b;
+        }
+
+        .cv-kpi-sub {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .cv-kpis-mini-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .cv-facility-box {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .cv-facility-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+
+        .cv-fac-label {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .cv-fac-val {
+            color: #1e293b;
+            font-weight: 700;
+            text-align: right;
+            max-width: 170px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cv-badge-privacy {
+            display: inline-block;
+            background: #dcfce7;
+            color: #166534;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .cv-status-log {
+            font-size: 12px;
+            color: #475569;
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 10px;
+            border-left: 3px solid #7c3aed;
+            font-family: monospace;
+            line-height: 1.4;
+        }
+
+        .cv-privacy-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .live-dot-pulse {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #94a3b8;
+            display: inline-block;
+            transition: 0.3s ease;
+        }
+
+        .live-dot-pulse.active {
+            background: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+            animation: pulse-live 1.8s infinite;
+        }
+
+        @keyframes pulse-live {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Toggle switch */
+        .cv-toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 38px;
+            height: 20px;
+        }
+        .cv-toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .cv-toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: .2s;
+            border-radius: 20px;
+        }
+        .cv-toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .2s;
+            border-radius: 50%;
+        }
+        input:checked + .cv-toggle-slider {
+            background-color: #7c3aed;
+        }
+        input:checked + .cv-toggle-slider:before {
+            transform: translateX(18px);
+        }
+
+        @media (max-width: 950px) {
+            .cv-sensing-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -490,6 +845,175 @@
                         Refresh Status
 
                     </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 LIVE COMPUTER VISION SENSING PANEL
+                 ================================================= -->
+
+            <div class="card-panel cv-sensing-card" id="cvSensingPanel">
+
+                <div class="panel-header">
+
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="live-dot-pulse" id="cvStatusPulse"></span>
+                        <h3 class="panel-title" style="margin: 0;">
+                            Live Computer Vision Crowd Sensing
+                        </h3>
+                        <span class="card-badge badge-secondary" id="cvStatusBadge">
+                            Standby
+                        </span>
+                    </div>
+
+                    <div class="cv-privacy-pill">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        <span>100% Privacy Preserved • Zero Biometric Storage</span>
+                    </div>
+
+                </div>
+
+                <div class="cv-sensing-grid">
+
+                    <!-- Viewport Column -->
+                    <div class="cv-viewport-container">
+
+                        <div class="cv-video-frame" id="cvVideoWrapper">
+
+                            <img id="cvStreamImg"
+                                 src=""
+                                 alt="Live Camera Crowd Sensing Feed"
+                                 class="cv-stream-media"
+                                 style="display: none;"
+                            />
+
+                            <div class="cv-standby-cover" id="cvStandbyCover">
+
+                                <div class="cv-standby-icon">
+                                    <svg viewBox="0 0 24 24" width="54" height="54" fill="none" stroke="#7c3aed" stroke-width="1.8">
+                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                        <circle cx="12" cy="13" r="4"/>
+                                    </svg>
+                                </div>
+
+                                <h4>Edge AI Vision Pipeline Ready</h4>
+                                <p>
+                                    YOLO11n person detection + ByteTrack persistent tracking &amp; ROI spatial filtering
+                                </p>
+
+                                <button class="cv-primary-btn" id="btnStartCvCamera" type="button">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="5 3 19 12 5 21 5 3"/>
+                                    </svg>
+                                    Start Live Camera Sensing
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Viewport Toolbar -->
+                        <div class="cv-viewport-toolbar">
+
+                            <div class="cv-toolbar-group">
+
+                                <button class="cv-btn cv-btn-danger" id="btnStopCvCamera" type="button" style="display: none;">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="6" y="6" width="12" height="12" rx="2"/>
+                                    </svg>
+                                    Stop Camera
+                                </button>
+
+                                <button class="cv-btn cv-btn-secondary" id="btnToggleCvRoi" type="button">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="3 3"/>
+                                    </svg>
+                                    <span id="cvRoiBtnText">ROI Filter: OFF</span>
+                                </button>
+
+                                <button class="cv-btn cv-btn-purple" id="btnSyncCvNow" type="button" title="Push camera count into facility queue &amp; live operational state">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                                    </svg>
+                                    Sync to Queue
+                                </button>
+
+                            </div>
+
+                            <div class="cv-toolbar-group">
+                                <label class="cv-select-label" for="cvSourceMode">Source:</label>
+                                <select id="cvSourceMode" class="cv-mode-select">
+                                    <option value="webcam" selected>Webcam (Device 0)</option>
+                                    <option value="simulation">Simulation (Virtual Demo)</option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Metrics Sidebar Column -->
+                    <div class="cv-metrics-sidebar">
+
+                        <div class="cv-kpi-card highlight">
+                            <span class="cv-kpi-label">Smoothed People Count</span>
+                            <span class="cv-kpi-value" id="cvMetricSmoothed">--</span>
+                            <span class="cv-kpi-sub">Rolling median temporal filter</span>
+                        </div>
+
+                        <div class="cv-kpis-mini-row">
+
+                            <div class="cv-kpi-card">
+                                <span class="cv-kpi-label">Raw Detected</span>
+                                <span class="cv-kpi-value sm" id="cvMetricRaw">--</span>
+                            </div>
+
+                            <div class="cv-kpi-card">
+                                <span class="cv-kpi-label">Active Tracks</span>
+                                <span class="cv-kpi-value sm" id="cvMetricTracks">--</span>
+                            </div>
+
+                            <div class="cv-kpi-card">
+                                <span class="cv-kpi-label">FPS</span>
+                                <span class="cv-kpi-value sm" id="cvMetricFps">--</span>
+                            </div>
+
+                        </div>
+
+                        <div class="cv-facility-box">
+
+                            <div class="cv-facility-row">
+                                <span class="cv-fac-label">Connected Facility:</span>
+                                <span class="cv-fac-val" id="cvFacilityName" title="District Headquarters Hospital Angul">
+                                    DHH Angul (FAC_ANGUL_DH)
+                                </span>
+                            </div>
+
+                            <div class="cv-facility-row">
+                                <span class="cv-fac-label">Auto-Sync to Crowd:</span>
+                                <label class="cv-toggle-switch">
+                                    <input type="checkbox" id="cvAutoSyncCheck" checked>
+                                    <span class="cv-toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="cv-facility-row">
+                                <span class="cv-fac-label">Data Protection:</span>
+                                <span class="cv-badge-privacy">Edge Anonymized</span>
+                            </div>
+
+                        </div>
+
+                        <div class="cv-status-log" id="cvStatusTicker">
+                            Standby. Click 'Start Live Camera Sensing' to initiate computer vision detection.
+                        </div>
+
+                    </div>
 
                 </div>
 

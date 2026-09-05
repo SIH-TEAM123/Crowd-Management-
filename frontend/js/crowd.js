@@ -1411,5 +1411,247 @@ document.addEventListener(
                 }
             );
         }
+
+        // Initialize Computer Vision Crowd Sensing
+        initComputerVisionSensing();
     }
 );
+
+
+// ============================================================
+// COMPUTER VISION LIVE SENSING CONTROLLER
+// ============================================================
+
+let cvPollingTimer = null;
+let cvIsSensingActive = false;
+
+function initComputerVisionSensing() {
+    const btnStart = document.getElementById("btnStartCvCamera");
+    const btnStop = document.getElementById("btnStopCvCamera");
+    const btnRoi = document.getElementById("btnToggleCvRoi");
+    const btnSync = document.getElementById("btnSyncCvNow");
+    const modeSelect = document.getElementById("cvSourceMode");
+    const autoSyncCheck = document.getElementById("cvAutoSyncCheck");
+
+    const streamImg = document.getElementById("cvStreamImg");
+    const standbyCover = document.getElementById("cvStandbyCover");
+    const statusBadge = document.getElementById("cvStatusBadge");
+    const statusPulse = document.getElementById("cvStatusPulse");
+    const roiBtnText = document.getElementById("cvRoiBtnText");
+    const statusTicker = document.getElementById("cvStatusTicker");
+
+    const metricSmoothed = document.getElementById("cvMetricSmoothed");
+    const metricRaw = document.getElementById("cvMetricRaw");
+    const metricTracks = document.getElementById("cvMetricTracks");
+    const metricFps = document.getElementById("cvMetricFps");
+
+    if (!btnStart) return;
+
+    function setCvUiRunning(isRunning, mode = "webcam") {
+        cvIsSensingActive = isRunning;
+        if (isRunning) {
+            if (streamImg) {
+                streamImg.style.display = "block";
+                streamImg.src = VIZITOR.getCameraStreamUrl();
+            }
+            if (standbyCover) standbyCover.style.display = "none";
+            if (btnStop) btnStop.style.display = "inline-flex";
+            if (statusBadge) {
+                statusBadge.textContent = mode === "webcam" ? "Live Webcam" : "Virtual Demo";
+                statusBadge.className = "card-badge badge-success";
+            }
+            if (statusPulse) statusPulse.classList.add("active");
+            if (statusTicker) {
+                statusTicker.textContent = `YOLO11n + ByteTrack active (${mode}). Real-time stream running.`;
+            }
+        } else {
+            if (streamImg) {
+                streamImg.style.display = "none";
+                streamImg.src = "";
+            }
+            if (standbyCover) standbyCover.style.display = "flex";
+            if (btnStop) btnStop.style.display = "none";
+            if (statusBadge) {
+                statusBadge.textContent = "Standby";
+                statusBadge.className = "card-badge badge-secondary";
+            }
+            if (statusPulse) statusPulse.classList.remove("active");
+            if (statusTicker) {
+                statusTicker.textContent = "Camera stopped. Standby mode.";
+            }
+        }
+    }
+
+    async function pollCvMetrics() {
+        if (!cvIsSensingActive) return;
+        try {
+            const data = await VIZITOR.getCameraStatus();
+            if (!data) return;
+
+            if (data.is_running !== cvIsSensingActive) {
+                setCvUiRunning(data.is_running, data.source_mode);
+            }
+
+            if (metricSmoothed) metricSmoothed.textContent = data.people_count ?? 0;
+            if (metricRaw) metricRaw.textContent = data.raw_count ?? 0;
+            if (metricTracks) metricTracks.textContent = data.active_tracks ?? 0;
+            if (metricFps) metricFps.textContent = (data.fps ?? 0).toFixed(1);
+
+            if (roiBtnText) {
+                roiBtnText.textContent = data.roi_enabled ? "ROI Filter: ON" : "ROI Filter: OFF";
+                if (btnRoi) {
+                    if (data.roi_enabled) btnRoi.classList.add("active");
+                    else btnRoi.classList.remove("active");
+                }
+            }
+
+            if (statusTicker && data.is_running) {
+                statusTicker.textContent = `Tracking: ${data.active_tracks} people | Smoothed: ${data.people_count} | ROI: ${data.roi_enabled ? "Active" : "Full frame"} | ${data.fps} FPS`;
+            }
+
+            // Sync with main crowd status if auto-sync is enabled and no manual simulation is active
+            if (autoSyncCheck && autoSyncCheck.checked && data.is_running && !VIZITOR.isSimulationActive()) {
+                const count = Number(data.people_count) || 0;
+                const peopleEl = document.getElementById("peopleCount");
+                const queueEl = document.getElementById("queueSize");
+                const waitEl = document.getElementById("waitTime");
+                const levelText = document.getElementById("levelText");
+                const levelBadge = document.getElementById("levelBadge");
+
+                if (peopleEl) peopleEl.textContent = String(count);
+                if (queueEl) queueEl.textContent = String(count);
+
+                const waitMins = Math.max(1, Math.ceil(count * 1.5));
+                if (waitEl) waitEl.innerHTML = `${waitMins}<span class="wait-unit"> min</span>`;
+
+                const level = calculateLevel(count);
+                const lvlClass = levelClass(level);
+                if (levelText) {
+                    levelText.textContent = level;
+                    levelText.className = `crowd-level-badge ${lvlClass}`;
+                }
+                if (levelBadge) {
+                    if (typeof VIZITOR.renderCrowdBadge === "function") {
+                        VIZITOR.renderCrowdBadge(levelBadge, level, count);
+                    } else {
+                        levelBadge.textContent = level;
+                        levelBadge.className = `card-badge badge-${lvlClass === "low" ? "success" : lvlClass === "moderate" ? "warning" : "danger"}`;
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn("[CV] Metrics polling error:", e);
+        }
+    }
+
+    // Start Button
+    btnStart.addEventListener("click", async () => {
+        btnStart.disabled = true;
+        btnStart.innerHTML = "Starting...";
+        const mode = modeSelect ? modeSelect.value : "webcam";
+        try {
+            const res = await VIZITOR.startCamera({
+                source_mode: mode,
+                facility_id: "FAC_ANGUL_DH",
+                camera_id: "CV_CAM_01",
+                roi_enabled: btnRoi && btnRoi.classList.contains("active")
+            });
+            setCvUiRunning(true, res.source_mode || mode);
+            if (!cvPollingTimer) {
+                cvPollingTimer = setInterval(pollCvMetrics, 1000);
+            }
+            await pollCvMetrics();
+        } catch (err) {
+            alert("Could not start camera: " + err.message);
+            setCvUiRunning(false);
+        } finally {
+            btnStart.disabled = false;
+            btnStart.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Start Live Camera Sensing`;
+        }
+    });
+
+    // Stop Button
+    if (btnStop) {
+        btnStop.addEventListener("click", async () => {
+            btnStop.disabled = true;
+            try {
+                await VIZITOR.stopCamera();
+                setCvUiRunning(false);
+                if (cvPollingTimer) {
+                    clearInterval(cvPollingTimer);
+                    cvPollingTimer = null;
+                }
+            } catch (err) {
+                console.error("Stop camera error:", err);
+            } finally {
+                btnStop.disabled = false;
+            }
+        });
+    }
+
+    // Toggle ROI Button
+    if (btnRoi) {
+        btnRoi.addEventListener("click", async () => {
+            try {
+                const res = await VIZITOR.toggleCameraRoi();
+                if (roiBtnText) {
+                    roiBtnText.textContent = res.roi_enabled ? "ROI Filter: ON" : "ROI Filter: OFF";
+                }
+                if (res.roi_enabled) btnRoi.classList.add("active");
+                else btnRoi.classList.remove("active");
+                if (statusTicker) {
+                    statusTicker.textContent = `ROI filter is now ${res.roi_enabled ? "ACTIVE (filtering detections)" : "DISABLED (full frame)"}`;
+                }
+            } catch (err) {
+                console.error("ROI toggle error:", err);
+            }
+        });
+    }
+
+    // Manual Sync Button
+    if (btnSync) {
+        btnSync.addEventListener("click", async () => {
+            try {
+                btnSync.disabled = true;
+                const syncRes = await VIZITOR.syncCameraTelemetry();
+                if (statusTicker) {
+                    statusTicker.textContent = `Synced: ${syncRes.people_count} people pushed to facility queue at ${new Date().toLocaleTimeString()}.`;
+                }
+                await refreshStatus();
+            } catch (err) {
+                alert("Telemetry sync error: " + err.message);
+            } finally {
+                btnSync.disabled = false;
+            }
+        });
+    }
+
+    // Source Mode Change
+    if (modeSelect) {
+        modeSelect.addEventListener("change", async () => {
+            if (cvIsSensingActive) {
+                try {
+                    const newMode = modeSelect.value;
+                    const res = await VIZITOR.startCamera({
+                        source_mode: newMode,
+                        facility_id: "FAC_ANGUL_DH"
+                    });
+                    setCvUiRunning(true, res.source_mode || newMode);
+                } catch (e) {
+                    console.error("Mode switch error:", e);
+                }
+            }
+        });
+    }
+
+    // Check initial status on load
+    VIZITOR.getCameraStatus().then(status => {
+        if (status && status.is_running) {
+            setCvUiRunning(true, status.source_mode);
+            if (!cvPollingTimer) {
+                cvPollingTimer = setInterval(pollCvMetrics, 1000);
+            }
+            pollCvMetrics();
+        }
+    }).catch(() => {});
+}
