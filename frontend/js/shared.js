@@ -89,8 +89,22 @@ const VIZITOR = (() => {
             );
 
             if (response.status === 401) {
-                localStorage.removeItem("access_token");
-                localStorage.removeItem("isAuthenticated");
+                let errData = {};
+                try {
+                    errData = await response.json();
+                } catch (_) {}
+                const detail = String(errData.detail || "").toLowerCase();
+                const isAuthExpired = detail.includes("invalid") || detail.includes("expired") || detail.includes("not authenticated");
+                if (isAuthExpired && (path === "/auth/me" || path === "/auth/login")) {
+                    console.warn("[VIZITOR] Confirmed invalid/expired token on auth check. Clearing session.");
+                    localStorage.removeItem("access_token");
+                    localStorage.removeItem("isAuthenticated");
+                    if (shouldRedirectOn401()) {
+                        window.location.href = "index.html";
+                    }
+                } else {
+                    console.warn(`[VIZITOR] Received 401 on ${path}. Session kept intact.`);
+                }
                 return null;
             }
 

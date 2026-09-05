@@ -1,4 +1,4 @@
-﻿// Real authentication using FastAPI
+// Real authentication using FastAPI
 const LOCAL_API_URL = "http://127.0.0.1:8000";
 const RENDER_API_URL = "https://vizitor.onrender.com";
 
@@ -85,7 +85,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         });
                         usedApi = fallbackApi;
                         window.API_BASE_URL = fallbackApi;
-                        API_BASE_URL = fallbackApi;
                     } catch (fallbackErr) {
                         console.error("[VIZITOR Auth] Both APIs unreachable:", netErr, fallbackErr);
                         alert(`Unable to connect to the backend server.\nTried: ${primaryApi} and ${fallbackApi}.\nPlease verify that FastAPI is running on ${LOCAL_API_URL} or check your internet connection.`);

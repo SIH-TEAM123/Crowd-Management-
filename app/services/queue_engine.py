@@ -131,16 +131,19 @@ class QueueEngine:
         if not appointments:
             return []
 
-        token_ids = [a.token_id for a in appointments]
-        t_result = await db.execute(
-            select(Token).where(Token.token_id.in_(token_ids))
-        )
-        token_map = {t.token_id: t for t in t_result.scalars().all()}
+        token_ids = [a.token_id for a in appointments if a.token_id]
+        if token_ids:
+            t_result = await db.execute(
+                select(Token).where(Token.token_id.in_(token_ids))
+            )
+            token_map = {t.token_id: t for t in t_result.scalars().all()}
+        else:
+            token_map = {}
 
         # Sort: EMERGENCY (0), TIME_CRITICAL/VULNERABLE (1), NORMAL (2)
         def priority_key(appt: Appointment):
             t = token_map.get(appt.token_id)
-            pt = (t.priority_type if t else "NORMAL").upper()
+            pt = (getattr(t, "priority_type", "NORMAL") or "NORMAL").upper()
             if pt == "EMERGENCY":
                 p_rank = 0
             elif pt in ("TIME_CRITICAL", "VULNERABLE"):

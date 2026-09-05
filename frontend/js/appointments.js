@@ -169,17 +169,20 @@ async function createToken(priorityType = "NORMAL") {
         );
 
         if (response.status === 401) {
-
-            localStorage.removeItem(
-                "access_token"
-            );
-
-            window.location.href =
-                "index.html";
-
+            const detail = String(data?.detail || "").toLowerCase();
+            const isAuthExpired = detail.includes("invalid") || detail.includes("expired") || detail.includes("not authenticated");
+            if (isAuthExpired) {
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("isAuthenticated");
+                window.location.href = "index.html";
+                return {
+                    success: false,
+                    message: "Session expired. Please login again."
+                };
+            }
             return {
                 success: false,
-                message: "Session expired. Please login again."
+                message: data?.detail || "Action unauthorized. Session kept intact."
             };
         }
 
@@ -1763,14 +1766,15 @@ async function performCancellation(
 
 
         if (response.status === 401) {
-
-            localStorage.removeItem(
-                "access_token"
-            );
-
-            window.location.href =
-                "index.html";
-
+            const detail = String(data?.detail || "").toLowerCase();
+            const isAuthExpired = detail.includes("invalid") || detail.includes("expired") || detail.includes("not authenticated");
+            if (isAuthExpired) {
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("isAuthenticated");
+                window.location.href = "index.html";
+                return;
+            }
+            showErrorModal(data?.detail || "Action unauthorized. Session kept intact.");
             return;
         }
 

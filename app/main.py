@@ -86,6 +86,20 @@ async def lifespan(app: FastAPI):
             Base.metadata.create_all
         )
 
+        from sqlalchemy import text
+        migrations = [
+            "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS facility_id VARCHAR(64);",
+            "ALTER TABLE tokens ADD COLUMN IF NOT EXISTS priority_type VARCHAR(30) DEFAULT 'NORMAL';",
+            "ALTER TABLE tokens ADD COLUMN IF NOT EXISTS queue_position INTEGER;",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT FALSE;",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'user';",
+        ]
+        for mig in migrations:
+            try:
+                await connection.execute(text(mig))
+            except Exception as e:
+                print(f"[Lifespan migration] Notice executing '{mig}': {e}")
+
     # Seed initial hospital data
     await seed_hospitals()
 
@@ -127,6 +141,28 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+from fastapi import Request
+from fastapi.responses import JSONResponse
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    import traceback
+    err_tb = traceback.format_exc()
+    print(f"[ERROR 500] {request.method} {request.url.path}: {exc}\n{err_tb}")
+    origin = request.headers.get("origin") or "*"
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal Server Error: {str(exc)}", "type": type(exc).__name__},
+        headers={
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Methods": "*",
+        }
+    )
+
 
 
 # ============================================================

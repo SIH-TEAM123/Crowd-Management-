@@ -161,41 +161,53 @@ async def get_my_appointments(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(Appointment)
-        .where(Appointment.user_id == current_user.user_id)
-        .order_by(
-            Appointment.appointment_date,
-            Appointment.appointment_time,
-            Appointment.appointment_id,
+    try:
+        result = await db.execute(
+            select(Appointment)
+            .where(Appointment.user_id == current_user.user_id)
+            .order_by(
+                Appointment.appointment_date,
+                Appointment.appointment_time,
+                Appointment.appointment_id,
+            )
         )
-    )
-    appointments = result.scalars().all()
+        appointments = result.scalars().all()
 
-    # Load tokens to include priority
-    token_ids = [a.token_id for a in appointments]
-    t_result = await db.execute(
-        select(Token).where(Token.token_id.in_(token_ids))
-    )
-    token_map = {t.token_id: t for t in t_result.scalars().all()}
+        # Load tokens to include priority safely
+        token_ids = [a.token_id for a in appointments if a.token_id]
+        if token_ids:
+            t_result = await db.execute(
+                select(Token).where(Token.token_id.in_(token_ids))
+            )
+            token_map = {t.token_id: t for t in t_result.scalars().all()}
+        else:
+            token_map = {}
 
-    return [
-        {
-            "appointment_id": appt.appointment_id,
-            "user_id": appt.user_id,
-            "token_id": appt.token_id,
-            "token_display": queue_engine.token_display_for(appt.appointment_id),
-            "token_number": queue_engine.token_display_for(appt.appointment_id),
-            "token_numeric": queue_engine.token_number_for(appt.appointment_id),
-            "purpose": appt.purpose,
-            "appointment_date": appt.appointment_date,
-            "appointment_time": appt.appointment_time,
-            "counter": "Counter 1",
-            "status": appt.status,
-            "priority_type": token_map.get(appt.token_id).priority_type if token_map.get(appt.token_id) else "NORMAL",
-        }
-        for appt in appointments
-    ]
+        return [
+            {
+                "appointment_id": appt.appointment_id,
+                "user_id": appt.user_id,
+                "token_id": appt.token_id,
+                "token_display": queue_engine.token_display_for(appt.appointment_id),
+                "token_number": queue_engine.token_display_for(appt.appointment_id),
+                "token_numeric": queue_engine.token_number_for(appt.appointment_id),
+                "purpose": appt.purpose,
+                "appointment_date": appt.appointment_date,
+                "appointment_time": appt.appointment_time,
+                "counter": "Counter 1",
+                "status": appt.status,
+                "priority_type": getattr(token_map.get(appt.token_id), "priority_type", "NORMAL") or "NORMAL",
+            }
+            for appt in appointments
+        ]
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database error loading appointments: {str(e)}"
+        )
+
 
 
 # =========================================================
