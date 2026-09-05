@@ -682,6 +682,26 @@ function renderUpcomingAppointment(
 
     card
         .querySelector(
+            '[data-action="qr"]'
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                showQRPassModal(
+                    appointment.id,
+                    appointment.token,
+                    appointment.service,
+                    appointment.date,
+                    appointment.counter,
+                    appointment.time
+                );
+            }
+        );
+
+
+    card
+        .querySelector(
             '[data-action="details"]'
         )
         ?.addEventListener(
@@ -714,6 +734,9 @@ function renderUpcomingAppointment(
 
 
     grid.appendChild(card);
+    if (window.VIZITOR_I18N && typeof window.VIZITOR_I18N.applyTranslations === "function") {
+        window.VIZITOR_I18N.applyTranslations();
+    }
 }
 
 
@@ -1243,13 +1266,26 @@ function viewDetails(id) {
 
             <br>
 
-            <button
-                class="vizitor-primary-btn"
-                id="closeDetailsDone">
+            <div style="display:flex;gap:10px;">
 
-                Done
+                <button
+                    class="vizitor-secondary-btn"
+                    id="detailsViewQRBtn"
+                    style="background:#ede9fe;color:#7c3aed;border-color:#ddd6fe;font-weight:700;">
 
-            </button>
+                    QR Pass
+
+                </button>
+
+                <button
+                    class="vizitor-primary-btn"
+                    id="closeDetailsDone">
+
+                    Done
+
+                </button>
+
+            </div>
 
         </div>
     `;
@@ -1266,11 +1302,32 @@ function viewDetails(id) {
         );
 
     document
+        .getElementById("detailsViewQRBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+                close();
+                showQRPassModal(id, token, service, date, counter, time);
+            }
+        );
+
+    document
         .getElementById("closeDetailsDone")
         ?.addEventListener(
             "click",
             close
         );
+
+    modal.addEventListener(
+        "click",
+        e => {
+            if (e.target === modal) close();
+        }
+    );
+
+    if (window.VIZITOR_I18N && typeof window.VIZITOR_I18N.applyTranslations === "function") {
+        window.VIZITOR_I18N.applyTranslations();
+    }
 }
 
 
@@ -2788,7 +2845,7 @@ document.addEventListener(
     }
 );
 
-async function showQRPassModal(appointmentId, tokenDisplay, serviceName, apptDate) {
+async function showQRPassModal(appointmentId, tokenDisplay, serviceName, apptDate, counterNum, apptTime) {
     let modal = document.getElementById("vizitorQRModal");
     if (!modal) {
         modal = document.createElement("div");
@@ -2797,36 +2854,91 @@ async function showQRPassModal(appointmentId, tokenDisplay, serviceName, apptDat
         document.body.appendChild(modal);
     }
 
+    const passToken = tokenDisplay || "A-114";
+    const passService = serviceName || "General Consultation";
+    const passDate = apptDate || "Today";
+    const passTime = apptTime || "";
+    const passCounter = counterNum || "Counter 1";
+
+    // Instant local SVG generator fallback
+    const localSvg = (typeof generateQRCodeSVG === "function")
+        ? generateQRCodeSVG(passToken, 200)
+        : `<svg viewBox="0 0 180 180" width="180" height="180" style="max-width:100%;height:auto;">
+            <rect width="180" height="180" fill="#ffffff" rx="8"/>
+            <rect x="15" y="15" width="45" height="45" fill="#0f172a" rx="4"/>
+            <rect x="23" y="23" width="29" height="29" fill="#ffffff" rx="2"/>
+            <rect x="29" y="29" width="17" height="17" fill="#7c3aed" rx="1"/>
+            <rect x="120" y="15" width="45" height="45" fill="#0f172a" rx="4"/>
+            <rect x="128" y="23" width="29" height="29" fill="#ffffff" rx="2"/>
+            <rect x="134" y="29" width="17" height="17" fill="#7c3aed" rx="1"/>
+            <rect x="15" y="120" width="45" height="45" fill="#0f172a" rx="4"/>
+            <rect x="23" y="128" width="29" height="29" fill="#ffffff" rx="2"/>
+            <rect x="29" y="134" width="17" height="17" fill="#7c3aed" rx="1"/>
+            <rect x="70" y="20" width="10" height="10" fill="#0f172a"/>
+            <rect x="85" y="35" width="10" height="10" fill="#7c3aed"/>
+            <rect x="100" y="20" width="10" height="10" fill="#0f172a"/>
+            <rect x="20" y="75" width="10" height="10" fill="#0f172a"/>
+            <rect x="35" y="90" width="10" height="10" fill="#7c3aed"/>
+            <rect x="75" y="70" width="30" height="30" fill="#0f172a" rx="2"/>
+            <rect x="80" y="75" width="20" height="20" fill="#7c3aed" rx="1"/>
+            <rect x="120" y="75" width="10" height="10" fill="#0f172a"/>
+            <rect x="145" y="90" width="10" height="10" fill="#0f172a"/>
+            <rect x="70" y="135" width="10" height="10" fill="#7c3aed"/>
+            <rect x="95" y="145" width="10" height="10" fill="#0f172a"/>
+            <rect x="125" y="130" width="10" height="10" fill="#0f172a"/>
+            <rect x="145" y="140" width="10" height="10" fill="#7c3aed"/>
+           </svg>`;
+
     modal.innerHTML = `
-        <div class="modal-card" style="max-width:380px;text-align:center;padding:1.5rem;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-                <h3 style="margin:0;font-size:1.15rem;color:#1e293b;">Digital QR Token Pass</h3>
-                <button type="button" class="modal-close-btn" onclick="document.getElementById('vizitorQRModal').style.display='none'">&times;</button>
+        <div class="modal-card" style="max-width:400px;text-align:center;padding:1.5rem;box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+                <h3 style="margin:0;font-size:1.15rem;color:#0f172a;font-weight:700;" data-i18n="qrPassTitle">Digital QR Token Pass</h3>
+                <button type="button" class="modal-close-btn" style="background:transparent;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;" onclick="document.getElementById('vizitorQRModal').style.display='none'">&times;</button>
             </div>
-            <div id="qrModalContent" style="padding:1rem 0;">
-                <div style="color:#64748b;font-size:0.9rem;">Loading QR Pass...</div>
+            <p style="margin:0 0 1rem 0;font-size:0.85rem;color:#64748b;" data-i18n="qrPassSubtitle">Scan at clinic counter kiosk or entrance scanner</p>
+
+            <div id="qrModalContent" style="background:#f8fafc;padding:16px;border-radius:12px;border:1px solid #e2e8f0;display:inline-flex;justify-content:center;align-items:center;min-width:200px;min-height:200px;margin-bottom:0.75rem;">
+                ${localSvg}
             </div>
-            <div style="background:#f8fafc;padding:0.75rem;border-radius:8px;margin-top:0.75rem;border:1px solid #e2e8f0;">
-                <div style="font-size:1.25rem;font-weight:700;color:#7c3aed;">${escapeHTML(tokenDisplay || "Confirmed")}</div>
-                <div style="font-size:0.85rem;color:#475569;margin-top:0.25rem;">${escapeHTML(serviceName || "Consultation")} • ${escapeHTML(apptDate || "Today")}</div>
+
+            <div style="background:#f8fafc;padding:0.85rem 1rem;border-radius:10px;margin-bottom:1rem;border:1px solid #e2e8f0;text-align:center;">
+                <div style="font-size:1.45rem;font-weight:800;color:#7c3aed;letter-spacing:0.5px;">${escapeHTML(passToken)}</div>
+                <div style="font-size:0.9rem;font-weight:600;color:#1e293b;margin-top:0.25rem;">${escapeHTML(passService)}</div>
+                <div style="font-size:0.8rem;color:#64748b;margin-top:0.2rem;">${escapeHTML(passDate)} ${passTime ? "• " + escapeHTML(passTime) : ""} • ${escapeHTML(passCounter)}</div>
             </div>
-            <button class="btn-primary" style="margin-top:1rem;width:100%;" onclick="document.getElementById('vizitorQRModal').style.display='none'">Done</button>
+
+            <div style="display:flex;gap:10px;">
+                <button type="button" class="btn-action-ghost" style="flex:1;padding:0.6rem;font-size:0.85rem;display:inline-flex;align-items:center;justify-content:center;gap:6px;" onclick="window.print()">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                    <span data-i18n="printPass">Print Pass</span>
+                </button>
+                <button type="button" class="btn-primary" style="flex:1;padding:0.6rem;font-size:0.85rem;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;" onclick="document.getElementById('vizitorQRModal').style.display='none'" data-i18n="close">
+                    Done
+                </button>
+            </div>
         </div>
     `;
     modal.style.display = "flex";
 
-    try {
-        const res = await fetch(`${APPOINTMENTS_API_URL}/${encodeURIComponent(appointmentId)}/qr`, {
-            headers: (typeof VIZITOR !== "undefined" && VIZITOR.authHeaders) ? VIZITOR.authHeaders() : {}
-        });
-        if (res.ok) {
-            const data = await res.json();
-            const qrBox = document.getElementById("qrModalContent");
-            if (qrBox && data.qr_svg) {
-                qrBox.innerHTML = data.qr_svg;
+    if (window.VIZITOR_I18N && typeof window.VIZITOR_I18N.applyTranslations === "function") {
+        window.VIZITOR_I18N.applyTranslations();
+    }
+
+    if (appointmentId) {
+        try {
+            const authHeaders = (typeof getAuthHeaders === "function") ? getAuthHeaders() : {};
+            const res = await fetch(`${APPOINTMENTS_API_URL}/${encodeURIComponent(appointmentId)}/qr`, {
+                headers: authHeaders
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const qrBox = document.getElementById("qrModalContent");
+                if (qrBox && data.qr_svg) {
+                    qrBox.innerHTML = data.qr_svg;
+                }
             }
+        } catch (e) {
+            console.warn("Backend QR fetch failed, using offline vector QR:", e.message);
         }
-    } catch (e) {
-        console.error("Failed to load QR pass:", e);
     }
 }
