@@ -71,6 +71,7 @@ from app.routes.follow_up import router as follow_up_router
 from app.seed_hospitals import seed_hospitals
 from app.seed_articles import seed_articles
 from app.seed_healthcare import seed_healthcare_network
+from app.seed_50_specialists import main as seed_50_specialists
 
 
 # ============================================================
@@ -100,18 +101,44 @@ async def lifespan(app: FastAPI):
             except Exception as e:
                 print(f"[Lifespan migration] Notice executing '{mig}': {e}")
 
-    # Seed initial hospital data
+        # Seed initial hospital data
+    # This already creates/updates the 20 hospitals safely.
     await seed_hospitals()
 
     # Seed initial article data
     await seed_articles()
 
-    # Seed initial healthcare network data (Facilities, Specialists, Diagnostics, Medicines, Referrals)
+    # Existing baseline healthcare network seed
     try:
         import asyncio
         await asyncio.to_thread(seed_healthcare_network)
     except Exception as e:
         print(f"[Lifespan] Healthcare network seeding notice: {e}")
+
+    # Seed 50 managed VIZITOR doctors.
+    # Only run when the managed doctor set is incomplete.
+    try:
+        from app.database import SyncSessionLocal
+        from app.models.specialist import Specialist
+
+        with SyncSessionLocal() as db:
+            doctor_count = (
+                db.query(Specialist)
+                .filter(Specialist.id.like("VIZ_DOC_%"))
+                .count()
+            )
+
+        if doctor_count < 50:
+            await asyncio.to_thread(seed_50_specialists)
+            print("[Lifespan] 50 managed specialist seed completed.")
+        else:
+            print(
+                f"[Lifespan] Managed specialists already present: "
+                f"{doctor_count}"
+            )
+
+    except Exception as e:
+        print(f"[Lifespan] Specialist seeding notice: {e}")
 
     yield
 
