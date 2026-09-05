@@ -471,6 +471,43 @@
 
     // Deep text dictionary for DOM-wide real content translation
     const PHRASE_MAP = {
+        "My Profile": { hi: "मेरी प्रोफाइल", or: "ମୋର ପ୍ରୋଫାଇଲ୍", mr: "माझी प्रोफाइल" },
+        "Edit Profile": { hi: "प्रोफाइल संपादित करें", or: "ପ୍ରୋଫାଇଲ୍ ସଂପାଦନ କରନ୍ତୁ", mr: "प्रोफाइल संपादित करा" },
+        "Full Name": { hi: "पूरा नाम", or: "ପୂରା ନାମ", mr: "पूर्ण नाव" },
+        "User ID": { hi: "उपयोगकर्ता आईडी", or: "ୟୁଜର୍ ଆଇଡି", mr: "वापरकर्ता आयडी" },
+        "Email Address": { hi: "ईमेल पता", or: "ଇମେଲ୍ ଠିକଣା", mr: "ईमेल पत्ता" },
+        "Phone Number": { hi: "फ़ोन नंबर", or: "ଫୋନ୍ ନମ୍ବର", mr: "फोन नंबर" },
+        "Emergency Contact": { hi: "आपातकालीन संपर्क", or: "ଜରୁରୀକାଳୀନ ଯୋଗାଯୋଗ", mr: "आपत्कालीन संपर्क" },
+        "Blood Group": { hi: "रक्त समूह", or: "ରକ୍ତ ବର୍ଗ", mr: "रक्त गट" },
+        "Active Summary": { hi: "सक्रिय सारांश", or: "ସକ୍ରିୟ ସାରାଂଶ", mr: "सक्रिय सारांश" },
+        "Current Active Token": { hi: "वर्तमान सक्रिय टोकन", or: "ବର୍ତ୍ତମାନ ସକ୍ରିୟ ଟୋକନ୍", mr: "वर्तमान सक्रिय टोकन" },
+        "Token Number": { hi: "टोकन संख्या", or: "ଟୋକନ୍ ନମ୍ବର", mr: "टोकन क्रमांक" },
+        "Queue Status": { hi: "कतार स्थिति", or: "ଧାଡ଼ି ସ୍ଥିତି", mr: "रांग स्थिती" },
+        "People Ahead": { hi: "आगे कतार में लोग", or: "ଆଗରେ ଥିବା ଲୋକ", mr: "पुढील लोक" },
+        "Wait Time": { hi: "प्रतीक्षा समय", or: "ଅପେକ୍ଷା ସମୟ", mr: "प्रतीक्षा वेळ" },
+        "Upcoming Appointment": { hi: "आगामी अपॉइंटमेंट", or: "ଆଗାମୀ ଆପଏଣ୍ଟମେଣ୍ଟ", mr: "आगामी अपॉइंटमेंट" },
+        "No upcoming appointment": { hi: "कोई आगामी अपॉइंटमेंट नहीं", or: "କୌଣସି ଆଗାମୀ ଆପଏଣ୍ଟମେଣ୍ଟ ନାହିଁ", mr: "कोणतीही आगामी अपॉइंटमेंट नाही" },
+        "Preferences & Accessibility": { hi: "प्राथमिकताएं और पहुंच", or: "ପସନ୍ଦ ଓ ସୁବିଧା", mr: "प्राधान्ये आणि सुलभता" },
+        "Sound Effects": { hi: "ध्वनि प्रभाव", or: "ଧ୍ୱନି ପ୍ରଭାବ", mr: "ध्वनी प्रभाव" },
+        "Play gentle audio cues for queue updates and assistant cues": { hi: "कतार अपडेट और सहायक के लिए सौम्य ध्वनि बजाएं", or: "ଧାଡ଼ି ସୂଚନା ଓ ସହାୟକ ପାଇଁ କୋମଳ ଧ୍ୱନି ବଜାନ୍ତୁ", mr: "रांग अपडेट आणि सहाय्यकासाठी मंद आवाज प्ले करा" },
+        "Account Security & Actions": { hi: "खाता सुरक्षा और क्रियाएं", or: "ଖାତା ସୁରକ୍ଷା ଓ କାର୍ଯ୍ୟାନୁଷ୍ଠାନ", mr: "खाते सुरक्षा आणि कृती" },
+        "Change Password": { hi: "पासवर्ड बदलें", or: "ପାସୱାର୍ଡ଼ ବଦଳାନ୍ତୁ", mr: "पासवर्ड बदला" },
+        "Logout Account": { hi: "खाता लॉग आउट करें", or: "ଖାତା ଲଗ୍ ଆଉଟ୍ କରନ୍ତୁ", mr: "खाते लॉग आउट करा" },
+        "Save Changes": { hi: "परिवर्तन सहेजें", or: "ପରିବର୍ତ୍ତନ ସଂରକ୍ଷଣ କରନ୍ତୁ", mr: "बदल जतन करा" },
+        "Saving...": { hi: "सहेज रहा है...", or: "ସଂରକ୍ଷଣ ହେଉଛି...", mr: "जतन करत आहे..." },
+        "Cancel": { hi: "रद्द करें", or: "ବାତିଲ୍", mr: "रद्द करा" },
+        "Profile updated successfully!": { hi: "प्रोफाइल सफलतापूर्वक अपडेट हो गया!", or: "ପ୍ରୋଫାଇଲ୍ ସଫଳତାର ସହ ଅଦ୍ୟତନ ହୋଇଗଲା!", mr: "प्रोफाइल यशस्वीरीत्या अद्ययावत केले!" },
+        "Profile Updated": { hi: "प्रोफाइल अपडेट हो गई", or: "ପ୍ରୋଫାଇଲ୍ ଅଦ୍ୟତନ ହେଲା", mr: "प्रोफाइल अद्ययावत केली" },
+        "Your details have been saved across Vizitor.": { hi: "आपके विवरण VIZITOR पर सहेज दिए गए हैं।", or: "ଆପଣଙ୍କ ବିବରଣୀ VIZITOR ରେ ସଂରକ୍ଷଣ ହୋଇଗଲା।", mr: "तुमचे तपशील VIZITOR वर जतन केले गेले आहेत." },
+        "Verified Account": { hi: "सत्यापित खाता", or: "ପ୍ରମାଣିତ ଖାତା", mr: "सत्यापित खाते" },
+        "Verified Citizen": { hi: "सत्यापित नागरिक", or: "ପ୍ରମାଣିତ ନାଗରିକ", mr: "सत्यापित नागरिक" },
+        "Verified Patient": { hi: "सत्यापित मरीज", or: "ପ୍ରମାଣିତ ରୋଗୀ", mr: "सत्यापित रुग्ण" },
+        "Manage your account settings, details, and active queue information.": { hi: "अपनी खाता सेटिंग्स, विवरण और सक्रिय कतार जानकारी प्रबंधित करें।", or: "ଆପଣଙ୍କ ଖାତା ସେଟିଂସ୍, ବିବରଣୀ ଏବଂ ସକ୍ରିୟ ଧାଡ଼ି ସୂଚନା ପରିଚାଳନା କରନ୍ତୁ।", mr: "तुमची खाते सेटिंग्ज, तपशील आणि सक्रिय रांग माहिती व्यवस्थापित करा." },
+        "Update your personal contact information": { hi: "अपनी व्यक्तिगत संपर्क जानकारी अपडेट करें", or: "ଆପଣଙ୍କ ବ୍ୟକ୍ତିଗତ ଯୋଗାଯୋଗ ବିବରଣୀ ଅଦ୍ୟତନ କରନ୍ତୁ", mr: "तुमची वैयक्तिक संपर्क माहिती अद्ययावत करा" },
+        "No Token": { hi: "कोई टोकन नहीं", or: "କୌଣସି ଟୋକନ୍ ନାହିଁ", mr: "कोणताही टोकन नाही" },
+        "Language": { hi: "भाषा", or: "ଭାଷା", mr: "भाषा" },
+        "Change Language": { hi: "भाषा बदलें", or: "ଭାଷା ବଦଳାନ୍ତୁ", mr: "भाषा बदला" },
+
         // Navigation & Titles
         "Dashboard": { or: "ଡ୍ୟାସବୋର୍ଡ", mr: "डॅशबोर्ड", hi: "डैशबोर्ड" },
         "Appointments": { or: "ଆପଏଣ୍ଟମେଣ୍ଟ", mr: "अपॉइंटमेंट्स", hi: "अपॉइंटमेंट्स" },
@@ -771,16 +808,71 @@
         }
     ];
 
-    function getCurrentLang() {
-        return localStorage.getItem(STORAGE_KEY) || "or";
+    // Bi-directional reverse mapping so already translated text in any language can switch seamlessly
+    const REVERSE_PHRASE_MAP = {};
+    for (const [enKey, trans] of Object.entries(PHRASE_MAP)) {
+        if (trans.or) REVERSE_PHRASE_MAP[trans.or.trim()] = enKey;
+        if (trans.mr) REVERSE_PHRASE_MAP[trans.mr.trim()] = enKey;
+        if (trans.hi) REVERSE_PHRASE_MAP[trans.hi.trim()] = enKey;
     }
 
-    function setLanguage(lang) {
+    const CHANNEL_NAME = "vizitor_i18n_sync";
+    let broadcastChannel = null;
+    try {
+        if (typeof BroadcastChannel !== "undefined") {
+            broadcastChannel = new BroadcastChannel(CHANNEL_NAME);
+        }
+    } catch (e) {
+        broadcastChannel = null;
+    }
+
+    let currentAppliedLang = null;
+
+    function getCurrentLang() {
+        return localStorage.getItem(STORAGE_KEY) || localStorage.getItem("vizitor_language") || "or";
+    }
+
+    function setLanguage(lang, broadcast = true) {
         if (!TRANSLATIONS[lang]) lang = "or";
         localStorage.setItem(STORAGE_KEY, lang);
+        localStorage.setItem("vizitor_language", lang);
+        localStorage.setItem("vizitor_lang_ts", Date.now().toString());
+        currentAppliedLang = lang;
         applyTranslations();
         window.dispatchEvent(new CustomEvent("vizitorLanguageChanged", { detail: { lang } }));
+
+        if (broadcast && broadcastChannel) {
+            try {
+                broadcastChannel.postMessage({ type: "SYNC_LANGUAGE", lang: lang, ts: Date.now() });
+            } catch (err) {}
+        }
     }
+
+    if (broadcastChannel) {
+        broadcastChannel.onmessage = (evt) => {
+            if (evt && evt.data && evt.data.type === "SYNC_LANGUAGE" && evt.data.lang) {
+                if (evt.data.lang !== getCurrentLang()) {
+                    setLanguage(evt.data.lang, false);
+                }
+            }
+        };
+    }
+
+    window.addEventListener("storage", (evt) => {
+        if ((evt.key === STORAGE_KEY || evt.key === "vizitor_language" || evt.key === "vizitor_lang_ts") && evt.newValue) {
+            const newLang = getCurrentLang();
+            if (newLang !== currentAppliedLang) {
+                setLanguage(newLang, false);
+            }
+        }
+    });
+
+    window.addEventListener("focus", () => {
+        const savedLang = getCurrentLang();
+        if (savedLang && savedLang !== currentAppliedLang) {
+            setLanguage(savedLang, false);
+        }
+    });
 
     function t(key) {
         const lang = getCurrentLang();
@@ -820,27 +912,43 @@
             nodeOrigMap.set(node, orig);
         }
 
-        const trimmed = orig.trim();
-        if (!trimmed) return;
+        const currentText = (node.nodeValue || "").trim();
+        const trimmedOrig = (orig || "").trim();
+        if (!currentText && !trimmedOrig) return;
+
+        // Find canonical English phrase
+        let canonical = trimmedOrig;
+        if (!PHRASE_MAP[canonical]) {
+            canonical = REVERSE_PHRASE_MAP[trimmedOrig] ||
+                        REVERSE_PHRASE_MAP[currentText] ||
+                        (PHRASE_MAP[currentText] ? currentText : trimmedOrig);
+        }
 
         if (lang === "en") {
-            if (node.nodeValue !== orig) {
-                node.nodeValue = orig;
+            const target = PHRASE_MAP[canonical] ? canonical : (REVERSE_PHRASE_MAP[currentText] || orig);
+            if (node.nodeValue !== target) {
+                node.nodeValue = target;
             }
             return;
         }
 
         // 1. Direct dictionary match
-        if (PHRASE_MAP[trimmed] && PHRASE_MAP[trimmed][lang]) {
-            node.nodeValue = orig.replace(trimmed, PHRASE_MAP[trimmed][lang]);
+        if (PHRASE_MAP[canonical] && PHRASE_MAP[canonical][lang]) {
+            const translated = PHRASE_MAP[canonical][lang];
+            if (node.nodeValue !== translated) {
+                node.nodeValue = translated;
+            }
             return;
         }
 
         // 2. Pattern match
         for (const p of PATTERNS) {
-            const match = trimmed.match(p.regex);
+            const match = canonical.match(p.regex);
             if (match) {
-                node.nodeValue = orig.replace(trimmed, p.render(match, lang));
+                const patVal = p.render(match, lang);
+                if (node.nodeValue !== patVal) {
+                    node.nodeValue = patVal;
+                }
                 return;
             }
         }
