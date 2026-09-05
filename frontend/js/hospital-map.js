@@ -64,7 +64,7 @@
              * Do NOT put quotes around the key itself.
              */
             script.src =
-                "https://maps.googleapis.com/maps/api/js?key=AIzaSyC607wKpIOjVXRR_Rw61v-_y4tvVKrobRo";
+                "https://maps.googleapis.com/maps/api/js?key=AIzaSyAq21utjDCssYMI7UThmtD6LMjUn1FWAe8";
 
             script.async = true;
             script.defer = true;
