@@ -1946,6 +1946,17 @@ const VIZITOR = (() => {
     // SHARED CROWD DISPLAY COMPONENT (SECTION H)
     // ========================================================
 
+    function calculateCrowdLevel(queueSize) {
+        const size = Number(queueSize) || 0;
+        if (size <= 0) return "No Crowd";
+        if (size <= 5) return "Low";
+        if (size <= 15) return "Moderate";
+        if (size <= 30) return "High";
+        return "Critical";
+    }
+
+    window.calculateCrowdLevel = calculateCrowdLevel;
+
     function renderCrowdBadge(elementOrId, crowdLevel, queueSize) {
         const el = typeof elementOrId === "string" ? document.getElementById(elementOrId) : elementOrId;
         if (!el) return;
