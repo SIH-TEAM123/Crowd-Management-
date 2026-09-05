@@ -26,7 +26,6 @@ class SMSDeliveryRecord(Base):
         default=lambda: f"SMS_{uuid.uuid4().hex[:12]}",
     )
     appointment_id = Column(
-        String(64),
         ForeignKey("appointments.appointment_id", ondelete="CASCADE"),
         nullable=False,
         index=True,
