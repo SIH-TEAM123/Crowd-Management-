@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="VIZITOR turns hospital crowd chaos into coordinated care." />
+  <title>VIZITOR — Care, in motion.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/about.css" />
+</head>
+<body>
+  <header class="site-header" data-header>
+    <a class="wordmark" href="about.html" aria-label="VIZITOR home">VIZITOR<span class="wordmark-dot">.</span></a>
+    <nav class="site-nav" aria-label="About navigation">
+      <a href="#why">Why VIZITOR</a>
+      <a href="#system">The system</a>
+      <a href="#impact">Impact</a>
+    </nav>
+    <a class="header-login" href="index.html">Log in <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main>
+    <section class="hero section-shell" aria-labelledby="hero-title">
+      <div class="hero-copy reveal">
+        <p class="eyebrow">A new standard for hospital flow</p>
+        <h1 id="hero-title">Care,<br /><em>in motion.</em></h1>
+        <p class="hero-intro">VIZITOR turns the invisible friction of hospital crowds into a calm, coordinated experience—for every patient, every team, every day.</p>
+        <a class="text-link" href="#why">See how it works <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="hero-visual" aria-label="Animated visualization of coordinated patient movement">
+        <canvas id="flow-canvas"></canvas>
+        <div class="visual-label label-a">arrival <span>01</span></div>
+        <div class="visual-label label-b">care <span>02</span></div>
+        <div class="visual-label label-c">next step <span>03</span></div>
+        <div class="hero-visual-note">real-time patient flow<br /><span>coordinated quietly</span></div>
+      </div>
+      <div class="hero-meta"><span>01 / 06</span><span>Scroll to explore</span></div>
+    </section>
+
+    <section class="problem section-shell" id="why" aria-labelledby="why-title">
+      <div class="section-index reveal">01 <span>Why VIZITOR</span></div>
+      <div class="problem-grid">
+        <h2 class="display-title reveal" id="why-title">Hospitals are<br /><em>full of movement.</em></h2>
+        <div class="problem-copy reveal">
+          <p class="large-copy">But not all movement is progress.</p>
+          <p>Every waiting room, hallway, and handoff carries a signal. When those signals stay disconnected, patients feel the delay before anyone can name it.</p>
+          <p class="muted-copy">VIZITOR gives the whole hospital a shared view of what is happening now—and what needs to happen next.</p>
+        </div>
+      </div>
+      <div class="signal-row" aria-label="Hospital flow signals">
+        <span class="signal-cell">Patients arrive</span><span class="signal-line"></span><span class="signal-cell">Teams coordinate</span><span class="signal-line"></span><span class="signal-cell">Care moves forward</span>
+      </div>
+    </section>
+
+    <section class="system section-shell" id="system" aria-labelledby="system-title">
+      <div class="section-index reveal">02 <span>The system</span></div>
+      <div class="system-heading reveal"><h2 class="display-title" id="system-title">One view.<br /><em>Every decision.</em></h2><p>From arrival to discharge, VIZITOR makes the next best action visible.</p></div>
+      <div class="system-layout">
+        <div class="stage-rail" role="tablist" aria-label="VIZITOR system stages">
+          <button class="stage is-active" type="button" data-stage="0" role="tab" aria-selected="true"><span>01</span>See the crowd</button>
+          <button class="stage" type="button" data-stage="1" role="tab" aria-selected="false"><span>02</span>Find the pressure</button>
+          <button class="stage" type="button" data-stage="2" role="tab" aria-selected="false"><span>03</span>Move with intent</button>
+        </div>
+        <div class="stage-panel" data-stage-panel>
+          <div class="panel-top"><span class="mono-label">LIVE SYSTEM VIEW</span><span class="panel-status"><i></i> Connected</span></div>
+          <div class="panel-visual"><div class="panel-grid"></div><div class="panel-orbit orbit-one"></div><div class="panel-orbit orbit-two"></div><div class="panel-node node-one">Arrival</div><div class="panel-node node-two">Triage</div><div class="panel-node node-three">Care team</div><div class="panel-pulse"></div></div>
+          <div class="panel-bottom"><span data-panel-number>01</span><p data-panel-copy>Understand how people and resources are moving through the hospital in real time.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="intelligence section-shell" aria-labelledby="intelligence-title">
+      <div class="section-index reveal">03 <span>Crowd intelligence</span></div>
+      <div class="intelligence-layout">
+        <div class="intelligence-copy reveal"><h2 class="display-title" id="intelligence-title">Less waiting.<br /><em>More knowing.</em></h2><p>VIZITOR makes complexity legible. Not by adding another layer of noise, but by bringing the right signal to the right person at the right moment.</p></div>
+        <div class="density-card reveal"><div class="density-head"><span class="mono-label">CROWD DENSITY</span><span data-density-label>Balanced</span></div><div class="density-visual" data-density-visual></div><div class="density-scale"><span>Low</span><span>Balanced</span><span>High</span></div></div>
+      </div>
+    </section>
+
+    <section class="impact section-shell" id="impact" aria-labelledby="impact-title">
+      <div class="section-index reveal">04 <span>The impact</span></div>
+      <div class="impact-content reveal"><p class="eyebrow">When the system sees clearly</p><h2 class="display-title" id="impact-title">People feel<br /><em>the difference.</em></h2><div class="impact-list"><div><span>01</span><p>Patients know where they are in the journey.</p></div><div><span>02</span><p>Teams spend less time finding context.</p></div><div><span>03</span><p>Hospitals make room for better care.</p></div></div></div>
+    </section>
+
+    <section class="closing section-shell" aria-labelledby="closing-title"><div class="closing-rule"></div><p class="eyebrow">Technology in service of care</p><h2 id="closing-title">The future of healthcare<br /><em>should feel human.</em></h2><a class="closing-link" href="index.html">Enter VIZITOR <span aria-hidden="true">↗</span></a><div class="footer-meta"><span>VIZITOR. / 2025</span><span>Care, in motion.</span></div></section>
+  </main>
+  <script src="js/about.js"></script>
+</body>
+</html>
