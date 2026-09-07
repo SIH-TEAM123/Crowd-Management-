@@ -1,75 +1,61 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="VIZITOR turns healthcare waiting rooms into clear, calmer journeys.">
-  <title>VIZITOR — Make waiting visible</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sign in to VIZITOR.">
+  <title>Login — VIZITOR</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/login.css">
 </head>
-<body>
-  <header class="site-header" data-header>
-    <a class="wordmark" href="#top" aria-label="VIZITOR home">VIZITOR<span class="wordmark-dot">.</span></a>
-    <nav class="site-nav" aria-label="Main navigation">
-      <a href="#why">Why</a>
-      <a href="#system">The system</a>
-      <a href="#impact">Impact</a>
-    </nav>
-    <a class="nav-cta" href="#system">See how it works <span aria-hidden="true">↗</span></a>
-  </header>
+<body class="login-page">
+  <main class="login-container">
+    <div class="login-visual" aria-hidden="true">
+      <div class="login-slideshow" data-login-slideshow></div>
+      <div class="login-visual-overlay"></div>
+      <div class="login-visual-caption"><span>VIZITOR / SYSTEM ACCESS</span><span>Make waiting visible.</span></div>
+    </div>
 
-  <main id="top">
-    <section class="hero section-shell" aria-labelledby="hero-title">
-      <div class="hero-copy reveal">
-        <p class="eyebrow">A better way through care</p>
-        <h1 id="hero-title">Make waiting<br><em>visible.</em></h1>
-        <p class="hero-deck">VIZITOR gives every patient a clearer path through the healthcare system — and gives every team the signal to move with purpose.</p>
-        <a class="text-link" href="#system">Explore the system <span aria-hidden="true">↓</span></a>
-      </div>
-      <div class="hero-visual" aria-label="Animated visualization of people moving through a healthcare system">
-        <canvas id="flowCanvas" aria-hidden="true"></canvas>
-        <div class="flow-label flow-label-top">signal in</div>
-        <div class="flow-label flow-label-bottom">care out</div>
-      </div>
-      <div class="hero-meta"><span>01 / 04</span><span>For patients, teams<br>and better outcomes.</span></div>
-    </section>
+    <section class="login-form-side" aria-labelledby="login-title">
+      <div class="login-form-wrapper">
+        <div class="logo-container login-reveal login-reveal-1">
+          <span class="logo-mark" aria-hidden="true">V</span>
+          <span class="logo-text">VIZITOR<span class="wordmark-dot">.</span></span>
+        </div>
 
-    <section class="statement section-shell" id="why" aria-labelledby="statement-title">
-      <p class="section-index">The problem</p>
-      <div class="statement-content reveal">
-        <h2 id="statement-title">The hardest part of care shouldn’t be finding your way through it.</h2>
-        <p>When the system is opaque, everyone pays: patients lose time and trust. Teams lose visibility. Good care gets buried beneath avoidable friction.</p>
-      </div>
-    </section>
+        <div class="form-header login-reveal login-reveal-2">
+          <p class="login-kicker">SECURE ENTRY / 01</p>
+          <h1 id="login-title">WELCOME BACK, VISITOR.</h1>
+          <p>Enter the system and continue managing the flow.</p>
+        </div>
 
-    <section class="system section-shell" id="system" aria-labelledby="system-title">
-      <div class="system-intro">
-        <p class="section-index">The system</p>
-        <h2 id="system-title">One clear signal.<br><em>Every step.</em></h2>
-        <p>VIZITOR connects the moments between arrival and outcome, so people know what’s next and teams know where to focus.</p>
-      </div>
-      <div class="steps" data-steps>
-        <article class="step is-active" data-step="0"><span class="step-number">01</span><div><h3>Arrive</h3><p>A calm, simple start that captures what matters.</p></div></article>
-        <article class="step" data-step="1"><span class="step-number">02</span><div><h3>Understand</h3><p>Live context turns uncertainty into a shared picture.</p></div></article>
-        <article class="step" data-step="2"><span class="step-number">03</span><div><h3>Move forward</h3><p>Better signals help every person take the next right step.</p></div></article>
-      </div>
-      <div class="system-progress" aria-hidden="true"><span data-progress></span></div>
-    </section>
+        <form class="login-form login-reveal login-reveal-3" id="loginForm">
+          <div class="input-group">
+            <label for="email">Email address</label>
+            <input type="email" id="email" placeholder="you@organization.com" required autocomplete="email">
+          </div>
+          <div class="input-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+          </div>
+          <div class="form-actions">
+            <label class="remember-me"><input type="checkbox" id="rememberMe"><span>Remember for 30 days</span></label>
+            <a href="forgot-password.html" class="forgot-password">Forgot password?</a>
+          </div>
+          <button type="submit" class="btn-primary">ENTER SYSTEM <span aria-hidden="true">→</span></button>
+          <button type="button" class="btn-google" id="btnGoogle">Continue with Google</button>
+        </form>
 
-    <section class="impact section-shell" id="impact" aria-labelledby="impact-title">
-      <p class="section-index">The measure</p>
-      <div class="impact-content reveal"><h2 id="impact-title">Clarity is not a feature.<br><em>It’s the outcome.</em></h2><p>When waiting becomes visible, care becomes more human. Less guesswork. More attention where it belongs.</p></div>
-    </section>
-
-    <section class="final-cta section-shell" aria-labelledby="cta-title">
-      <div><p class="eyebrow">Start with a clearer view</p><h2 id="cta-title">Ready to see<br><em>what’s next?</em></h2></div>
-      <a class="circle-cta" href="#system" aria-label="See how the VIZITOR system works"><span>See the<br>system</span><span aria-hidden="true">↗</span></a>
+        <div class="form-footer login-reveal login-reveal-4">Don&apos;t have an account? <a href="signup.html">Sign up</a></div>
+      </div>
     </section>
   </main>
-  <footer class="site-footer section-shell"><span>© 2026 VIZITOR</span><span>Making care easier to navigate.</span><a href="#top">Back to top ↑</a></footer>
-  <script src="js/landing.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/login-config.js"></script>
+  <script src="js/login.js"></script>
 </body>
 </html>
