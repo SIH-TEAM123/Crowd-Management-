@@ -1,245 +1,75 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Login - VIZITOR</title>
-
-    <!-- Google Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-        rel="stylesheet"
-    >
-
-    <!-- Main CSS -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/vizi.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="VIZITOR turns healthcare waiting rooms into clear, calmer journeys.">
+  <title>VIZITOR — Make waiting visible</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/landing.css">
 </head>
-
 <body>
+  <header class="site-header" data-header>
+    <a class="wordmark" href="#top" aria-label="VIZITOR home">VIZITOR<span class="wordmark-dot">.</span></a>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="#why">Why</a>
+      <a href="#system">The system</a>
+      <a href="#impact">Impact</a>
+    </nav>
+    <a class="nav-cta" href="#system">See how it works <span aria-hidden="true">↗</span></a>
+  </header>
 
-    <div class="login-container">
+  <main id="top">
+    <section class="hero section-shell" aria-labelledby="hero-title">
+      <div class="hero-copy reveal">
+        <p class="eyebrow">A better way through care</p>
+        <h1 id="hero-title">Make waiting<br><em>visible.</em></h1>
+        <p class="hero-deck">VIZITOR gives every patient a clearer path through the healthcare system — and gives every team the signal to move with purpose.</p>
+        <a class="text-link" href="#system">Explore the system <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="hero-visual" aria-label="Animated visualization of people moving through a healthcare system">
+        <canvas id="flowCanvas" aria-hidden="true"></canvas>
+        <div class="flow-label flow-label-top">signal in</div>
+        <div class="flow-label flow-label-bottom">care out</div>
+      </div>
+      <div class="hero-meta"><span>01 / 04</span><span>For patients, teams<br>and better outcomes.</span></div>
+    </section>
 
-        <!-- LEFT SIDE -->
-<div class="login-visual">
-</div>
+    <section class="statement section-shell" id="why" aria-labelledby="statement-title">
+      <p class="section-index">The problem</p>
+      <div class="statement-content reveal">
+        <h2 id="statement-title">The hardest part of care shouldn’t be finding your way through it.</h2>
+        <p>When the system is opaque, everyone pays: patients lose time and trust. Teams lose visibility. Good care gets buried beneath avoidable friction.</p>
+      </div>
+    </section>
 
+    <section class="system section-shell" id="system" aria-labelledby="system-title">
+      <div class="system-intro">
+        <p class="section-index">The system</p>
+        <h2 id="system-title">One clear signal.<br><em>Every step.</em></h2>
+        <p>VIZITOR connects the moments between arrival and outcome, so people know what’s next and teams know where to focus.</p>
+      </div>
+      <div class="steps" data-steps>
+        <article class="step is-active" data-step="0"><span class="step-number">01</span><div><h3>Arrive</h3><p>A calm, simple start that captures what matters.</p></div></article>
+        <article class="step" data-step="1"><span class="step-number">02</span><div><h3>Understand</h3><p>Live context turns uncertainty into a shared picture.</p></div></article>
+        <article class="step" data-step="2"><span class="step-number">03</span><div><h3>Move forward</h3><p>Better signals help every person take the next right step.</p></div></article>
+      </div>
+      <div class="system-progress" aria-hidden="true"><span data-progress></span></div>
+    </section>
 
-        <!-- RIGHT SIDE -->
-        <div class="login-form-side">
+    <section class="impact section-shell" id="impact" aria-labelledby="impact-title">
+      <p class="section-index">The measure</p>
+      <div class="impact-content reveal"><h2 id="impact-title">Clarity is not a feature.<br><em>It’s the outcome.</em></h2><p>When waiting becomes visible, care becomes more human. Less guesswork. More attention where it belongs.</p></div>
+    </section>
 
-            <div class="login-form-wrapper">
-
-
-                <!-- BRANDING -->
-                <div class="logo-container">
-
-                    <svg
-                        class="logo-icon"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    >
-                        <path
-                            d="M12 2L2 7v10l10 5 10-5V7L12 2z"
-                            fill="rgba(124, 58, 237, 0.15)"
-                            stroke="#7c3aed"
-                            stroke-width="2"
-                        />
-
-                        <circle
-                            cx="12"
-                            cy="12"
-                            r="3"
-                            fill="#7c3aed"
-                        />
-                    </svg>
-
-                    <span class="logo-text">
-                        VIZITOR
-                    </span>
-
-                </div>
-
-
-                <!-- HEADER -->
-                <div class="form-header">
-
-                    <h1>
-                        Welcome back
-                    </h1>
-
-                    <p>
-                        Please enter your details to sign in.
-                    </p>
-
-                </div>
-
-
-                <!-- LOGIN FORM -->
-                <form
-                    class="login-form"
-                    id="loginForm"
-                >
-
-                    <!-- EMAIL -->
-                    <div class="input-group">
-
-                        <label for="email">
-                            Email
-                        </label>
-
-                        <input
-                            type="email"
-                            id="email"
-                            placeholder="Enter your email"
-                            required
-                            autocomplete="email"
-                        >
-
-                    </div>
-
-
-                    <!-- PASSWORD -->
-                    <div class="input-group">
-
-                        <label for="password">
-                            Password
-                        </label>
-
-                        <input
-                            type="password"
-                            id="password"
-                            placeholder="••••••••"
-                            required
-                            autocomplete="current-password"
-                        >
-
-                    </div>
-
-
-                    <!-- REMEMBER + FORGOT PASSWORD -->
-                    <div class="form-actions">
-
-                        <label class="remember-me">
-
-                            <input
-                                type="checkbox"
-                                id="rememberMe"
-                            >
-
-                            <span>
-                                Remember for 30 days
-                            </span>
-
-                        </label>
-
-
-                        <a
-                            href="forgot-password.html"
-                            class="forgot-password"
-                        >
-                            Forgot password?
-                        </a>
-
-                    </div>
-
-
-                    <!-- SIGN IN BUTTON -->
-                    <button
-                        type="submit"
-                        class="btn-primary"
-                    >
-                        Sign in
-                    </button>
-
-
-                    <!-- GOOGLE SIGN IN -->
-                    <button
-                        type="button"
-                        class="btn-google"
-                        id="btnGoogle"
-                    >
-
-                        <svg
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <path
-                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                                fill="#4285F4"
-                            />
-
-                            <path
-                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                                fill="#34A853"
-                            />
-
-                            <path
-                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                                fill="#FBBC05"
-                            />
-
-                            <path
-                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                                fill="#EA4335"
-                            />
-                        </svg>
-
-                        Sign in with Google
-
-                    </button>
-
-                </form>
-
-
-                <!-- SIGN UP -->
-                <div class="form-footer">
-
-                    Don't have an account?
-
-                    <a href="signup.html">
-                        Sign up
-                    </a>
-
-                </div>
-
-                <!-- DEMO ACCOUNTS QUICK-FILL -->
-                <div style="margin-top: 18px; padding: 12px 14px; background: rgba(124, 58, 237, 0.05); border: 1px dashed #7c3aed; border-radius: 10px; font-size: 0.82rem; color: #475569;">
-                    <div style="font-weight: 600; color: #7c3aed; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
-                        <span>⚡ Quick Test Logins (Password: Password123!)</span>
-                    </div>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button type="button" onclick="document.getElementById('email').value='aryansahoo211@gmail.com'; document.getElementById('password').value='Password123!';" style="flex: 1; min-width: 140px; padding: 6px 10px; background: white; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 500; color: #1e293b;">
-                            👤 Patient (Aryan)
-                        </button>
-                        <button type="button" onclick="document.getElementById('email').value='doctor_test_e2e@vizitor.gov.in'; document.getElementById('password').value='Password123!';" style="flex: 1; min-width: 140px; padding: 6px 10px; background: white; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 500; color: #1e293b;">
-                            🩺 Doctor (Dr. Aryan)
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- JAVASCRIPT -->
-    <script src="js/api.js"></script>
-    <script src="js/auth.js"></script>
-
-    <script src="js/i18n.js"></script>
-    <script src="js/vizi.js"></script>
+    <section class="final-cta section-shell" aria-labelledby="cta-title">
+      <div><p class="eyebrow">Start with a clearer view</p><h2 id="cta-title">Ready to see<br><em>what’s next?</em></h2></div>
+      <a class="circle-cta" href="#system" aria-label="See how the VIZITOR system works"><span>See the<br>system</span><span aria-hidden="true">↗</span></a>
+    </section>
+  </main>
+  <footer class="site-footer section-shell"><span>© 2026 VIZITOR</span><span>Making care easier to navigate.</span><a href="#top">Back to top ↑</a></footer>
+  <script src="js/landing.js"></script>
 </body>
-
 </html>
