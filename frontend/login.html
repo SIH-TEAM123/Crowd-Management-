@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sign in to VIZITOR.">
+  <title>Login — VIZITOR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body class="login-page">
+  <main class="login-container">
+    <div class="login-visual" aria-hidden="true">
+      <div class="login-slideshow" data-login-slideshow></div>
+      <div class="login-visual-overlay"></div>
+      <div class="login-visual-caption"><span>VIZITOR / SYSTEM ACCESS</span><span>Make waiting visible.</span></div>
+    </div>
+
+    <section class="login-form-side" aria-labelledby="login-title">
+      <div class="login-form-wrapper">
+        <div class="logo-container login-reveal login-reveal-1">
+          <span class="logo-mark" aria-hidden="true">V</span>
+          <span class="logo-text">VIZITOR<span class="wordmark-dot">.</span></span>
+        </div>
+
+        <div class="form-header login-reveal login-reveal-2">
+          <p class="login-kicker">SECURE ENTRY / 01</p>
+          <h1 id="login-title">WELCOME BACK, VISITOR.</h1>
+          <p>Enter the system and continue managing the flow.</p>
+        </div>
+
+        <form class="login-form login-reveal login-reveal-3" id="loginForm">
+          <div class="input-group">
+            <label for="email">Email address</label>
+            <input type="email" id="email" placeholder="you@organization.com" required autocomplete="email">
+          </div>
+          <div class="input-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+          </div>
+          <div class="form-actions">
+            <label class="remember-me"><input type="checkbox" id="rememberMe"><span>Remember for 30 days</span></label>
+            <a href="forgot-password.html" class="forgot-password">Forgot password?</a>
+          </div>
+          <button type="submit" class="btn-primary">ENTER SYSTEM <span aria-hidden="true">→</span></button>
+          <button type="button" class="btn-google" id="btnGoogle">Continue with Google</button>
+        </form>
+
+        <div class="form-footer login-reveal login-reveal-4">Don&apos;t have an account? <a href="signup.html">Sign up</a></div>
+      </div>
+    </section>
+  </main>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/login-config.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>
